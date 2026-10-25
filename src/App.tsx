@@ -424,7 +424,7 @@ function App() {
       <button className="quiet-link" onClick={() => go('home')}>← Back home</button>
     </section>}
 
-    <footer>BBB Unofficial - pending school approval. Unique visitors: {visitStats.total}/{visitStats.today}</footer>
+    <footer>Unique visitors: {visitStats.total} visitors total / {visitStats.today} visitors today</footer>
   </main>
 }
 export default App
