@@ -377,7 +377,6 @@ function App() {
         >→</button>
       </div>
 
-      <p className="projects-source">Starting facts: Town of Bedford transportation, public works and electricity pages; Bedford TAC meeting records; Bedford Town Clerk data reported by The Bedford Citizen.</p>
 
       {ideaOpen && <div className="idea-modal-backdrop" onMouseDown={closeIdeaModal}>
         <div className="idea-modal" role="dialog" aria-modal="true" aria-labelledby="idea-form-title" onMouseDown={e => e.stopPropagation()}>
