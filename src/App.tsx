@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import Newsletter from './Newsletter'
+import { EngineeringTabs, EngineeringWorkspace } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
 import crosswalkIcon from './assets/crosswalk.png'
 import dogparkIcon from './assets/dogpark.png'
@@ -115,6 +116,7 @@ function App() {
   const [page, setPage] = useState<Page>('home')
   const [menuOpen, setMenuOpen] = useState(false)
   const [projectPage, setProjectPage] = useState(0)
+  const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>('ideas')
   const [ideaOpen, setIdeaOpen] = useState(false)
   const [ideaForm, setIdeaForm] = useState<IdeaForm>(emptyIdea)
   const [ideaPhoto, setIdeaPhoto] = useState<File | null>(null)
@@ -321,11 +323,13 @@ function App() {
       <div className="projects-heading">
         <div>
           <p className="eyebrow">BEDFORD PROBLEM LAB</p>
-          <h1>Problems worth exploring.</h1>
+          <h1>{projectTab === "ideas" ? "Problems worth exploring." : "Engineering lab."}</h1>
         </div>
-        <p>These are starting questions — not finished solutions. We observe, research, measure, sketch, model, and test before deciding what might actually work.</p>
+        <p>{projectTab === "ideas" ? "These are starting questions — not finished solutions. We observe, research, measure, sketch, model, and test before deciding what might actually work." : "Explore engineering concepts through interactive models, experiments, and hands-on activities."}</p>
       </div>
 
+      <EngineeringTabs active={projectTab} onChange={setProjectTab} />
+      {projectTab === 'ideas' ? <>
       <div className="problem-grid">
         {visibleProjects.map(problem => <article className={problem.cta ? 'problem-card problem-card-cta' : problem.isSubmitted ? 'problem-card submitted-project-card' : 'problem-card'} key={problem.cta ? 'idea-cta' : problem.isSubmitted ? `submitted-${problem.id}` : `project-${problem.number}`}>
           {!problem.cta && <span className={problem.isSubmitted ? 'problem-index problem-index-new' : 'problem-index'}>{problem.number}</span>}
@@ -376,6 +380,8 @@ function App() {
         >→</button>
       </div>
 
+
+      </> : <EngineeringWorkspace tab={projectTab} />}
 
       {ideaOpen && <div className="idea-modal-backdrop" onMouseDown={closeIdeaModal}>
         <div className="idea-modal" role="dialog" aria-modal="true" aria-labelledby="idea-form-title" onMouseDown={e => e.stopPropagation()}>
