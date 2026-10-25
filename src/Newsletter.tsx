@@ -26,7 +26,6 @@ export default function Newsletter() {
         <span>ISSUE LIBRARY</span>
         <button className="archive-close" type="button" onClick={() => setArchiveOpen(false)} aria-label="Close issue navigation">×</button>
       </div>
-      <h2>Browse issues</h2>
       <nav className="archive-list" aria-label="Published newsletter issues">
         {issues.map(issue => <button key={issue.id} type="button" className={issue.id === selectedIssueId ? "archive-item selected" : "archive-item"} aria-current={issue.id === selectedIssueId ? "page" : undefined} onClick={() => { setSelectedIssueId(issue.id); setExpanded(false); window.scrollTo({top:0,behavior:"smooth"}) }}>
           <span>{issue.month} <small>ISSUE {issue.number}</small></span>
