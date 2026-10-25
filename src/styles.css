@@ -371,3 +371,13 @@ footer{min-height:38px;font-size:9.5px}
   .pagination-arrow{width:30px;height:30px}
   .pagination-page{width:29px;height:29px}
 }
+
+/* Full-bleed header: keep the navigation aligned with the centered content. */
+.topbar{position:relative;isolation:isolate}
+.topbar::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);background:#173f2d}
+.nav-menu{background:transparent;box-shadow:none}
+.brand-text{color:#fff}
+@media(max-width:760px){
+  .menu-toggle span{background:#fff}
+  .nav-menu{background:#173f2d;box-shadow:0 12px 30px rgba(15,40,28,.22)}
+}
