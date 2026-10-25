@@ -387,3 +387,16 @@ body::before{content:"";position:absolute;top:0;left:0;right:0;height:116px;back
   .menu-toggle span{background:#fff}
   .nav-menu{background:#173f2d;box-shadow:0 12px 30px rgba(15,40,28,.22)}
 }
+
+/* Projects: readable, fluid cards without clipped descriptions on smaller laptops. */
+.site-shell:has(.projects-page){height:auto;min-height:100svh;overflow:visible;grid-template-rows:auto 1fr auto}
+.projects-page{height:auto;min-height:0;display:flex;flex-direction:column;gap:20px;padding:32px 0 36px;overflow:visible}
+.projects-heading{grid-template-columns:minmax(0,1fr) minmax(240px,.65fr);gap:32px;align-items:end}
+.problem-grid{height:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:auto;gap:16px;align-items:stretch}
+.problem-card,.submitted-project-card,.problem-card-cta{height:auto!important;min-height:270px!important;max-height:none!important;padding:20px!important;overflow-wrap:anywhere}
+.problem-card h2{font-size:clamp(18px,1.5vw,22px)}
+.problem-fact{font-size:13px;line-height:1.5}
+.problem-question{font-size:12.5px;line-height:1.55}
+.project-pagination{padding:6px 0 0}
+@media(max-width:1050px){.problem-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.projects-heading{grid-template-columns:1fr}}
+@media(max-width:760px){.projects-page{gap:20px;padding:24px 0 30px}.problem-grid{grid-template-columns:1fr;gap:14px}.problem-card,.submitted-project-card,.problem-card-cta{min-height:0!important;padding:19px!important}}
