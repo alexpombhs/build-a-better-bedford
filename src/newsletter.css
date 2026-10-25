@@ -159,3 +159,7 @@
 @media(max-width:1100px){
   .newsletter-archive-scrim{top:var(--bbb-header-height,116px)}
 }
+
+/* Closed-state navigation affordance: icon only, never visible beside an open library. */
+.newsletter-issue-tab{width:46px;height:46px;justify-content:center;padding:0}
+.newsletter-issue-tab .issue-tab-symbol{font-size:20px}
