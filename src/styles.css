@@ -411,3 +411,11 @@ body::before{position:fixed!important;top:0;left:0;right:0;width:100%;height:var
 .site-shell:has(.newsletter-page),.site-shell:has(.projects-page){overflow:visible}
 .topbar{position:sticky;top:0;z-index:45;background:transparent;min-height:var(--bbb-header-height)}
 @media(max-width:760px){.nav-menu{z-index:50}}
+
+/* Projects toolbar: title left, atomic MUI tabs right, no extra introduction. */
+.projects-page{gap:16px;padding-top:20px}
+.projects-toolbar{display:flex;align-items:center;justify-content:space-between;gap:20px;min-width:0}
+.projects-toolbar h1{flex:0 0 auto;margin:0;font-size:clamp(34px,3vw,48px);line-height:1.1}
+.projects-toolbar .bbb-ui-tabs{min-width:0;max-width:100%;margin-bottom:0}
+.projects-toolbar .MuiTabs-flexContainer{justify-content:flex-end}
+@media(max-width:760px){.projects-toolbar{flex-wrap:wrap;gap:10px}.projects-toolbar h1{font-size:34px}.projects-toolbar .bbb-ui-tabs{width:100%}.projects-page{padding-top:16px}}
