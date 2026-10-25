@@ -109,3 +109,33 @@
 .archive-item strong{display:block;margin-top:10px;font-size:14px;line-height:1.45}
 .archive-coming{margin-top:24px;color:#708075;font-size:12px;line-height:1.5}
 @media(max-width:760px){.newsletter-issue-tab{top:102px;padding:10px 12px;font-size:11px}.newsletter-archive{padding:24px 20px}}
+
+/* Desktop issue library sits flush against the screen edge, below the sticky site header. */
+@media(min-width:1101px){
+  .newsletter-library{padding-left:clamp(220px,19vw,300px)}
+  .newsletter-archive,.newsletter-archive.open{
+    position:fixed;left:0;top:var(--bbb-header-height,108px);bottom:0;
+    width:clamp(220px,19vw,300px);height:auto;padding:32px 24px;
+    transform:none;visibility:visible;pointer-events:auto;
+    border:0;border-right:1px solid #dbe3dc;border-radius:0;
+    box-shadow:none;background:#f5f8f5;z-index:31;
+  }
+  .newsletter-issue-tab,.newsletter-archive-scrim,.archive-close{display:none}
+  .newsletter-library .newsletter-clean{height:calc(100svh - var(--bbb-header-height,108px) - 38px)}
+  .newsletter-library .newsletter-intro h1{font-size:clamp(43px,4vw,72px)}
+}
+@media(min-width:1101px) and (max-height:820px){
+  .newsletter-library .newsletter-clean{height:calc(100svh - var(--bbb-header-height,68px) - 28px)}
+}
+/* On narrow screens the edge-attached issues control opens a full-height drawer. */
+@media(max-width:1100px){
+  .newsletter-issue-tab{top:var(--bbb-header-height,116px);left:0;border-radius:0 0 10px 0}
+  .newsletter-archive{top:var(--bbb-header-height,116px);bottom:0;width:min(380px,90vw);padding:28px 25px}
+  .newsletter-archive.open{transform:translateX(0)}
+  .newsletter-library .newsletter-clean{height:calc(100svh - var(--bbb-header-height,116px) - 30px);min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:3vw}
+}
+@media(max-width:760px){
+  .newsletter-archive{top:82px}
+  .newsletter-issue-tab{top:82px}
+  .newsletter-library .newsletter-clean{height:auto;min-height:calc(100svh - 112px);display:block}
+}
