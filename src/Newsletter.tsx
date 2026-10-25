@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import roadSolution from './assets/road_solution.png'
 
+// Add new published issues here when their articles are ready.
+const issues = [{ id: '2026-09', month: 'September 2026', number: '01', title: 'Can you design danger out of a road?' }] as const
+
 const sections = [
   ['01', 'The idea', 'Roads have a user experience. Geometry, visibility, markings, lighting and crossing distance influence how people move and what they notice.'],
   ['02', 'The question', 'What if we studied a Bedford crossing like a designer studies an interface: where is the uncertainty, and what behavior does the street encourage?'],
@@ -10,7 +13,22 @@ const sections = [
 export default function Newsletter() {
   const [expanded, setExpanded] = useState(false)
 
-  return <section className={expanded ? 'newsletter-page expanded' : 'newsletter-page'}>
+  return <div className="newsletter-library">
+    <aside className="newsletter-archive" aria-label="Newsletter issues">
+      <div className="archive-head"><span>THE ARCHIVE</span><h2>Newsletter</h2><p>Explore our monthly ideas and engineering stories.</p></div>
+      <label className="archive-mobile-label" htmlFor="newsletter-issue-select">Choose an issue</label>
+      <select id="newsletter-issue-select" className="archive-select" value={issues[0].id} onChange={() => setExpanded(false)}>
+        {issues.map(issue => <option key={issue.id} value={issue.id}>{issue.month} · Issue {issue.number}</option>)}
+      </select>
+      <nav className="archive-list" aria-label="Published newsletter issues">
+        {issues.map(issue => <button key={issue.id} type="button" className="archive-item selected" aria-current="page" onClick={() => { setExpanded(false); window.scrollTo({top:0,behavior:'smooth'}) }}>
+          <span>{issue.month} <small>ISSUE {issue.number}</small></span>
+          <strong>{issue.title}</strong>
+        </button>)}
+      </nav>
+      <p className="archive-coming">New issues will appear here as they’re published.</p>
+    </aside>
+    <section className={expanded ? 'newsletter-page expanded' : 'newsletter-page'}>
     <div className="newsletter-clean">
       <div className="newsletter-intro">
         <p className="eyebrow">SEPTEMBER 2026 · ISSUE 01</p>
@@ -114,4 +132,5 @@ export default function Newsletter() {
         </section>
       </div>}
   </section>
+  </div>
 }
