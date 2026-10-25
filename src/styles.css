@@ -400,3 +400,14 @@ body::before{content:"";position:absolute;top:0;left:0;right:0;height:116px;back
 .project-pagination{padding:6px 0 0}
 @media(max-width:1050px){.problem-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.projects-heading{grid-template-columns:1fr}}
 @media(max-width:760px){.projects-page{gap:20px;padding:24px 0 30px}.problem-grid{grid-template-columns:1fr;gap:14px}.problem-card,.submitted-project-card,.problem-card-cta{min-height:0!important;padding:19px!important}}
+
+/* The header stays visible across long Projects and Newsletter pages. */
+:root{--bbb-header-height:116px}
+@media(min-width:1051px){:root{--bbb-header-height:clamp(76px,10.5vh,108px)}}
+@media(min-width:1051px) and (max-height:820px){:root{--bbb-header-height:68px}}
+@media(min-width:761px) and (max-height:720px){:root{--bbb-header-height:72px}}
+@media(max-width:760px){:root{--bbb-header-height:82px}}
+body::before{position:fixed!important;top:0;left:0;right:0;width:100%;height:var(--bbb-header-height)!important;z-index:44}
+.site-shell:has(.newsletter-page),.site-shell:has(.projects-page){overflow:visible}
+.topbar{position:sticky;top:0;z-index:45;background:transparent;min-height:var(--bbb-header-height)}
+@media(max-width:760px){.nav-menu{z-index:50}}
