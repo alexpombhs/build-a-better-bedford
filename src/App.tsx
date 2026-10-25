@@ -321,7 +321,6 @@ function App() {
 
     {page === 'projects' && <section className="projects-page">
       <div className="projects-heading projects-toolbar">
-        <h1>Projects</h1>
         <EngineeringTabs active={projectTab} onChange={setProjectTab} />
       </div>
       {projectTab === 'ideas' ? <>
