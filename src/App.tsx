@@ -320,15 +320,10 @@ function App() {
     {page === 'newsletter' && <Newsletter />}
 
     {page === 'projects' && <section className="projects-page">
-      <div className="projects-heading">
-        <div>
-          <p className="eyebrow">BEDFORD PROBLEM LAB</p>
-          <h1>{projectTab === "ideas" ? "Problems worth exploring." : "Engineering lab."}</h1>
-        </div>
-        <p>{projectTab === "ideas" ? "These are starting questions — not finished solutions. We observe, research, measure, sketch, model, and test before deciding what might actually work." : "Explore engineering concepts through interactive models, experiments, and hands-on activities."}</p>
+      <div className="projects-heading projects-toolbar">
+        <h1>Projects</h1>
+        <EngineeringTabs active={projectTab} onChange={setProjectTab} />
       </div>
-
-      <EngineeringTabs active={projectTab} onChange={setProjectTab} />
       {projectTab === 'ideas' ? <>
       <div className="problem-grid">
         {visibleProjects.map(problem => <article className={problem.cta ? 'problem-card problem-card-cta' : problem.isSubmitted ? 'problem-card submitted-project-card' : 'problem-card'} key={problem.cta ? 'idea-cta' : problem.isSubmitted ? `submitted-${problem.id}` : `project-${problem.number}`}>
