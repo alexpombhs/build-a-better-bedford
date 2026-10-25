@@ -19,7 +19,7 @@ export default function Newsletter() {
       <span className="issue-tab-symbol" aria-hidden="true">☰</span><span>Browse issues</span>
     </button>
     {archiveOpen && <div className="newsletter-archive-scrim" onClick={() => setArchiveOpen(false)} aria-hidden="true" />}
-    <aside id="newsletter-issue-navigation" className={archiveOpen ? 'newsletter-archive open' : 'newsletter-archive'} aria-label="Newsletter issues" aria-hidden={!archiveOpen}>
+    <aside id="newsletter-issue-navigation" className={archiveOpen ? 'newsletter-archive open' : 'newsletter-archive'} aria-label="Newsletter issues">
       <div className="archive-head">
         <span>ISSUE LIBRARY</span>
         <button className="archive-close" type="button" onClick={() => setArchiveOpen(false)} aria-label="Close issue navigation">×</button>
