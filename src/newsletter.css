@@ -87,3 +87,42 @@
   .newsletter-note p{font-size:14px}
   .expand-grid p,.solution-layout p{font-size:14px}
 }
+
+/* Newsletter library: archive navigation alongside the selected published issue. */
+.newsletter-library{display:grid;grid-template-columns:230px minmax(0,1fr);gap:clamp(24px,3vw,50px);align-items:start;padding:26px 0 36px}
+.newsletter-archive{position:sticky;top:20px;min-width:0;padding:20px 18px;background:#f4f7f4;border:1px solid #dbe5dc;border-radius:14px}
+.archive-head>span{font-size:10px;letter-spacing:.16em;font-weight:800;color:#587460}
+.archive-head h2{margin:10px 0 7px;color:#173f2d;font-size:24px;letter-spacing:-.035em}
+.archive-head p,.archive-coming{margin:0;color:#63766a;font-size:12px;line-height:1.55}
+.archive-list{margin-top:22px;display:grid;gap:8px}
+.archive-item{width:100%;text-align:left;border:1px solid #c2d4c6;border-radius:10px;padding:12px;background:#fff;color:#173f2d;cursor:pointer}
+.archive-item.selected{border-color:#2f684b;box-shadow:inset 3px 0 #2f684b}
+.archive-item span{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:11px;font-weight:750}
+.archive-item small{font-size:9px;color:#5b8066;white-space:nowrap}
+.archive-item strong{display:block;margin-top:8px;font-size:13px;line-height:1.35}
+.archive-coming{margin-top:17px}
+.archive-select,.archive-mobile-label{display:none}
+.newsletter-library .newsletter-page{min-width:0}
+.newsletter-library .newsletter-clean{height:auto;min-height:calc(100svh - 190px);grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,3vw,44px);padding:18px 0 64px;align-items:center}
+.newsletter-library .newsletter-intro h1{font-size:clamp(38px,3.6vw,64px)}
+.newsletter-library .newsletter-note h2{font-size:19px}
+.newsletter-library .newsletter-note p{font-size:13px}
+.newsletter-library .newsletter-drawer-toggle{bottom:0}
+@media(max-width:1100px){
+  .newsletter-library{grid-template-columns:190px minmax(0,1fr);gap:20px}
+  .newsletter-library .newsletter-clean{display:block;min-height:0;padding:16px 0 64px}
+  .newsletter-library .newsletter-notes{margin-top:34px}
+  .newsletter-library .newsletter-intro h1{font-size:clamp(42px,5vw,64px)}
+}
+@media(max-width:760px){
+  .newsletter-library{display:block;padding:18px 0 30px}
+  .newsletter-archive{position:static;padding:14px 16px;margin-bottom:22px}
+  .archive-head h2{font-size:20px;margin:4px 0}
+  .archive-head p{font-size:11px}
+  .archive-list,.archive-coming{display:none}
+  .archive-mobile-label{display:block;font-size:11px;font-weight:800;margin:12px 0 5px;color:#315844}
+  .archive-select{display:block;width:100%;min-height:42px;padding:9px 12px;border-radius:8px;border:1px solid #b1c9b7;background:#fff;color:#173f2d;font:700 13px Inter,sans-serif}
+  .newsletter-library .newsletter-clean{padding:12px 0 60px}
+  .newsletter-library .newsletter-notes{margin-top:30px}
+  .newsletter-library .newsletter-intro h1{font-size:clamp(40px,11vw,60px)}
+}
