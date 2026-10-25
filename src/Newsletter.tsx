@@ -13,8 +13,10 @@ const sections = [
 export default function Newsletter() {
   const [expanded, setExpanded] = useState(false)
   const [archiveOpen, setArchiveOpen] = useState(false)
+  const [selectedIssueId, setSelectedIssueId] = useState<string>(issues[0].id)
+  const selectedIssue = issues.find(issue => issue.id === selectedIssueId) ?? issues[0]
 
-  return <div className="newsletter-library">
+  return <div className={archiveOpen ? "newsletter-library archive-visible" : "newsletter-library"}>
     <button className="newsletter-issue-tab" type="button" aria-expanded={archiveOpen} aria-controls="newsletter-issue-navigation" onClick={() => setArchiveOpen(v => !v)}>
       <span className="issue-tab-symbol" aria-hidden="true">☰</span><span>Browse issues</span>
     </button>
@@ -26,7 +28,7 @@ export default function Newsletter() {
       </div>
       <h2>Browse issues</h2>
       <nav className="archive-list" aria-label="Published newsletter issues">
-        {issues.map(issue => <button key={issue.id} type="button" className="archive-item selected" aria-current="page" onClick={() => { setExpanded(false); setArchiveOpen(false); window.scrollTo({top:0,behavior:'smooth'}) }}>
+        {issues.map(issue => <button key={issue.id} type="button" className={issue.id === selectedIssueId ? "archive-item selected" : "archive-item"} aria-current={issue.id === selectedIssueId ? "page" : undefined} onClick={() => { setSelectedIssueId(issue.id); setExpanded(false); window.scrollTo({top:0,behavior:"smooth"}) }}>
           <span>{issue.month} <small>ISSUE {issue.number}</small></span>
           <strong>{issue.title}</strong>
         </button>)}
@@ -36,7 +38,7 @@ export default function Newsletter() {
     <section className={expanded ? 'newsletter-page expanded' : 'newsletter-page'}>
     <div className="newsletter-clean">
       <div className="newsletter-intro">
-        <p className="eyebrow">SEPTEMBER 2026 · ISSUE 01</p>
+        <p className="eyebrow">{selectedIssue.month.toUpperCase()} · ISSUE {selectedIssue.number}</p>
         <p className="newsletter-label">MONTHLY FIELD NOTE</p>
         <h1>Can you design <span>danger</span> out of a road?</h1>
         <p className="newsletter-deck">A look at how design, urbanism and engineering can make safer behavior easier and more intuitive.</p>
