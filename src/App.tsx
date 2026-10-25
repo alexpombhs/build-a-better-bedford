@@ -298,7 +298,6 @@ function App() {
 
       <div className="home-content">
         <p className="eyebrow">STUDENT-LED · BEDFORD, MASSACHUSETTS</p>
-        <h1>Real places.<br/>Real solutions.</h1>
         <p className="lede">We explore local infrastructure, learn the engineering behind it, and turn observations into ideas we can sketch, model, build, and test.</p>
 
         <div className="focus">
