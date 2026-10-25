@@ -373,8 +373,14 @@ footer{min-height:38px;font-size:9.5px}
 }
 
 /* Full-bleed header: keep the navigation aligned with the centered content. */
-.topbar{position:relative;isolation:isolate}
-.topbar::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);background:#173f2d}
+.topbar{position:relative}
+/* The stripe lives on body, outside .site-shell's overflow clipping. */
+body::before{content:"";position:absolute;top:0;left:0;right:0;height:116px;background:#173f2d;pointer-events:none}
+@media(min-width:1051px){body::before{height:clamp(76px,10.5vh,108px)}}
+@media(min-width:1051px) and (max-height:820px){body::before{height:68px}}
+@media(min-width:761px) and (max-width:1050px){body::before{height:116px}}
+@media(min-width:761px) and (max-height:720px){body::before{height:72px}}
+@media(max-width:760px){body::before{height:82px}}
 .nav-menu{background:transparent;box-shadow:none}
 .brand-text{color:#fff}
 @media(max-width:760px){
