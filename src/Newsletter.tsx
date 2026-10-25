@@ -12,21 +12,26 @@ const sections = [
 
 export default function Newsletter() {
   const [expanded, setExpanded] = useState(false)
+  const [archiveOpen, setArchiveOpen] = useState(false)
 
   return <div className="newsletter-library">
-    <aside className="newsletter-archive" aria-label="Newsletter issues">
-      <div className="archive-head"><span>THE ARCHIVE</span><h2>Newsletter</h2><p>Explore our monthly ideas and engineering stories.</p></div>
-      <label className="archive-mobile-label" htmlFor="newsletter-issue-select">Choose an issue</label>
-      <select id="newsletter-issue-select" className="archive-select" value={issues[0].id} onChange={() => setExpanded(false)}>
-        {issues.map(issue => <option key={issue.id} value={issue.id}>{issue.month} · Issue {issue.number}</option>)}
-      </select>
+    <button className="newsletter-issue-tab" type="button" aria-expanded={archiveOpen} aria-controls="newsletter-issue-navigation" onClick={() => setArchiveOpen(v => !v)}>
+      <span className="issue-tab-symbol" aria-hidden="true">☰</span><span>Issues</span>
+    </button>
+    {archiveOpen && <div className="newsletter-archive-scrim" onClick={() => setArchiveOpen(false)} aria-hidden="true" />}
+    <aside id="newsletter-issue-navigation" className={archiveOpen ? 'newsletter-archive open' : 'newsletter-archive'} aria-label="Newsletter issues" aria-hidden={!archiveOpen}>
+      <div className="archive-head">
+        <span>ISSUE LIBRARY</span>
+        <button className="archive-close" type="button" onClick={() => setArchiveOpen(false)} aria-label="Close issue navigation">×</button>
+      </div>
+      <h2>Browse issues</h2>
       <nav className="archive-list" aria-label="Published newsletter issues">
-        {issues.map(issue => <button key={issue.id} type="button" className="archive-item selected" aria-current="page" onClick={() => { setExpanded(false); window.scrollTo({top:0,behavior:'smooth'}) }}>
+        {issues.map(issue => <button key={issue.id} type="button" className="archive-item selected" aria-current="page" onClick={() => { setExpanded(false); setArchiveOpen(false); window.scrollTo({top:0,behavior:'smooth'}) }}>
           <span>{issue.month} <small>ISSUE {issue.number}</small></span>
           <strong>{issue.title}</strong>
         </button>)}
       </nav>
-      <p className="archive-coming">New issues will appear here as they’re published.</p>
+      <p className="archive-coming">More issues will appear here as they are published.</p>
     </aside>
     <section className={expanded ? 'newsletter-page expanded' : 'newsletter-page'}>
     <div className="newsletter-clean">
