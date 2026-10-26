@@ -19,3 +19,6 @@
 .bbb-about-join:focus-visible{outline:3px solid #76a68b;outline-offset:3px}
 @media(max-width:800px){.bbb-about-grid{grid-template-columns:1fr}.bbb-about-page{padding-top:30px}.bbb-about-cta{flex-wrap:wrap}}
 @media(max-width:480px){.bbb-about-panel-content{padding:20px!important}.bbb-about-row{grid-template-columns:1fr;gap:3px;padding:12px 0}.bbb-about-description{font-size:15px!important}.bbb-about-cta{align-items:stretch}.bbb-about-join{width:100%}}
+
+/* Keep About usable on smaller laptop heights and preserve the sticky site header. */
+.site-shell:has(.bbb-about-page){height:auto;min-height:100svh;overflow:visible;grid-template-rows:auto 1fr auto}
