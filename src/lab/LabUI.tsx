@@ -6,7 +6,7 @@ export const labColors = { ink:'#173f2d', accent:'#2f684b', muted:'#61766a', bor
 export function SectionHeading({eyebrow,title,description}:{eyebrow:string;title:string;description:string}) {
   return <UiBox sx={{maxWidth:850,mb:3}}>
     <UiText variant="overline" sx={{color:labColors.accent,fontWeight:800,letterSpacing:2}}>{eyebrow}</UiText>
-    <UiText variant="h3" component="h2" sx={{fontFamily:'Georgia, serif',fontWeight:500,color:labColors.ink,fontSize:{xs:34,md:50},my:1}}>{title}</UiText>
+    <UiText variant="h3" sx={{fontFamily:'Georgia, serif',fontWeight:500,color:labColors.ink,fontSize:{xs:34,md:50},my:1}}>{title}</UiText>
     <UiText sx={{color:labColors.muted,lineHeight:1.7}}>{description}</UiText>
   </UiBox>
 }
@@ -15,7 +15,7 @@ export function LabCard({eyebrow,title,children}:{eyebrow:string;title:string;ch
   return <UiCard variant="outlined" sx={{borderColor:labColors.border,borderRadius:3,height:'100%',boxShadow:'none'}}>
     <UiCardContent sx={{p:3,'&:last-child':{pb:3}}}>
       <UiText variant="overline" sx={{color:labColors.accent,fontWeight:800}}>{eyebrow}</UiText>
-      <UiText variant="h6" component="h3" sx={{fontWeight:750,color:labColors.ink,my:1}}>{title}</UiText>
+      <UiText variant="h6" sx={{fontWeight:750,color:labColors.ink,my:1}}>{title}</UiText>
       <UiText variant="body2" sx={{color:labColors.muted,lineHeight:1.7}}>{children}</UiText>
     </UiCardContent>
   </UiCard>
