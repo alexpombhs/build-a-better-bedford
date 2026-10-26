@@ -29,7 +29,12 @@ export default function Newsletter() {
 
   return <div className={archiveOpen ? "newsletter-library archive-visible" : "newsletter-library"}>
     {!archiveOpen && <button className="newsletter-issue-tab" type="button" aria-expanded={false} aria-controls="newsletter-issue-navigation" aria-label="Browse newsletter issues" onClick={() => setArchiveOpen(true)}>
-      <span className="issue-tab-symbol" aria-hidden="true">▤</span><span>Browse issues</span>
+      <svg className="issue-tab-symbol" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="18" rx="1" />
+        <path d="M7 7h0M7 17h0" />
+        <rect x="11" y="3" width="4" height="18" rx="1" />
+        <path d="m17 5 4 14M18.7 10l-2.9.7" />
+      </svg><span>Browse issues</span>
     </button>}
     {archiveOpen && <div className="newsletter-archive-scrim" onClick={() => setArchiveOpen(false)} aria-hidden="true" />}
     <aside id="newsletter-issue-navigation" className={archiveOpen ? 'newsletter-archive open' : 'newsletter-archive'} aria-label="Newsletter issues">
@@ -69,7 +74,7 @@ export default function Newsletter() {
         </article>)}
         {isOctober ? <div className="newsletter-disclaimer">
           <strong>Club leadership</strong>
-          <p>Alex · Farah · Ms. Roberts</p>
+          <p>Alex Pominova · Club leader (11th grade)<br />Farah Semy · Co-leader (11th grade)<br />Julia Richards · Club advisor</p>
         </div> : <div className="newsletter-disclaimer">
           <strong>Design exploration, not an engineering plan.</strong>
           <p>A real design would require site measurements, accessibility and drainage requirements, traffic data, sight-distance analysis, utilities and right-of-way constraints.</p>
@@ -97,8 +102,8 @@ export default function Newsletter() {
             </div>
             <div className="design-principle">
               <span>LEADERSHIP TEAM</span>
-              <strong>Alex · Farah · Ms. Roberts</strong>
-              <p>Our student leadership team and advisor will help organize projects, meetings and opportunities throughout the year.</p>
+              <strong>Alex Pominova · Farah Semy · Julia Richards</strong>
+              <p>Alex Pominova (club leader, 11th grade), Farah Semy (co-leader, 11th grade) and Julia Richards (club advisor) will help organize projects, meetings and opportunities throughout the year.</p>
             </div>
           </div>
         </section>
