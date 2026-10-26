@@ -8,6 +8,17 @@ export function EngineeringTabs({active,onChange}:{active:Tab;onChange:(tab:Tab)
   return <LabTabs value={active} onChange={value=>onChange(value as Tab)} />
 }
 
+const sectionCopy: Record<Tab,{title:string;description:string}> = {
+  simulators:{title:'Bridge load simulator',description:'Adjust the load and span to explore how a bridge beam responds'},
+  ideas:{title:'Ideas worth exploring',description:'Local problems we can investigate, design for, and test'},
+  lab:{title:'Test and improve',description:'Make a prediction, change one variable, and compare results'},
+  'hands-on':{title:'Build and test',description:'Simple hands-on engineering challenges for club meetings'},
+}
+
+export function EngineeringSectionIntro({tab}:{tab:Tab}) {
+  return <SectionHeading title={sectionCopy[tab].title} description={sectionCopy[tab].description}/>
+}
+
 export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
   const [load,setLoad]=useState(10)
   const [position,setPosition]=useState(50)
@@ -16,10 +27,10 @@ export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
   const left=load*(span-a)/span
   const right=load*a/span
   const maxMoment=left*a
-  if(tab==='lab') return <UiBox sx={{pb:4}}><SectionHeading eyebrow="ENGINEERING LAB" title="Try it. Measure it. Improve it." description="Document tests, compare designs, and explain what changed."/><UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',md:'repeat(3,minmax(0,1fr))'},gap:2}}><LabCard eyebrow="01 / QUESTION" title="Make a prediction">Choose a problem and decide what you expect before testing.</LabCard><LabCard eyebrow="02 / TEST" title="Change one variable">Keep the other conditions the same, record measurements, and repeat trials.</LabCard><LabCard eyebrow="03 / REVIEW" title="Share what you learned">Graph results, explain surprises, and sketch the next iteration.</LabCard></UiBox></UiBox>
-  if(tab==='hands-on') return <UiBox sx={{pb:4}}><SectionHeading eyebrow="HANDS-ON ENGINEERING" title="Build something you can test." description="Classroom-safe starting activities for club meetings, with teacher supervision."/><UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',md:'repeat(3,minmax(0,1fr))'},gap:2}}><LabCard eyebrow="BRIDGES" title="Paper beam challenge">Compare flat and folded paper spanning the same gap, using small weights.</LabCard><LabCard eyebrow="STRUCTURES" title="Triangle vs. square">Build straw frames and gently compare how their shapes resist deformation.</LabCard><LabCard eyebrow="ROAD DESIGN" title="Crosswalk model">Compare tabletop street layouts with toy cars for visibility and crossing distance.</LabCard></UiBox></UiBox>
+  if(tab==='lab') return <UiBox sx={{pb:4}}><UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',md:'repeat(3,minmax(0,1fr))'},gap:2}}><LabCard eyebrow="01 / QUESTION" title="Make a prediction">Choose a problem and decide what you expect before testing.</LabCard><LabCard eyebrow="02 / TEST" title="Change one variable">Keep the other conditions the same, record measurements, and repeat trials.</LabCard><LabCard eyebrow="03 / REVIEW" title="Share what you learned">Graph results, explain surprises, and sketch the next iteration.</LabCard></UiBox></UiBox>
+  if(tab==='hands-on') return <UiBox sx={{pb:4}}><UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',md:'repeat(3,minmax(0,1fr))'},gap:2}}><LabCard eyebrow="BRIDGES" title="Paper beam challenge">Compare flat and folded paper spanning the same gap, using small weights.</LabCard><LabCard eyebrow="STRUCTURES" title="Triangle vs. square">Build straw frames and gently compare how their shapes resist deformation.</LabCard><LabCard eyebrow="ROAD DESIGN" title="Crosswalk model">Compare tabletop street layouts with toy cars for visibility and crossing distance.</LabCard></UiBox></UiBox>
   return <UiBox sx={{pb:4}}>
-    <SectionHeading eyebrow="INTERACTIVE SIMULATORS / 01" title="How does a bridge carry a load?" description="Explore a simplified simply supported beam. Move the load and change the span to see support reactions and peak bending moment." />
+    
     <UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',lg:'minmax(0,1.35fr) minmax(320px,.65fr)'},gap:3}}>
       <UiSurface variant="outlined" sx={{p:3,bgcolor:"#f5f8f6",borderColor:labColors.border,borderRadius:3}}>
         <svg viewBox="0 0 640 310" role="img" aria-label="A simply supported beam with an adjustable point load and reactions at both ends">
