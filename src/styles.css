@@ -461,3 +461,11 @@ body::before{position:fixed!important;top:0;left:0;right:0;width:100%;height:var
   .projects-page:has(.problem-grid) .submitted-project-card,
   .projects-page:has(.problem-grid) .problem-card-cta{min-height:0!important}
 }
+
+/* Reusable tab section toolbar: pagination sits opposite title, not below cards. */
+.bbb-section-heading{width:100%;min-width:0}
+.bbb-section-heading-actions{display:flex;align-items:center;justify-content:flex-end}
+.bbb-section-heading-actions .project-pagination{margin:0;padding:0;justify-content:flex-end;white-space:nowrap}
+@media(max-width:760px){
+  .bbb-section-heading-actions{width:100%;justify-content:flex-end}
+}
