@@ -3,11 +3,14 @@ import { UiBox, UiCard, UiCardContent, UiSlider, UiStack, UiTab, UiTabs, UiText 
 
 export const labColors = { ink:'#173f2d', accent:'#2f684b', muted:'#61766a', border:'#d7e0da' }
 
-export function SectionHeading({eyebrow,title,description}:{eyebrow:string;title:string;description:string}) {
-  return <UiBox sx={{maxWidth:850,mb:3}}>
-    <UiText variant="overline" sx={{color:labColors.accent,fontWeight:800,letterSpacing:2}}>{eyebrow}</UiText>
-    <UiText variant="h3" sx={{fontFamily:'Georgia, serif',fontWeight:500,color:labColors.ink,fontSize:{xs:34,md:50},my:1}}>{title}</UiText>
-    <UiText sx={{color:labColors.muted,lineHeight:1.7}}>{description}</UiText>
+export function SectionHeading({eyebrow,title,description,actions}:{eyebrow?:string;title:string;description:string;actions?:ReactNode}) {
+  return <UiBox className="bbb-section-heading" sx={{display:'flex',justifyContent:'space-between',alignItems:{xs:'flex-start',md:'center'},flexWrap:{xs:'wrap',md:'nowrap'},gap:2,mb:{xs:3,md:3.5}}}>
+    <UiBox className="bbb-section-heading-copy" sx={{maxWidth:780,minWidth:0}}>
+      {eyebrow && <UiText variant="overline" sx={{color:labColors.accent,fontWeight:750,letterSpacing:1.5,fontSize:11}}>{eyebrow}</UiText>}
+      <UiText variant="h3" sx={{fontFamily:'Georgia, serif',fontWeight:600,color:labColors.ink,fontSize:{xs:32,md:42},lineHeight:1.14,mt:0.8,mb:1.1}}>{title}</UiText>
+      <UiText sx={{color:labColors.muted,lineHeight:1.6,fontSize:{xs:14,md:16}}}>{description}</UiText>
+    </UiBox>
+    {actions && <UiBox className="bbb-section-heading-actions" sx={{flexShrink:0,ml:{md:'auto'}}}>{actions}</UiBox>}
   </UiBox>
 }
 

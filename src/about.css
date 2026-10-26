@@ -1,0 +1,26 @@
+.bbb-about-page{width:min(1050px,100%);margin:0 auto;padding:clamp(36px,6vh,72px) 0 48px;align-self:start}
+.bbb-about-intro{max-width:760px;margin-bottom:28px}
+.bbb-about-title{font-family:Georgia,"Times New Roman",serif!important;font-weight:500!important;font-size:clamp(40px,4.5vw,60px)!important;line-height:1.1!important;letter-spacing:-.035em!important;color:#173f2d}
+.bbb-about-description{margin-top:15px!important;font-size:16px!important;line-height:1.75!important;color:#607367}
+.bbb-about-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.bbb-about-panel{border-color:#dbe4dd!important;border-radius:14px!important;box-shadow:none!important;background:#fff!important}
+.bbb-about-panel-content{padding:24px 28px!important}
+.bbb-about-panel-title{font-size:18px!important;font-weight:750!important;color:#173f2d;margin-bottom:12px!important}
+.bbb-about-row{display:grid;grid-template-columns:118px minmax(0,1fr);align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px solid #e7ece8}
+.bbb-about-row:last-child{border-bottom:0}
+.bbb-about-row-label{color:#63776a;font-size:13px!important;font-weight:650!important}
+.bbb-about-row-value{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+.bbb-about-value{color:#173f2d;font-size:16px!important;font-weight:700!important;line-height:1.5!important}
+.bbb-about-note{color:#74867b;font-size:12px!important}
+.bbb-about-cta{margin-top:22px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 0;border-top:1px solid #e1e7e1}
+.bbb-about-cta .bbb-ui-text{color:#53685a}
+.bbb-about-join{display:inline-flex;align-items:center;justify-content:center;gap:12px;white-space:nowrap;background:#173f2d;color:#fff;border:0;border-radius:9px;padding:13px 20px;font-size:14px;font-weight:750;cursor:pointer}
+.bbb-about-join:hover{background:#2f684b}
+.bbb-about-join:focus-visible{outline:3px solid #76a68b;outline-offset:3px}
+@media(max-width:800px){.bbb-about-grid{grid-template-columns:1fr}.bbb-about-page{padding-top:30px}.bbb-about-cta{flex-wrap:wrap}}
+@media(max-width:480px){.bbb-about-panel-content{padding:20px!important}.bbb-about-row{grid-template-columns:1fr;gap:3px;padding:12px 0}.bbb-about-description{font-size:15px!important}.bbb-about-cta{align-items:stretch}.bbb-about-join{width:100%}}
+
+/* Keep About usable on smaller laptop heights and preserve the sticky site header. */
+.site-shell:has(.bbb-about-page){height:auto;min-height:100svh;overflow:visible;grid-template-rows:auto 1fr auto}
+
+.bbb-about-disclaimer{display:block;max-width:850px;margin-top:18px!important;color:#78857c;font-size:12px!important;line-height:1.6!important}
