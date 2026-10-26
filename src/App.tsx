@@ -41,65 +41,65 @@ const projectProblems: ProjectCard[] = [
   {
     number: '01',
     icon: crosswalkIcon,
-    title: 'Why Is Crossing Here So Sketchy?',
-    fact: 'Bedford records cite three pedestrian deaths in 2022–2024, including two on Concord Road.',
-    question: 'If crossing the road feels like a mini game where the objective is simply not getting hit, something is off. We can look at speed, visibility, crossing distance, lighting, and road geometry to see whether the street design is making the safe choice obvious—or weirdly difficult.'
+    title: "Can Bedford Crosswalks Be Safer?",
+    fact: "Three pedestrian deaths were documented in Bedford during 2022–2024.",
+    question: "Could better visibility, narrower crossings, and safer street geometry reduce risk?"
   },
   {
     number: '02',
     icon: dogparkIcon,
-    title: 'Where’s the Dog Park?',
-    fact: 'Bedford has 1,162 registered pet dogs and about 6,000 households.',
-    question: 'There are lots of dogs in Bedford, but no dedicated dog park. So sidewalks and trails become the unofficial meetup spot. Could a well-designed dog park give dogs room to run and socialize without turning every walk into surprise dog networking?'
+    title: "Where’s the Dog Park?",
+    fact: "Bedford has over 1,100 registered dogs.",
+    question: "Could a dedicated park create a safer space for dogs and owners?"
   },
   {
     number: '03',
     icon: electricityIcon,
-    title: 'Why Does the Power Always Dip?',
-    fact: 'Eversource maintains Bedford’s electric distribution grid and restores local outages.',
-    question: 'Storm starts. Wi-Fi disappears. Chargers become precious artifacts. Why do outages happen so often, and could tree management, undergrounding, microgrids, or smarter grid design make Bedford less dramatic about bad weather?'
+    title: "Why Do Outages Happen?",
+    fact: "Storms can disrupt Bedford's electricity supply.",
+    question: "Could tree management and resilient grid design help prevent outages?"
   },
   {
     number: '04',
     icon: roadworkIcon,
-    title: 'Didn’t They Just Fix This?',
-    fact: 'Bedford has recurring paving, utility, drainage, sewer, sidewalk, and transportation projects.',
-    question: 'The road gets paved. Two months later: cones. Again. At this point the orange barrels have lore. Why does the same street keep getting reopened, and could utility, drainage, sewer, sidewalk, and paving work be coordinated better?'
+    title: "Why Is This Road Closed Again?",
+    fact: "Road repairs and utility projects repeatedly affect local streets.",
+    question: "Could better project coordination reduce repeat roadwork?"
   },
   {
     number: '05',
     icon: bathroomIcon,
-    title: 'Why Are Bathrooms Still Split?',
-    fact: 'Many public restrooms separate users by gender even when each toilet is already inside an individual enclosed stall.',
-    question: 'At home, one bathroom works for everyone. In public, suddenly we’re sorting into teams—even when each toilet is already in its own stall. Could better layouts improve privacy, accessibility, safety, and efficiency without making the bathroom experience a whole social system?'
+    title: "Can Public Bathrooms Work Better?",
+    fact: "Public bathrooms must balance privacy, access, and space.",
+    question: "Could more flexible layouts improve comfort and accessibility?"
   },
   {
     number: '06',
     icon: bikepathIcon,
-    title: 'Why Does the Sidewalk Just End?',
-    fact: 'The Town says the Concord Road trail crossing currently lacks continuous sidewalk or bicycle connections.',
-    question: 'You’re walking. Everything is fine. Then the sidewalk just… ends. Where do Bedford’s walking and biking routes lose continuity, and how could those missing links be redesigned so getting somewhere doesn’t require improvisation?'
+    title: "Why Does the Sidewalk End?",
+    fact: "Some Bedford walking and cycling connections are incomplete.",
+    question: "How could missing links be made safer and easier to navigate?"
   },
   {
     number: '07',
     icon: trailsIcon,
-    title: 'Why Is Bedford’s Cool Stuff So Hidden?',
-    fact: 'Bedford has historic places, trails, and infrastructure that can be easy to pass without noticing.',
-    question: 'Bedford has trails, historic places, and cool infrastructure, but sometimes you only find out they exist after someone’s parent mentions them. Could signs, maps, trail connections, or digital wayfinding make local history feel less like hidden side quests?'
+    title: "Where Are Bedford’s Hidden Trails?",
+    fact: "Local trails and historic sites can be hard to find.",
+    question: "Could better signs and maps make these places easier to explore?"
   },
   {
     number: '08',
     icon: floodIcon,
-    title: 'Why Does This Spot Keep Flooding?',
-    fact: 'Heavy rain can overwhelm drainage and leave low-lying streets, paths, and public spaces with standing water.',
-    question: 'When the same place floods again and again, what is happening below the surface? We can investigate drainage, grading, pavement, soil, and green infrastructure—and explore how design could help water go somewhere better.'
+    title: "Why Does This Spot Flood?",
+    fact: "Heavy rain can overwhelm local drainage systems.",
+    question: "Could grading and green infrastructure help manage runoff?"
   },
   {
     number: '',
     cta: true,
-    title: 'YOUR IDEA HERE',
-    fact: 'What Bedford problem do you notice that everyone else seems to walk past?',
-    question: 'Bring us something worth investigating. We can observe it, research it, sketch possibilities, and figure out what would need to be tested before calling it a real solution.'
+    title: "YOUR IDEA HERE",
+    fact: "Have an idea for a better Bedford?",
+    question: "Share a local problem worth exploring, designing, or testing."
   },
 ]
 
@@ -342,7 +342,10 @@ function App() {
             </div>
           </div>
           <p className="problem-fact">{problem.fact}</p>
-          <p className="problem-question">{problem.question}</p>
+          {problem.isSubmitted ? <details className="idea-description-details">
+            <summary>Read idea</summary>
+            <p className="problem-question">{problem.question}</p>
+          </details> : <p className="problem-question">{problem.question}</p>}
           {problem.submitterName && <p className="idea-byline">Idea by {problem.submitterName}</p>}
           {problem.cta && <button className="idea-cta" onClick={openNewIdea}>Bring your idea <span>→</span></button>}
         </article>)}
