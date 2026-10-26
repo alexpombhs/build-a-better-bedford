@@ -50,5 +50,8 @@ export default function AboutPage({onJoin}:{onJoin:()=>void}) {
       <UiText variant="body1">Interested in exploring engineering with us?</UiText>
       <button className="bbb-about-join" onClick={onJoin}>Join the club <span aria-hidden="true">→</span></button>
     </UiBox>
+    <UiText variant="body2" className="bbb-about-disclaimer">
+      This is a student-run webpage/account that is not managed or endorsed by the Bedford Public Schools.
+    </UiText>
   </UiBox>
 }
