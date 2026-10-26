@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import Newsletter from './Newsletter'
 import AboutPage from './AboutPage'
-import { EngineeringTabs, EngineeringWorkspace } from './EngineeringLab'
+import { EngineeringTabs, EngineeringWorkspace, EngineeringSectionIntro } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
 import crosswalkIcon from './assets/crosswalk.png'
 import dogparkIcon from './assets/dogpark.png'
@@ -324,6 +324,7 @@ function App() {
       <div className="projects-heading projects-toolbar">
         <EngineeringTabs active={projectTab} onChange={setProjectTab} />
       </div>
+      <EngineeringSectionIntro tab={projectTab} />
       {projectTab === 'ideas' ? <>
       <div className="problem-grid">
         {visibleProjects.map(problem => <article className={problem.cta ? 'problem-card problem-card-cta' : problem.isSubmitted ? 'problem-card submitted-project-card' : 'problem-card'} key={problem.cta ? 'idea-cta' : problem.isSubmitted ? `submitted-${problem.id}` : `project-${problem.number}`}>
