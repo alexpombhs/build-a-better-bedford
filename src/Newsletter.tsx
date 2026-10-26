@@ -28,8 +28,8 @@ export default function Newsletter() {
   const activeSections = isOctober ? octoberSections : septemberSections
 
   return <div className={archiveOpen ? "newsletter-library archive-visible" : "newsletter-library"}>
-    {!archiveOpen && <button className="newsletter-issue-tab" type="button" aria-expanded={false} aria-controls="newsletter-issue-navigation" aria-label="Open issue navigation" onClick={() => setArchiveOpen(true)}>
-      <span className="issue-tab-symbol" aria-hidden="true">☰</span>
+    {!archiveOpen && <button className="newsletter-issue-tab" type="button" aria-expanded={false} aria-controls="newsletter-issue-navigation" aria-label="Browse newsletter issues" onClick={() => setArchiveOpen(true)}>
+      <span className="issue-tab-symbol" aria-hidden="true">▤</span><span>Browse issues</span>
     </button>}
     {archiveOpen && <div className="newsletter-archive-scrim" onClick={() => setArchiveOpen(false)} aria-hidden="true" />}
     <aside id="newsletter-issue-navigation" className={archiveOpen ? 'newsletter-archive open' : 'newsletter-archive'} aria-label="Newsletter issues">
