@@ -8,15 +8,31 @@ export function EngineeringTabs({active,onChange}:{active:Tab;onChange:(tab:Tab)
   return <LabTabs value={active} onChange={value=>onChange(value as Tab)} />
 }
 
-const sectionCopy: Record<Tab,{title:string;description:string}> = {
-  simulators:{title:'Bridge load simulator',description:'Adjust the load and span to explore how a bridge beam responds'},
-  ideas:{title:'Ideas worth exploring',description:'Local problems we can investigate, design for, and test'},
-  lab:{title:'Test and improve',description:'Make a prediction, change one variable, and compare results'},
-  'hands-on':{title:'Build and test',description:'Simple hands-on engineering challenges for club meetings'},
+const sectionCopy: Record<Tab,{eyebrow:string;title:string;description:string}> = {
+  simulators:{
+    eyebrow:'EXPLORE THE PHYSICS',
+    title:'What holds a bridge up?',
+    description:'Change the load, its position, and the span to see how forces move through a simple beam',
+  },
+  ideas:{
+    eyebrow:'BEDFORD CHALLENGES',
+    title:'What could we improve?',
+    description:'Start with real questions about Bedford, then investigate what a better design might look like',
+  },
+  lab:{
+    eyebrow:'THE ENGINEERING PROCESS',
+    title:'Test a hypothesis',
+    description:'Make a prediction, change one variable, record what happens, and improve your design',
+  },
+  'hands-on':{
+    eyebrow:'BUILD IT YOURSELF',
+    title:'Turn ideas into models',
+    description:'Try classroom-friendly challenges that bring structures, forces, and street design to life',
+  },
 }
 
 export function EngineeringSectionIntro({tab}:{tab:Tab}) {
-  return <SectionHeading title={sectionCopy[tab].title} description={sectionCopy[tab].description}/>
+  return <SectionHeading {...sectionCopy[tab]}/>
 }
 
 export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
