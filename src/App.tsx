@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import Newsletter from './Newsletter'
+import AboutPage from './AboutPage'
 import { EngineeringTabs, EngineeringWorkspace } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
 import crosswalkIcon from './assets/crosswalk.png'
@@ -415,30 +416,7 @@ function App() {
       </div>}
     </section>}
 
-    {page === 'about' && <section className="about-page">
-      <div className="about-intro">
-        <p className="eyebrow">BUILD A BETTER BEDFORD · BHS</p>
-        <h1>About our club.</h1>
-        <p>Build a Better Bedford is a student-led civil engineering club at Bedford Public High School (BHS) in Bedford, Massachusetts.</p>
-      </div>
-      <div className="about-details">
-        <section className="about-panel">
-          <p className="eyebrow">CLUB TEAM</p>
-          <dl>
-            <div><dt>Club leader</dt><dd>Alex Pominova <span>11th grade</span></dd></div>
-            <div><dt>Co-leader</dt><dd>Farah Semy <span>11th grade</span></dd></div>
-            <div><dt>Club advisor</dt><dd>Julia Richards</dd></div>
-          </dl>
-        </section>
-        <section className="about-panel about-meetings">
-          <p className="eyebrow">MEET WITH US</p>
-          <div><span className="about-detail-label">When</span><strong>Mondays · 2:30–3:30 PM</strong></div>
-          <div><span className="about-detail-label">Where</span><strong>Guidance Office, BHS</strong></div>
-          <div><span className="about-detail-label">Next meeting</span><strong>Monday, October 26, 2026</strong></div>
-          <button className="primary" onClick={joinClub}>Join the club <span>→</span></button>
-        </section>
-      </div>
-    </section>}
+    {page === 'about' && <AboutPage onJoin={joinClub} />}
 
     {page !== 'home' && page !== 'newsletter' && page !== 'projects' && page !== 'about' && <section className="coming-page">
       <p className="eyebrow">{labels[page]}</p>
