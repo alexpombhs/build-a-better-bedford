@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import roadSolution from './assets/road_solution.png'
 
+// Add new published issues here when their articles are ready.
+const issues = [{ id: '2026-09', month: 'September 2026', number: '01', title: 'Can you design danger out of a road?' }] as const
+
 const sections = [
   ['01', 'The idea', 'Roads have a user experience. Geometry, visibility, markings, lighting and crossing distance influence how people move and what they notice.'],
   ['02', 'The question', 'What if we studied a Bedford crossing like a designer studies an interface: where is the uncertainty, and what behavior does the street encourage?'],
@@ -9,11 +12,32 @@ const sections = [
 
 export default function Newsletter() {
   const [expanded, setExpanded] = useState(false)
+  const [archiveOpen, setArchiveOpen] = useState(false)
+  const [selectedIssueId, setSelectedIssueId] = useState<string>(issues[0].id)
+  const selectedIssue = issues.find(issue => issue.id === selectedIssueId) ?? issues[0]
 
-  return <section className={expanded ? 'newsletter-page expanded' : 'newsletter-page'}>
+  return <div className={archiveOpen ? "newsletter-library archive-visible" : "newsletter-library"}>
+    {!archiveOpen && <button className="newsletter-issue-tab" type="button" aria-expanded={false} aria-controls="newsletter-issue-navigation" aria-label="Open issue navigation" onClick={() => setArchiveOpen(true)}>
+      <span className="issue-tab-symbol" aria-hidden="true">☰</span>
+    </button>}
+    {archiveOpen && <div className="newsletter-archive-scrim" onClick={() => setArchiveOpen(false)} aria-hidden="true" />}
+    <aside id="newsletter-issue-navigation" className={archiveOpen ? 'newsletter-archive open' : 'newsletter-archive'} aria-label="Newsletter issues">
+      <div className="archive-head">
+        <span>ISSUE LIBRARY</span>
+        <button className="archive-close" type="button" onClick={() => setArchiveOpen(false)} aria-label="Close issue navigation">×</button>
+      </div>
+      <nav className="archive-list" aria-label="Published newsletter issues">
+        {issues.map(issue => <button key={issue.id} type="button" className={issue.id === selectedIssueId ? "archive-item selected" : "archive-item"} aria-current={issue.id === selectedIssueId ? "page" : undefined} onClick={() => { setSelectedIssueId(issue.id); setExpanded(false); window.scrollTo({top:0,behavior:"smooth"}) }}>
+          <span>{issue.month} <small>ISSUE {issue.number}</small></span>
+          <strong>{issue.title}</strong>
+        </button>)}
+      </nav>
+      <p className="archive-coming">More issues will appear here as they are published.</p>
+    </aside>
+    <section className={expanded ? 'newsletter-page expanded' : 'newsletter-page'}>
     <div className="newsletter-clean">
       <div className="newsletter-intro">
-        <p className="eyebrow">SEPTEMBER 2026 · ISSUE 01</p>
+        <p className="eyebrow">{selectedIssue.month.toUpperCase()} · ISSUE {selectedIssue.number}</p>
         <p className="newsletter-label">MONTHLY FIELD NOTE</p>
         <h1>Can you design <span>danger</span> out of a road?</h1>
         <p className="newsletter-deck">A look at how design, urbanism and engineering can make safer behavior easier and more intuitive.</p>
@@ -114,4 +138,5 @@ export default function Newsletter() {
         </section>
       </div>}
   </section>
+  </div>
 }

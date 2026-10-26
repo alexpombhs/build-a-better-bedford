@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import Newsletter from './Newsletter'
+import { EngineeringTabs, EngineeringWorkspace } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
 import crosswalkIcon from './assets/crosswalk.png'
 import dogparkIcon from './assets/dogpark.png'
@@ -115,6 +116,7 @@ function App() {
   const [page, setPage] = useState<Page>('home')
   const [menuOpen, setMenuOpen] = useState(false)
   const [projectPage, setProjectPage] = useState(0)
+  const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>('ideas')
   const [ideaOpen, setIdeaOpen] = useState(false)
   const [ideaForm, setIdeaForm] = useState<IdeaForm>(emptyIdea)
   const [ideaPhoto, setIdeaPhoto] = useState<File | null>(null)
@@ -298,7 +300,6 @@ function App() {
 
       <div className="home-content">
         <p className="eyebrow">STUDENT-LED · BEDFORD, MASSACHUSETTS</p>
-        <h1>Real places.<br/>Real solutions.</h1>
         <p className="lede">We explore local infrastructure, learn the engineering behind it, and turn observations into ideas we can sketch, model, build, and test.</p>
 
         <div className="focus">
@@ -319,14 +320,10 @@ function App() {
     {page === 'newsletter' && <Newsletter />}
 
     {page === 'projects' && <section className="projects-page">
-      <div className="projects-heading">
-        <div>
-          <p className="eyebrow">BEDFORD PROBLEM LAB</p>
-          <h1>Problems worth exploring.</h1>
-        </div>
-        <p>These are starting questions — not finished solutions. We observe, research, measure, sketch, model, and test before deciding what might actually work.</p>
+      <div className="projects-heading projects-toolbar">
+        <EngineeringTabs active={projectTab} onChange={setProjectTab} />
       </div>
-
+      {projectTab === 'ideas' ? <>
       <div className="problem-grid">
         {visibleProjects.map(problem => <article className={problem.cta ? 'problem-card problem-card-cta' : problem.isSubmitted ? 'problem-card submitted-project-card' : 'problem-card'} key={problem.cta ? 'idea-cta' : problem.isSubmitted ? `submitted-${problem.id}` : `project-${problem.number}`}>
           {!problem.cta && <span className={problem.isSubmitted ? 'problem-index problem-index-new' : 'problem-index'}>{problem.number}</span>}
@@ -377,7 +374,8 @@ function App() {
         >→</button>
       </div>
 
-      <p className="projects-source">Starting facts: Town of Bedford transportation, public works and electricity pages; Bedford TAC meeting records; Bedford Town Clerk data reported by The Bedford Citizen.</p>
+
+      </> : <EngineeringWorkspace tab={projectTab} />}
 
       {ideaOpen && <div className="idea-modal-backdrop" onMouseDown={closeIdeaModal}>
         <div className="idea-modal" role="dialog" aria-modal="true" aria-labelledby="idea-form-title" onMouseDown={e => e.stopPropagation()}>
@@ -417,14 +415,39 @@ function App() {
       </div>}
     </section>}
 
-    {page !== 'home' && page !== 'newsletter' && page !== 'projects' && <section className="coming-page">
+    {page === 'about' && <section className="about-page">
+      <div className="about-intro">
+        <p className="eyebrow">BUILD A BETTER BEDFORD · BHS</p>
+        <h1>About our club.</h1>
+        <p>Build a Better Bedford is a student-led civil engineering club at Bedford Public High School (BHS) in Bedford, Massachusetts.</p>
+      </div>
+      <div className="about-details">
+        <section className="about-panel">
+          <p className="eyebrow">CLUB TEAM</p>
+          <dl>
+            <div><dt>Club leader</dt><dd>Alex Pominova <span>11th grade</span></dd></div>
+            <div><dt>Co-leader</dt><dd>Farah Semy <span>11th grade</span></dd></div>
+            <div><dt>Club advisor</dt><dd>Julia Richards</dd></div>
+          </dl>
+        </section>
+        <section className="about-panel about-meetings">
+          <p className="eyebrow">MEET WITH US</p>
+          <div><span className="about-detail-label">When</span><strong>Mondays · 2:30–3:30 PM</strong></div>
+          <div><span className="about-detail-label">Where</span><strong>Guidance Office, BHS</strong></div>
+          <div><span className="about-detail-label">Next meeting</span><strong>Monday, October 26, 2026</strong></div>
+          <button className="primary" onClick={joinClub}>Join the club <span>→</span></button>
+        </section>
+      </div>
+    </section>}
+
+    {page !== 'home' && page !== 'newsletter' && page !== 'projects' && page !== 'about' && <section className="coming-page">
       <p className="eyebrow">{labels[page]}</p>
       <h1>Coming soon.</h1>
       <p>We’re preparing this part of Build a Better Bedford.</p>
       <button className="quiet-link" onClick={() => go('home')}>← Back home</button>
     </section>}
 
-    <footer>BBB Unofficial - pending school approval. Unique visitors: {visitStats.total}/{visitStats.today}</footer>
+    <footer>Unique visitors: {visitStats.total} visitors total / {visitStats.today} visitors today</footer>
   </main>
 }
 export default App
