@@ -324,7 +324,33 @@ function App() {
       <div className="projects-heading projects-toolbar">
         <EngineeringTabs active={projectTab} onChange={setProjectTab} />
       </div>
-      <EngineeringSectionIntro tab={projectTab} />
+      <EngineeringSectionIntro tab={projectTab} actions={projectTab === 'ideas' && projectPageCount > 1 ? (
+<div className="project-pagination" aria-label="Project pages">
+        <button
+          className="pagination-arrow"
+          onClick={() => setProjectPage(page => Math.max(0, page - 1))}
+          disabled={projectPage === 0}
+          aria-label="Previous project page"
+        >←</button>
+        <div className="pagination-pages">
+          {Array.from({ length: projectPageCount }, (_, index) =>
+            <button
+              key={index}
+              className={projectPage === index ? 'pagination-page active' : 'pagination-page'}
+              onClick={() => setProjectPage(index)}
+              aria-label={`Project page ${index + 1}`}
+              aria-current={projectPage === index ? 'page' : undefined}
+            >{index + 1}</button>
+          )}
+        </div>
+        <button
+          className="pagination-arrow"
+          onClick={() => setProjectPage(page => Math.min(projectPageCount - 1, page + 1))}
+          disabled={projectPage === projectPageCount - 1}
+          aria-label="Next project page"
+        >→</button>
+      </div>
+      ) : undefined} />
       {projectTab === 'ideas' ? <>
       <div className="problem-grid">
         {visibleProjects.map(problem => <article className={problem.cta ? 'problem-card problem-card-cta' : problem.isSubmitted ? 'problem-card submitted-project-card' : 'problem-card'} key={problem.cta ? 'idea-cta' : problem.isSubmitted ? `submitted-${problem.id}` : `project-${problem.number}`}>
@@ -353,31 +379,7 @@ function App() {
         </article>)}
       </div>
 
-      <div className="project-pagination" aria-label="Project pages">
-        <button
-          className="pagination-arrow"
-          onClick={() => setProjectPage(page => Math.max(0, page - 1))}
-          disabled={projectPage === 0}
-          aria-label="Previous project page"
-        >←</button>
-        <div className="pagination-pages">
-          {Array.from({ length: projectPageCount }, (_, index) =>
-            <button
-              key={index}
-              className={projectPage === index ? 'pagination-page active' : 'pagination-page'}
-              onClick={() => setProjectPage(index)}
-              aria-label={`Project page ${index + 1}`}
-              aria-current={projectPage === index ? 'page' : undefined}
-            >{index + 1}</button>
-          )}
-        </div>
-        <button
-          className="pagination-arrow"
-          onClick={() => setProjectPage(page => Math.min(projectPageCount - 1, page + 1))}
-          disabled={projectPage === projectPageCount - 1}
-          aria-label="Next project page"
-        >→</button>
-      </div>
+
 
 
       </> : <EngineeringWorkspace tab={projectTab} />}
