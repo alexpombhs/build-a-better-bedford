@@ -22,3 +22,5 @@
 
 /* Keep About usable on smaller laptop heights and preserve the sticky site header. */
 .site-shell:has(.bbb-about-page){height:auto;min-height:100svh;overflow:visible;grid-template-rows:auto 1fr auto}
+
+.bbb-about-disclaimer{display:block;max-width:850px;margin-top:18px!important;color:#78857c;font-size:12px!important;line-height:1.6!important}
