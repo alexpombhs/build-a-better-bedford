@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { UiBox, UiSurface, UiStack, UiText } from './components/atoms/MuiPrimitives'
 import { LabTabs, LabCard, LabSlider, SectionHeading, labColors } from './lab/LabUI'
 
@@ -31,8 +32,8 @@ const sectionCopy: Record<Tab,{eyebrow:string;title:string;description:string}> 
   },
 }
 
-export function EngineeringSectionIntro({tab}:{tab:Tab}) {
-  return <SectionHeading {...sectionCopy[tab]}/>
+export function EngineeringSectionIntro({tab,actions}:{tab:Tab;actions?:ReactNode}) {
+  return <SectionHeading {...sectionCopy[tab]} actions={actions}/>
 }
 
 export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
