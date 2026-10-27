@@ -32,3 +32,15 @@
 .portfolio-detail p{font-size:clamp(13px,1.3vw,18px);line-height:1.46;color:#40556a;margin:6px 0 0}
 @media(max-width:900px){.portfolio-hero{grid-template-columns:1fr 35%}.portfolio-home{padding-top:28px}.portfolio-detail{padding:0 15px;gap:10px}.portfolio-detail-icon{font-size:23px;min-width:25px}}
 @media(max-width:700px){.portfolio-hero{grid-template-columns:1fr}.portfolio-hero-sketch{max-height:160px;object-position:left}.portfolio-projects{grid-template-columns:1fr;gap:16px}.portfolio-project{aspect-ratio:1.6}.portfolio-details{grid-template-columns:1fr;padding-top:5px}.portfolio-detail,.portfolio-detail:first-child{padding:22px 0;border-right:0;border-bottom:1px solid #d3dce2}.portfolio-detail:last-child{border-bottom:0}.portfolio-hero-copy h1{font-size:clamp(38px,9vw,58px)}.portfolio-home{gap:20px}}
+
+
+.site-shell:has(.portfolio-home) .topbar{min-height:96px!important;height:96px!important;padding:0 2px!important}
+.portfolio-brand{display:flex;align-items:center;gap:20px;color:#10222e}
+.portfolio-brand strong{font-weight:850;font-size:42px;letter-spacing:-.075em;line-height:1}
+.portfolio-brand strong span{color:#a07d45}
+.portfolio-brand small{font-size:12px;line-height:1.35;letter-spacing:.035em;font-weight:500;color:#425466;border-left:1px solid #d3dbe1;padding-left:20px;text-align:left}
+.site-shell:has(.portfolio-home) .topbar .nav-button{font-size:16px!important;font-weight:500!important}
+.site-shell:has(.portfolio-home) .topbar .nav-menu{gap:clamp(17px,2.2vw,34px)!important}
+.site-shell:has(.portfolio-home) .topbar .join-link{padding:13px 25px!important;font-size:15px!important;border-radius:4px!important}
+@media(max-width:900px){.portfolio-brand strong{font-size:32px}.portfolio-brand small{font-size:10px;padding-left:11px}.site-shell:has(.portfolio-home) .topbar .nav-button{font-size:13px!important}.site-shell:has(.portfolio-home) .topbar .join-link{font-size:13px!important;padding:9px 12px!important}}
+@media(max-width:760px){.site-shell:has(.portfolio-home) .topbar{height:76px!important;min-height:76px!important}.portfolio-brand small{display:none}.portfolio-brand strong{font-size:36px}}
