@@ -16,6 +16,15 @@ import './newsletter.css'
 import './editorial.css'
 import './portfolio.css'
 
+// Vite resolves these to hashed built assets when PNGs are in src/assets.
+// The glob also permits checking out this branch before the image commit lands.
+const homepageAssetFiles = import.meta.glob('./assets/**/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+const homepageImage = (name: string): string | undefined => {
+  const entry = Object.entries(homepageAssetFiles).find(([path]) => path.toLowerCase().endsWith('/' + name.toLowerCase()))
+  return entry?.[1]
+}
+
+
 type Page = 'home' | 'about' | 'what-we-do' | 'projects' | 'newsletter' | 'join'
 type SubmittedIdea = { id:number; title:string; subtitle:string; description:string; submitter_name:string|null; photo_url:string|null }
 type ProjectCard = {
@@ -300,16 +309,16 @@ function App() {
           <h1>Build a Better Bedford</h1>
           <p>A student-led civil engineering club at Bedford High School, exploring structural engineering, design, and local infrastructure through research, modeling, and hands-on projects.</p>
         </div>
-        <img className="portfolio-hero-sketch" src="/build-a-better-bedford/bridge-sketch.png" alt="Conceptual pen sketch of a truss bridge" />
+        <img className="portfolio-hero-sketch" src={homepageImage("bridge-sketch.png") ?? heroLogo} alt="Conceptual pen sketch of a truss bridge" />
       </div>
       <div className="portfolio-projects">
         <button className="portfolio-project portfolio-bridge" onClick={() => {go('projects');setProjectTab('hands-on')}}>
-          <img src="/build-a-better-bedford/bridge-photo.png" alt="Steel truss bridge photographed from below" />
+          <img src={homepageImage("bridge-photo.png") ?? heroLogo} alt="Steel truss bridge photographed from below" />
           <span className="portfolio-project-copy"><strong>01 / Bridge Project</strong><small>STRUCTURAL MECHANICS · CURRENT PROJECT</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
         </button>
         <button className="portfolio-project portfolio-lab" onClick={() => {go('projects');setProjectTab('simulators')}}>
-          <img src="/build-a-better-bedford/bridge-blueprint.png" alt="Technical line drawing showing truss bridge elevations and details" />
+          <img src={homepageImage("bridge-blueprint.png") ?? heroLogo} alt="Technical line drawing showing truss bridge elevations and details" />
           <span className="portfolio-project-copy"><strong>02 / Engineering Lab</strong><small>SIMULATIONS · EXPERIMENTS · DESIGN TOOLS</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
         </button>
