@@ -24,3 +24,11 @@
 .site-shell:has(.bbb-about-page){height:auto;min-height:100svh;overflow:visible;grid-template-rows:auto 1fr auto}
 
 .bbb-about-disclaimer{display:block;max-width:850px;margin-top:18px!important;color:#78857c;font-size:12px!important;line-height:1.6!important}
+
+
+/* Alex voice: editorial, direct, and consistent with the site's UI typography. */
+.bbb-about-title{font-family:inherit!important;font-weight:780!important;letter-spacing:-.045em!important;font-size:clamp(34px,4vw,52px)!important}
+.bbb-about-description{max-width:670px;font-size:17px!important;line-height:1.55!important;color:#3b5446}
+.bbb-about-panel{border-radius:10px!important}
+.bbb-about-panel-title{font-size:16px!important}
+.bbb-about-cta{padding:18px 0}
