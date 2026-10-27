@@ -309,16 +309,16 @@ function App() {
           <h1>Build a Better Bedford</h1>
           <p>A student-led civil engineering club at Bedford High School, exploring structural engineering, design, and local infrastructure through research, modeling, and hands-on projects.</p>
         </div>
-        <img className="portfolio-hero-sketch" src={homepageImage("bridge-sketch.png") ?? heroLogo} alt="Conceptual pen sketch of a truss bridge" />
+        {homepageImage("bridge-sketch.png") ? <img className="portfolio-hero-sketch" src={homepageImage("bridge-sketch.png")} alt="Conceptual pen sketch of a truss bridge" /> : <div className="portfolio-missing-sketch" role="status">Bridge sketch unavailable</div>}
       </div>
       <div className="portfolio-projects">
         <button className="portfolio-project portfolio-bridge" onClick={() => {go('projects');setProjectTab('hands-on')}}>
-          <img src={homepageImage("bridge-photo.png") ?? heroLogo} alt="Steel truss bridge photographed from below" />
+          {homepageImage("bridge-photo.png") ? <img src={homepageImage("bridge-photo.png")} alt="Steel truss bridge photographed from below" /> : <span className="portfolio-missing-image">Bridge photo not found</span>}
           <span className="portfolio-project-copy"><strong>01 / Bridge Project</strong><small>STRUCTURAL MECHANICS · CURRENT PROJECT</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
         </button>
         <button className="portfolio-project portfolio-lab" onClick={() => {go('projects');setProjectTab('simulators')}}>
-          <img src={homepageImage("bridge-blueprint.png") ?? heroLogo} alt="Technical line drawing showing truss bridge elevations and details" />
+          {homepageImage("bridge-blueprint.png") ? <img src={homepageImage("bridge-blueprint.png")} alt="Technical line drawing showing truss bridge elevations and details" /> : <span className="portfolio-missing-image">Bridge blueprint not found</span>}
           <span className="portfolio-project-copy"><strong>02 / Engineering Lab</strong><small>SIMULATIONS · EXPERIMENTS · DESIGN TOOLS</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
         </button>
