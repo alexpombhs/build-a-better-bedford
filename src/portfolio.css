@@ -44,3 +44,11 @@
 .site-shell:has(.portfolio-home) .topbar .join-link{padding:13px 25px!important;font-size:15px!important;border-radius:4px!important}
 @media(max-width:900px){.portfolio-brand strong{font-size:32px}.portfolio-brand small{font-size:10px;padding-left:11px}.site-shell:has(.portfolio-home) .topbar .nav-button{font-size:13px!important}.site-shell:has(.portfolio-home) .topbar .join-link{font-size:13px!important;padding:9px 12px!important}}
 @media(max-width:760px){.site-shell:has(.portfolio-home) .topbar{height:76px!important;min-height:76px!important}.portfolio-brand small{display:none}.portfolio-brand strong{font-size:36px}}
+
+
+/* Explicit missing-asset state; never substitute the club logo for project imagery. */
+.portfolio-missing-image{display:grid;width:100%;height:100%;place-items:center;padding:24px;background:#e9eef1;color:#485e6f;font-size:15px;font-weight:600}
+.portfolio-missing-sketch{min-height:160px;display:grid;place-items:center;color:#647783;font-size:14px;border:1px dashed #c5d1d8}
+.portfolio-project:has(.portfolio-missing-image):after{display:none}
+.portfolio-project:has(.portfolio-missing-image) .portfolio-project-copy{background:#e9eef1;color:#10222e}
+.portfolio-project:has(.portfolio-missing-image) .portfolio-project-arrow{color:#10222e}
