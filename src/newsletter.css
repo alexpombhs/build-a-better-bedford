@@ -163,3 +163,10 @@
 /* Clearly labeled issue archive control, without a generic navigation hamburger. */
 .newsletter-issue-tab{width:auto;min-height:44px;height:auto;justify-content:center;padding:10px 15px;gap:9px;white-space:nowrap}
 .newsletter-issue-tab .issue-tab-symbol{font-size:21px;line-height:1}
+
+
+/* Newsletter reads like a club publication, not a marketing landing page. */
+.newsletter-library .newsletter-intro h1{font-family:inherit;letter-spacing:-.045em;line-height:1.08;font-weight:780}
+.newsletter-library .newsletter-deck{line-height:1.55;max-width:660px}
+.newsletter-library .newsletter-quote{font-weight:500}
+.newsletter-library .newsletter-note p{line-height:1.6}
