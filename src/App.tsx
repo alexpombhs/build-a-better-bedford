@@ -32,9 +32,9 @@ type IdeaForm = { title:string; subtitle:string; description:string; submitterNa
 const emptyIdea: IdeaForm = { title:'', subtitle:'', description:'', submitterName:'' }
 
 const focusAreas = [
-  ['01', 'Local infrastructure', 'Observe Bedford streets, crossings, trails, drainage, and public spaces.'],
-  ['02', 'Engineering + physics', 'Learn why structures work through calculations, models, building, and testing.'],
-  ['03', 'Design + CAD', 'Turn ideas into sketches, digital models, and practical design concepts.'],
+  ['01', 'Around Bedford', 'Look at streets, crossings, drainage, and places we use every day.'],
+  ['02', 'Structures + physics', 'Calculate forces, build models, and find out what breaks.'],
+  ['03', 'Design + CAD', 'Sketch, model in CAD, test, and revise.'],
 ]
 
 
@@ -42,65 +42,65 @@ const projectProblems: ProjectCard[] = [
   {
     number: '01',
     icon: crosswalkIcon,
-    title: "Can Bedford Crosswalks Be Safer?",
+    title: "Crosswalk safety",
     fact: "Three pedestrian deaths were documented in Bedford during 2022–2024.",
-    question: "Could better visibility, narrower crossings, and safer street geometry reduce risk?"
+    question: "Study crossing distance, visibility, speed, and how the road is laid out."
   },
   {
     number: '02',
     icon: dogparkIcon,
     title: "Where’s the Dog Park?",
     fact: "Bedford has over 1,100 registered dogs.",
-    question: "Could a dedicated park create a safer space for dogs and owners?"
+    question: "Where could one go? Look at available space, access, neighbors, and maintenance."
   },
   {
     number: '03',
     icon: electricityIcon,
     title: "Why Do Outages Happen?",
     fact: "Storms can disrupt Bedford's electricity supply.",
-    question: "Could tree management and resilient grid design help prevent outages?"
+    question: "Investigate overhead lines, storm exposure, trees, and how outages could be reduced."
   },
   {
     number: '04',
     icon: roadworkIcon,
     title: "Why Is This Road Closed Again?",
     fact: "Road repairs and utility projects repeatedly affect local streets.",
-    question: "Could better project coordination reduce repeat roadwork?"
+    question: "Compare paving, utility work, and project schedules to understand repeat closures."
   },
   {
     number: '05',
     icon: bathroomIcon,
-    title: "Can Public Bathrooms Work Better?",
+    title: "The public bathroom problem",
     fact: "Public bathrooms must balance privacy, access, and space.",
-    question: "Could more flexible layouts improve comfort and accessibility?"
+    question: "Compare layouts for privacy, accessibility, upkeep, and space."
   },
   {
     number: '06',
     icon: bikepathIcon,
     title: "Why Does the Sidewalk End?",
     fact: "Some Bedford walking and cycling connections are incomplete.",
-    question: "How could missing links be made safer and easier to navigate?"
+    question: "Find missing walking and cycling connections, then map possible routes."
   },
   {
     number: '07',
     icon: trailsIcon,
-    title: "Where Are Bedford’s Hidden Trails?",
+    title: "Where are the trails?",
     fact: "Local trails and historic sites can be hard to find.",
-    question: "Could better signs and maps make these places easier to explore?"
+    question: "Look at trail access, wayfinding, and how visitors find historic sites."
   },
   {
     number: '08',
     icon: floodIcon,
     title: "Why Does This Spot Flood?",
     fact: "Heavy rain can overwhelm local drainage systems.",
-    question: "Could grading and green infrastructure help manage runoff?"
+    question: "Follow the water: grading, pavement, drains, and where runoff collects."
   },
   {
     number: '',
     cta: true,
     title: "YOUR IDEA HERE",
-    fact: "Have an idea for a better Bedford?",
-    question: "Share a local problem worth exploring, designing, or testing."
+    fact: "Notice something in Bedford worth investigating?",
+    question: "Add it to the list."
   },
 ]
 
@@ -300,8 +300,8 @@ function App() {
       </div>
 
       <div className="home-content">
-        <p className="eyebrow">STUDENT-LED · BEDFORD, MASSACHUSETTS</p>
-        <p className="lede">We explore local infrastructure, learn the engineering behind it, and turn observations into ideas we can sketch, model, build, and test.</p>
+        <p className="eyebrow">CIVIL ENGINEERING CLUB · BEDFORD HIGH SCHOOL</p>
+        <p className="lede">We study how structures and infrastructure work, then build things to test what we learn. Bridges are first.</p>
 
         <div className="focus">
           {focusAreas.map(([number,title,text]) => <article className="focus-row" key={number}>
@@ -314,7 +314,7 @@ function App() {
           <button className="primary" onClick={joinClub}>Join the club <span>→</span></button>
           <button className="quiet-link" onClick={() => go('about')}>Learn more <span>→</span></button>
         </div>
-        <p className="about-line"><strong>No experience required.</strong> We learn together through real examples, design tools, models, and conversations with professionals.</p>
+        <p className="about-line"><strong>New to engineering? That's fine.</strong> Come build, test, and figure things out with us.</p>
       </div>
     </section>}
 
