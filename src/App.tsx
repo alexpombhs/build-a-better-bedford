@@ -14,6 +14,7 @@ import floodIcon from './assets/flood.png'
 import trailsIcon from './assets/trails.png'
 import './newsletter.css'
 import './editorial.css'
+import './portfolio.css'
 
 type Page = 'home' | 'about' | 'what-we-do' | 'projects' | 'newsletter' | 'join'
 type SubmittedIdea = { id:number; title:string; subtitle:string; description:string; submitter_name:string|null; photo_url:string|null }
@@ -288,64 +289,31 @@ function App() {
       </nav>
     </header>
 
-    {page === 'home' && <section className="editorial-home" aria-label="Build a Better Bedford homepage">
-      <div className="editorial-home-main">
-        <div className="editorial-home-intro">
-          <p className="editorial-overline">BEDFORD HIGH SCHOOL / CIVIL ENGINEERING CLUB</p>
-          <h1>Build a Better<br />Bedford<span className="editorial-period">.</span></h1>
-          <p className="editorial-home-lead">A club for people who want to know how things are built — and what happens when you put them to the test.</p>
-          <div className="editorial-home-buttons">
-            <button className="editorial-action" onClick={joinClub}>Join the club <span aria-hidden="true">↗</span></button>
-            <button className="editorial-action-secondary" onClick={() => go('projects')}>See what we're working on <span aria-hidden="true">→</span></button>
-          </div>
+    {page === 'home' && <section className="portfolio-home">
+      <div className="portfolio-hero">
+        <div className="portfolio-hero-copy">
+          <h1>Build a Better Bedford</h1>
+          <p>A student-led civil engineering club at Bedford High School, exploring structural engineering, design, and local infrastructure through research, modeling, and hands-on projects.</p>
         </div>
-        <div className="editorial-feature" aria-label="Current bridge project">
-          <div className="editorial-feature-bar"><span>PROJECT 001</span><span>2026–27 / IN PROGRESS</span></div>
-          <div className="editorial-bridge-drawing">
-            <svg viewBox="0 0 640 300" role="img" aria-label="Line drawing of a Warren truss bridge with triangular members and its supporting ends">
-              <defs><pattern id="bbb-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" stroke="#dde6dc" strokeWidth=".8" fill="none"/></pattern></defs>
-              <rect width="640" height="300" fill="url(#bbb-grid)"/>
-              <g stroke="#253b31" fill="none" strokeWidth="5" strokeLinejoin="round">
-                <path d="M66 210H574M66 122H574M66 122L130 210 194 122 258 210 322 122 386 210 450 122 514 210 574 122"/>
-                <path d="M66 122V210M574 122V210"/>
-              </g>
-              <g fill="none" stroke="#a64a31" strokeWidth="2">
-                <path d="M66 226v16m508-16v16M66 236H574"/>
-                <path d="M320 108V55"/>
-              </g>
-              <g fill="#a64a31"><path d="M314 66L320 51 326 66Z"/></g>
-              <g fontFamily="monospace" fontSize="13" fill="#385248">
-                <text x="322" y="42" textAnchor="middle">LOAD</text>
-                <text x="320" y="260" textAnchor="middle">SPAN / STRUCTURAL SYSTEM</text>
-                <text x="65" y="280">A</text><text x="570" y="280">B</text>
-              </g>
-            </svg>
-          </div>
-          <div className="editorial-feature-bottom">
-            <div><p className="editorial-small-label">RIGHT NOW</p><h2>Why do bridges look the way they do?</h2><p>We're comparing bridge structures, then building our own and testing how much weight they carry.</p></div>
-            <button onClick={() => {go('projects');setProjectTab('simulators')}} aria-label="Open bridge simulator">Try the beam simulator <span aria-hidden="true">↗</span></button>
-          </div>
-        </div>
+        <img className="portfolio-hero-sketch" src="/build-a-better-bedford/bridge-sketch.png" alt="Conceptual pen sketch of a truss bridge" />
       </div>
-      <aside className="editorial-home-sidebar" aria-label="Club information">
-        <div className="editorial-sidebar-head">
-          <img src={heroLogo} alt="Build a Better Bedford club logo" />
-          <span>BBB / BHS</span>
-        </div>
-        <div className="editorial-sidebar-section">
-          <p className="editorial-small-label">NEXT MEETING</p>
-          <p className="editorial-date">OCT 29 <span>THURSDAY</span></p>
-          <p>2:30–3:30 PM<br />Guidance Office</p>
-        </div>
-        <div className="editorial-sidebar-section">
-          <p className="editorial-small-label">WHAT WE DO</p>
-          <ol className="editorial-simple-list"><li>Physics + structures</li><li>Models + CAD</li><li>Infrastructure in Bedford</li></ol>
-        </div>
-        <div className="editorial-sidebar-bottom">
-          <p>No experience required. Just show up ready to try things.</p>
-          <button onClick={() => go('newsletter')}>Read the latest update <span aria-hidden="true">↗</span></button>
-        </div>
-      </aside>
+      <div className="portfolio-projects">
+        <button className="portfolio-project portfolio-bridge" onClick={() => {go('projects');setProjectTab('hands-on')}}>
+          <img src="/build-a-better-bedford/bridge-photo.png" alt="Steel truss bridge photographed from below" />
+          <span className="portfolio-project-copy"><strong>01 / Bridge Project</strong><small>STRUCTURAL MECHANICS · CURRENT PROJECT</small></span>
+          <span className="portfolio-project-arrow" aria-hidden="true">→</span>
+        </button>
+        <button className="portfolio-project portfolio-lab" onClick={() => {go('projects');setProjectTab('simulators')}}>
+          <img src="/build-a-better-bedford/bridge-blueprint.png" alt="Technical line drawing showing truss bridge elevations and details" />
+          <span className="portfolio-project-copy"><strong>02 / Engineering Lab</strong><small>SIMULATIONS · EXPERIMENTS · DESIGN TOOLS</small></span>
+          <span className="portfolio-project-arrow" aria-hidden="true">→</span>
+        </button>
+      </div>
+      <div className="portfolio-details">
+        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true">▣</span><div><small>NEXT MEETING</small><strong>Thursday, October 29</strong><p>2:30–3:30 PM · Guidance Office</p></div></div>
+        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true">▤</span><div><small>CURRENT FOCUS</small><strong>Bridge Design &amp; Testing</strong><p>Structural systems, materials, loads, and real-world examples.</p></div></div>
+        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true">♧</span><div><strong>Everyone’s welcome</strong><p>No engineering experience needed. Just curiosity.</p></div></div>
+      </div>
     </section>}
 
     {page === 'newsletter' && <Newsletter />}
