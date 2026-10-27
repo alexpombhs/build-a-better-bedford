@@ -2,12 +2,21 @@ import { useState } from 'react'
 import roadSolution from './assets/road_solution.png'
 
 // Add new published issues here when their articles are ready.
-const issues = [{ id: '2026-09', month: 'September 2026', number: '01', title: 'Can you design danger out of a road?' }] as const
+const issues = [
+  { id: '2026-10', month: 'October 2026', number: '02', title: 'We’re official — and we’re building bridges' },
+  { id: '2026-09', month: 'September 2026', number: '01', title: 'Can you design danger out of a road?' },
+] as const
 
-const sections = [
+const septemberSections = [
   ['01', 'The idea', 'Roads have a user experience. Geometry, visibility, markings, lighting and crossing distance influence how people move and what they notice.'],
   ['02', 'The question', 'What if we studied a Bedford crossing like a designer studies an interface: where is the uncertainty, and what behavior does the street encourage?'],
   ['03', 'The experiment', 'Observe safely, sketch one possible improvement, then identify the measurements and evidence needed before treating it as an engineering proposal.'],
+]
+
+const octoberSections = [
+  ['01', 'Officially approved', 'Build a Better Bedford is now an official BHS club. That means we can move from planning into a full year of exploring civil engineering through hands-on projects, design challenges and local questions.'],
+  ['02', 'Activity fair', 'We introduced the club at the activity fair, shared what BBB is about and invited students who are curious about engineering, design, building and problem-solving to join us.'],
+  ['03', 'First meeting', 'At our first meeting, members chose bridges as our first major topic and set a regular Thursday meeting time. Next up: learning why bridges take the shapes they do, then testing those ideas ourselves.'],
 ]
 
 export default function Newsletter() {
@@ -15,10 +24,17 @@ export default function Newsletter() {
   const [archiveOpen, setArchiveOpen] = useState(false)
   const [selectedIssueId, setSelectedIssueId] = useState<string>(issues[0].id)
   const selectedIssue = issues.find(issue => issue.id === selectedIssueId) ?? issues[0]
+  const isOctober = selectedIssue.id === '2026-10'
+  const activeSections = isOctober ? octoberSections : septemberSections
 
   return <div className={archiveOpen ? "newsletter-library archive-visible" : "newsletter-library"}>
-    {!archiveOpen && <button className="newsletter-issue-tab" type="button" aria-expanded={false} aria-controls="newsletter-issue-navigation" aria-label="Open issue navigation" onClick={() => setArchiveOpen(true)}>
-      <span className="issue-tab-symbol" aria-hidden="true">☰</span>
+    {!archiveOpen && <button className="newsletter-issue-tab" type="button" aria-expanded={false} aria-controls="newsletter-issue-navigation" aria-label="Browse newsletter issues" onClick={() => setArchiveOpen(true)}>
+      <svg className="issue-tab-symbol" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="18" rx="1" />
+        <path d="M7 7h0M7 17h0" />
+        <rect x="11" y="3" width="4" height="18" rx="1" />
+        <path d="m17 5 4 14M18.7 10l-2.9.7" />
+      </svg><span>Browse issues</span>
     </button>}
     {archiveOpen && <div className="newsletter-archive-scrim" onClick={() => setArchiveOpen(false)} aria-hidden="true" />}
     <aside id="newsletter-issue-navigation" className={archiveOpen ? 'newsletter-archive open' : 'newsletter-archive'} aria-label="Newsletter issues">
@@ -39,21 +55,30 @@ export default function Newsletter() {
       <div className="newsletter-intro">
         <p className="eyebrow">{selectedIssue.month.toUpperCase()} · ISSUE {selectedIssue.number}</p>
         <p className="newsletter-label">MONTHLY FIELD NOTE</p>
-        <h1>Can you design <span>danger</span> out of a road?</h1>
-        <p className="newsletter-deck">A look at how design, urbanism and engineering can make safer behavior easier and more intuitive.</p>
-        <div className="newsletter-quote">If the environment influences behavior, engineering can help make the safer choice the easier choice.</div>
+        {isOctober ? <>
+          <h1>We’re <span>official</span> — and we’re building bridges.</h1>
+          <p className="newsletter-deck">October turned Build a Better Bedford from an idea into an official club — with a leadership team, an activity fair debut, a first meeting and our first engineering project ready to begin.</p>
+          <div className="newsletter-quote">Start with a question. Learn the engineering. Build something. Test it. Improve it.</div>
+        </> : <>
+          <h1>Can you design <span>danger</span> out of a road?</h1>
+          <p className="newsletter-deck">A look at how design, urbanism and engineering can make safer behavior easier and more intuitive.</p>
+          <div className="newsletter-quote">If the environment influences behavior, engineering can help make the safer choice the easier choice.</div>
+        </>}
       </div>
 
       <div className="newsletter-notes">
         <div className="newsletter-notes-head"><span>THE STORY</span><span>BUILD A BETTER BEDFORD</span></div>
-        {sections.map(([number,title,text]) => <article className="newsletter-note" key={number}>
+        {activeSections.map(([number,title,text]) => <article className="newsletter-note" key={number}>
           <span>{number}</span>
           <div><h2>{title}</h2><p>{text}</p></div>
         </article>)}
-        <div className="newsletter-disclaimer">
+        {isOctober ? <div className="newsletter-disclaimer">
+          <strong>Club leadership</strong>
+          <p>Alex Pominova · Club leader (11th grade)<br />Farah Semy · Co-leader (11th grade)<br />Julia Richards · Club advisor</p>
+        </div> : <div className="newsletter-disclaimer">
           <strong>Design exploration, not an engineering plan.</strong>
           <p>A real design would require site measurements, accessibility and drainage requirements, traffic data, sight-distance analysis, utilities and right-of-way constraints.</p>
-        </div>
+        </div>}
       </div>
       <button
         className="newsletter-drawer-toggle"
@@ -67,6 +92,76 @@ export default function Newsletter() {
     </div>
 
     {expanded && <div className="newsletter-expand-panel">
+      {isOctober ? <>
+        <section className="design-problem">
+          <p className="expand-kicker">01 · WE’RE OFFICIAL</p>
+          <div className="expand-grid">
+            <div>
+              <h2>Build a Better Bedford is officially a BHS club.</h2>
+              <p>After starting the year as an idea, BBB has now been approved as an official club. Our goal is simple: use civil engineering as a way to learn how the built world works, then turn that knowledge into experiments, models and ideas connected to real places around us.</p>
+            </div>
+            <div className="design-principle">
+              <span>LEADERSHIP TEAM</span>
+              <strong>Alex Pominova · Farah Semy · Julia Richards</strong>
+              <p>Alex Pominova (club leader, 11th grade), Farah Semy (co-leader, 11th grade) and Julia Richards (club advisor) will help organize projects, meetings and opportunities throughout the year.</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="bedford-context">
+          <p className="expand-kicker">02 · ACTIVITY FAIR</p>
+          <div className="expand-grid">
+            <div>
+              <h2>Our first public introduction.</h2>
+              <p>We took part in the BHS activity fair and introduced students to what Build a Better Bedford is trying to do: explore civil engineering through hands-on work, creative problem-solving and questions that connect engineering to everyday life.</p>
+            </div>
+            <div>
+              <h3>What students can expect</h3>
+              <ul>
+                <li>design and build physical models</li>
+                <li>test structures and compare results</li>
+                <li>learn the physics and math behind designs</li>
+                <li>explore sustainability and materials</li>
+                <li>look at real engineering challenges in Bedford</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section className="solution-section">
+          <p className="expand-kicker">03 · OUR FIRST PROJECT</p>
+          <div className="solution-layout">
+            <div>
+              <h2>Bridges won the vote.</h2>
+              <p>Bridge engineering is a great first project because it combines math, physics, structural engineering, environmental science, materials science, architecture, sustainability and disaster planning in one structure you can actually build and test.</p>
+              <p>At our next meeting on <strong>Thursday, October 29</strong>, we’ll look at famous bridges around the world and ask why engineers chose particular shapes, materials and structural systems.</p>
+              <p className="solution-note">Then we move from looking to building: spaghetti bridges, hot glue, tape and load testing.</p>
+            </div>
+            <div className="design-principle">
+              <span>THE CHALLENGE</span>
+              <strong>How much load can your bridge carry?</strong>
+              <p>We’ll compare different shapes, watch where structures bend or fail, and use the results to redesign. Later, we’ll apply what we learn to a larger model inspired by the Golden Gate Bridge.</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="inspiration-section">
+          <p className="expand-kicker">04 · MEETINGS + WHAT’S NEXT</p>
+          <div className="inspiration-grid">
+            <article className="inspiration-card">
+              <div className="inspiration-top"><span>WEEKLY MEETINGS</span><span>THURSDAYS</span></div>
+              <h3>2:30–3:30 PM · Guidance Office</h3>
+              <p>A recurring calendar invitation will be sent out. No prior engineering experience is needed — students can join with curiosity, creativity and a willingness to try something new.</p>
+            </article>
+
+            <article className="inspiration-card">
+              <div className="inspiration-top"><span>BEYOND BRIDGES</span><span>THIS YEAR</span></div>
+              <h3>Build, test, redesign — then look local.</h3>
+              <p>Bridges are the starting point. Throughout the year we’ll explore more areas of civil engineering, experiment with different designs and investigate real-world challenges in Bedford that engineering might help us understand.</p>
+            </article>
+          </div>
+        </section>
+      </> : <>
         <section className="design-problem">
           <p className="expand-kicker">01 · THE DESIGN PROBLEM</p>
           <div className="expand-grid">
@@ -136,6 +231,7 @@ export default function Newsletter() {
             </article>
           </div>
         </section>
+      </>}
       </div>}
   </section>
   </div>
