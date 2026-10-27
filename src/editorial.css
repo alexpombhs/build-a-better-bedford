@@ -69,3 +69,38 @@ body{background:var(--bbb-paper);color:var(--bbb-ink)}
 @media(max-width:1050px){.editorial-home{grid-template-columns:minmax(0,1fr) 210px}.editorial-feature-bottom{align-items:start;flex-direction:column}.editorial-home-main{padding-right:25px}.editorial-home-sidebar{padding-left:20px}}
 @media(max-width:760px){.site-shell{padding:0 18px}.topbar{height:82px}.editorial-home{grid-template-columns:1fr}.editorial-home-main{padding:32px 0;gap:34px}.editorial-home-intro h1{font-size:clamp(49px,10vw,75px)}.editorial-home-sidebar{border-left:0;border-top:1px solid var(--bbb-ink);padding:18px 0 22px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.editorial-sidebar-head{grid-column:1/-1;padding:0}.editorial-sidebar-head img{width:76px;height:62px}.editorial-sidebar-section{padding:18px 0}.editorial-sidebar-bottom{grid-column:1/-1;margin:0}.editorial-feature-bottom{padding:16px}.newsletter-library .newsletter-clean{height:auto!important;min-height:0!important}.projects-page .problem-grid{border-left:0}.projects-page .problem-grid .problem-card{border-left:1px solid var(--bbb-line)!important}}
 @media(max-width:430px){.editorial-home-sidebar{grid-template-columns:1fr}.editorial-sidebar-head,.editorial-sidebar-bottom{grid-column:auto}.editorial-feature-bar{font-size:10px}.editorial-home-buttons{gap:13px}}
+
+
+/* Layout reset. Older stylesheet contains viewport-locked desktop rules and a
+   full-width dark header pseudo-element. Override explicitly at every width. */
+html{height:auto!important;overflow-y:auto!important}
+body{height:auto!important;min-height:100%;overflow-x:hidden!important;overflow-y:auto!important}
+body::before{display:none!important;content:none!important}
+.site-shell,.site-shell:has(.projects-page),.site-shell:has(.newsletter-page),.site-shell:has(.bbb-about-page){
+  height:auto!important;min-height:100svh!important;overflow:visible!important;
+  grid-template-rows:auto 1fr auto!important;
+}
+.site-shell:has(.editorial-home){display:flex!important;flex-direction:column!important}
+.site-shell:has(.editorial-home) .editorial-home{flex:1 0 auto!important;height:auto!important;min-height:0!important}
+.topbar{position:relative!important;top:auto!important;height:76px!important;min-height:76px!important;background:#f8f8f4!important;border-bottom:1px solid #bfcbbf!important;z-index:55!important}
+.topbar .brand-text{color:#192922!important}
+.topbar .nav-menu{background:transparent!important;border:0!important;box-shadow:none!important}
+.topbar .nav-button{color:#243b2e!important;opacity:1!important}
+.topbar .nav-button:hover{color:#a44d31!important}
+.topbar .nav-button.active-link{color:#192922!important}
+.topbar .join-link{color:#fff!important;background:#192922!important}
+.editorial-home-main{grid-template-rows:auto auto!important}
+.editorial-home{min-height:0!important}
+.editorial-home-sidebar{min-height:0!important}
+@media(max-width:760px){
+ .topbar{height:72px!important;min-height:72px!important}
+ .topbar .menu-toggle{position:relative;z-index:57}
+ .topbar .menu-toggle span{background:#192922!important}
+ .topbar .nav-menu.open{background:#f8f8f4!important;box-shadow:0 12px 25px rgba(12,37,20,.13)!important;border:1px solid #cbd6cc!important;padding:20px!important;z-index:56!important}
+ .topbar .nav-menu.open .nav-button{color:#192922!important}
+ .editorial-home-main{padding-top:38px}
+}
+@media(min-width:761px) and (max-width:1120px){
+ .topbar .nav-menu{gap:12px!important}
+ .topbar .nav-button{font-size:12px!important}
+}
