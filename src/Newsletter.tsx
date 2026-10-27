@@ -3,7 +3,7 @@ import roadSolution from './assets/road_solution.png'
 
 // Add new published issues here when their articles are ready.
 const issues = [
-  { id: '2026-10', month: 'October 2026', number: '02', title: 'We're official. Bridges are first.' },
+  { id: '2026-10', month: 'October 2026', number: '02', title: "We're official. Bridges are first." },
   { id: '2026-09', month: 'September 2026', number: '01', title: 'Can you design danger out of a road?' },
 ] as const
 
@@ -16,7 +16,7 @@ const septemberSections = [
 const octoberSections = [
   ['01', 'Officially approved', 'BBB has been approved as a BHS club. Meetings are on Thursdays, and our first topic is bridges.'],
   ['02', 'Activity fair', 'We had a table at the BHS activity fair and talked with students about the projects we want to try this year.'],
-  ['03', 'First meeting', 'Members voted for bridges and agreed on a Thursday meeting schedule. We'll compare bridge types before building and testing models.'],
+  ['03', 'First meeting', "Members voted for bridges and agreed on a Thursday meeting schedule. We'll compare bridge types before building and testing models."],
 ]
 
 export default function Newsletter() {
