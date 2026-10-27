@@ -11,24 +11,24 @@ export function EngineeringTabs({active,onChange}:{active:Tab;onChange:(tab:Tab)
 
 const sectionCopy: Record<Tab,{eyebrow:string;title:string;description:string}> = {
   simulators:{
-    eyebrow:'EXPLORE THE PHYSICS',
-    title:'What holds a bridge up?',
-    description:'Change the load, its position, and the span to see how forces move through a simple beam',
+    eyebrow:'BEAM SIMULATOR',
+    title:'How does a beam carry a load?',
+    description:'Move the load or change the span. Watch how the support reactions and bending moment change.',
   },
   ideas:{
-    eyebrow:'BEDFORD CHALLENGES',
-    title:'What could we improve?',
-    description:'Start with real questions about Bedford, then investigate what a better design might look like',
+    eyebrow:'LOCAL QUESTIONS',
+    title:'Ideas from around Bedford',
+    description:'Problems worth studying, from crosswalk geometry to drainage and trails.',
   },
   lab:{
-    eyebrow:'THE ENGINEERING PROCESS',
-    title:'Test a hypothesis',
-    description:'Make a prediction, change one variable, record what happens, and improve your design',
+    eyebrow:'TESTING',
+    title:'Run a controlled test',
+    description:'Make a prediction, change one variable, and compare the measurements.',
   },
   'hands-on':{
-    eyebrow:'BUILD IT YOURSELF',
-    title:'Turn ideas into models',
-    description:'Try classroom-friendly challenges that bring structures, forces, and street design to life',
+    eyebrow:'BUILD CHALLENGES',
+    title:'Build it. Then test it.',
+    description:'Small builds for comparing forces, structural shapes, and design choices.',
   },
 }
 
@@ -44,7 +44,7 @@ export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
   const left=load*(span-a)/span
   const right=load*a/span
   const maxMoment=left*a
-  if(tab==='lab') return <UiBox sx={{pb:4}}><UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',md:'repeat(3,minmax(0,1fr))'},gap:2}}><LabCard eyebrow="01 / QUESTION" title="Make a prediction">Choose a problem and decide what you expect before testing.</LabCard><LabCard eyebrow="02 / TEST" title="Change one variable">Keep the other conditions the same, record measurements, and repeat trials.</LabCard><LabCard eyebrow="03 / REVIEW" title="Share what you learned">Graph results, explain surprises, and sketch the next iteration.</LabCard></UiBox></UiBox>
+  if(tab==='lab') return <UiBox sx={{pb:4}}><UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',md:'repeat(3,minmax(0,1fr))'},gap:2}}><LabCard eyebrow="01 / QUESTION" title="Make a prediction">Choose a problem and decide what you expect before testing.</LabCard><LabCard eyebrow="02 / TEST" title="Change one variable">Keep the other conditions the same, record measurements, and repeat trials.</LabCard><LabCard eyebrow="03 / REVIEW" title="Check the results">Graph your results, explain unexpected behavior, and revise the design.</LabCard></UiBox></UiBox>
   if(tab==='hands-on') return <UiBox sx={{pb:4}}><UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',md:'repeat(3,minmax(0,1fr))'},gap:2}}><LabCard eyebrow="BRIDGES" title="Paper beam challenge">Compare flat and folded paper spanning the same gap, using small weights.</LabCard><LabCard eyebrow="STRUCTURES" title="Triangle vs. square">Build straw frames and gently compare how their shapes resist deformation.</LabCard><LabCard eyebrow="ROAD DESIGN" title="Crosswalk model">Compare tabletop street layouts with toy cars for visibility and crossing distance.</LabCard></UiBox></UiBox>
   return <UiBox sx={{pb:4}}>
     
