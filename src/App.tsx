@@ -274,7 +274,7 @@ function App() {
   return <main className="site-shell">
     <header className="topbar">
       <button className="identity identity-button" onClick={() => go('home')} aria-label="Build a Better Bedford home">
-        <span className="brand-text">Build a Better Bedford</span>
+        {page === "home" ? <span className="portfolio-brand"><strong>BBB<span>.</span></strong><small>BEDFORD HIGH SCHOOL<br />CIVIL ENGINEERING CLUB</small></span> : <span className="brand-text">Build a Better Bedford</span>}
       </button>
 
       <button className="menu-toggle" onClick={() => setMenuOpen(v => !v)} aria-expanded={menuOpen} aria-label="Toggle navigation">
@@ -282,7 +282,12 @@ function App() {
       </button>
 
       <nav className={menuOpen ? 'nav-menu open' : 'nav-menu'} aria-label="Main navigation">
-        {(['home','about','what-we-do','projects','newsletter'] as Page[]).map(item =>
+        {page === 'home' ? <>
+          <button className="nav-button" onClick={() => {go('projects');setProjectTab('ideas')}}>Projects</button>
+          <button className="nav-button" onClick={() => {go('projects');setProjectTab('simulators')}}>Lab</button>
+          <button className="nav-button" onClick={() => go('newsletter')}>Newsletter</button>
+          <button className="nav-button" onClick={() => go('about')}>About</button>
+        </> : (['home','about','what-we-do','projects','newsletter'] as Page[]).map(item =>
           <button key={item} className={page === item ? 'nav-button active-link' : 'nav-button'} onClick={() => go(item)}>{labels[item]}</button>
         )}
         <button className="join-link" onClick={joinClub}>Join the Club</button>
