@@ -37,17 +37,17 @@ function InfoPanel({title,items}:{title:string;items:Detail[]}) {
 export default function AboutPage({onJoin}:{onJoin:()=>void}) {
   return <UiBox className="bbb-about-page">
     <UiBox className="bbb-about-intro">
-      <UiText variant="h3" className="bbb-about-title">About our club</UiText>
+      <UiText variant="h3" className="bbb-about-title">The club</UiText>
       <UiText variant="body1" className="bbb-about-description">
-        A student-led civil engineering club at Bedford Public High School (BHS), Bedford, Massachusetts. We explore our community, learn from engineers, and test ideas through hands-on projects.
+        Build a Better Bedford is a student-led civil engineering club at Bedford High School. We study real structures and infrastructure, build models, run tests, and learn from people working in the field.
       </UiText>
     </UiBox>
     <UiBox className="bbb-about-grid">
-      <InfoPanel title="Our team" items={team}/>
+      <InfoPanel title="Club leadership" items={team}/>
       <InfoPanel title="Meetings" items={schedule}/>
     </UiBox>
     <UiBox className="bbb-about-cta">
-      <UiText variant="body1">Interested in exploring engineering with us?</UiText>
+      <UiText variant="body1">Want to join?</UiText>
       <button className="bbb-about-join" onClick={onJoin}>Join the club <span aria-hidden="true">→</span></button>
     </UiBox>
     <UiText variant="body2" className="bbb-about-disclaimer">
