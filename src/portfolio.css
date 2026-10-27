@@ -1,0 +1,34 @@
+/* Approved BBB portfolio homepage mock — isolated from legacy homepage styles. */
+.portfolio-home{width:100%;max-width:1440px;margin:0 auto;padding:38px 0 44px;display:flex;flex-direction:column;gap:26px;color:#10222e}
+.site-shell:has(.portfolio-home){height:auto!important;min-height:100svh!important;overflow:visible!important}
+.site-shell:has(.portfolio-home) .topbar{border-bottom:1px solid #d4dce1!important;background:#fff!important}
+.site-shell:has(.portfolio-home) .topbar .brand-text{color:#10222e!important}
+.site-shell:has(.portfolio-home) .topbar .nav-button{color:#10222e!important;opacity:1!important}
+.site-shell:has(.portfolio-home) .topbar .join-link{background:#10222e!important;color:white!important}
+.site-shell:has(.portfolio-home){background:#fff!important}
+.portfolio-hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.88fr);align-items:center;gap:20px;min-height:220px}
+.portfolio-hero-copy h1{font-size:clamp(42px,5.1vw,78px);font-weight:800;line-height:1.08;letter-spacing:-.055em;color:#081922;margin:0 0 16px}
+.portfolio-hero-copy p{font-size:clamp(16px,1.5vw,22px);line-height:1.5;max-width:765px;color:#445a6d;margin:0}
+.portfolio-hero-sketch{width:100%;max-height:240px;object-fit:contain;mix-blend-mode:multiply}
+.portfolio-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.portfolio-project{position:relative;display:block;text-align:left;cursor:pointer;min-width:0;width:100%;padding:0;overflow:hidden;border:0;border-radius:2px;aspect-ratio:1.72;background:#eef1f3;color:#10222e}
+.portfolio-project>img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .2s ease}
+.portfolio-project:hover>img{transform:scale(1.025)}
+.portfolio-project:focus-visible{outline:3px solid #365f80;outline-offset:3px}
+.portfolio-bridge:after{content:"";position:absolute;inset:38% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.72));pointer-events:none}
+.portfolio-project-copy{position:absolute;left:6%;bottom:7%;display:flex;flex-direction:column;gap:8px;z-index:1;max-width:80%}
+.portfolio-project-copy strong{font-size:clamp(22px,2.3vw,35px);line-height:1.1;letter-spacing:-.035em}
+.portfolio-project-copy small{font-size:clamp(10px,1vw,14px);letter-spacing:.09em;line-height:1.3}
+.portfolio-bridge .portfolio-project-copy{color:#fff}
+.portfolio-project-arrow{position:absolute;bottom:7%;right:5%;width:48px;height:48px;display:grid;place-items:center;border:2px solid currentColor;border-radius:50%;font-size:28px;line-height:1;z-index:1}
+.portfolio-bridge .portfolio-project-arrow{color:white}
+.portfolio-details{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #d3dce2;padding-top:35px;gap:0}
+.portfolio-detail{display:flex;align-items:flex-start;gap:20px;padding:0 28px;border-right:1px solid #d3dce2}
+.portfolio-detail:first-child{padding-left:12px}
+.portfolio-detail:last-child{border-right:none}
+.portfolio-detail-icon{font-size:30px;line-height:1;color:#243f54;min-width:33px}
+.portfolio-detail small{display:block;font-size:12px;letter-spacing:.05em;color:#536779;margin:0 0 10px}
+.portfolio-detail strong{display:block;font-size:clamp(17px,1.5vw,23px);letter-spacing:-.025em;line-height:1.23;color:#10222e}
+.portfolio-detail p{font-size:clamp(13px,1.3vw,18px);line-height:1.46;color:#40556a;margin:6px 0 0}
+@media(max-width:900px){.portfolio-hero{grid-template-columns:1fr 35%}.portfolio-home{padding-top:28px}.portfolio-detail{padding:0 15px;gap:10px}.portfolio-detail-icon{font-size:23px;min-width:25px}}
+@media(max-width:700px){.portfolio-hero{grid-template-columns:1fr}.portfolio-hero-sketch{max-height:160px;object-position:left}.portfolio-projects{grid-template-columns:1fr;gap:16px}.portfolio-project{aspect-ratio:1.6}.portfolio-details{grid-template-columns:1fr;padding-top:5px}.portfolio-detail,.portfolio-detail:first-child{padding:22px 0;border-right:0;border-bottom:1px solid #d3dce2}.portfolio-detail:last-child{border-bottom:0}.portfolio-hero-copy h1{font-size:clamp(38px,9vw,58px)}.portfolio-home{gap:20px}}
