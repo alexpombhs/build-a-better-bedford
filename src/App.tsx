@@ -32,13 +32,6 @@ type ProjectCard = {
 type IdeaForm = { title:string; subtitle:string; description:string; submitterName:string }
 const emptyIdea: IdeaForm = { title:'', subtitle:'', description:'', submitterName:'' }
 
-const focusAreas = [
-  ['01', 'Around Bedford', 'Look at streets, crossings, drainage, and places we use every day.'],
-  ['02', 'Structures + physics', 'Calculate forces, build models, and find out what breaks.'],
-  ['03', 'Design + CAD', 'Sketch, model in CAD, test, and revise.'],
-]
-
-
 const projectProblems: ProjectCard[] = [
   {
     number: '01',
