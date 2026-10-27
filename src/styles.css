@@ -469,3 +469,14 @@ body::before{position:fixed!important;top:0;left:0;right:0;width:100%;height:var
 @media(max-width:760px){
   .bbb-section-heading-actions{width:100%;justify-content:flex-end}
 }
+
+
+/* Student engineering publication: quieter hierarchy and clearer reading sizes. */
+.home-content .lede{max-width:700px;line-height:1.5;letter-spacing:-.015em}
+.home-content .eyebrow{letter-spacing:.06em;font-weight:700}
+.focus-row{border-color:#e0e6e0}
+.focus-row h2{letter-spacing:-.015em}
+.focus-row p{line-height:1.5}
+.projects-page > .problem-grid .problem-fact{font-size:13.5px;line-height:1.5}
+.projects-page > .problem-grid .problem-question{font-size:13px;line-height:1.5}
+.projects-page:has(.problem-grid) .problem-card{border-radius:10px}
