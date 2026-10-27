@@ -480,3 +480,24 @@ body::before{position:fixed!important;top:0;left:0;right:0;width:100%;height:var
 .projects-page > .problem-grid .problem-fact{font-size:13.5px;line-height:1.5}
 .projects-page > .problem-grid .problem-question{font-size:13px;line-height:1.5}
 .projects-page:has(.problem-grid) .problem-card{border-radius:10px}
+
+
+/* Club-site refresh: usable type sizes, simple navigation, fewer decorative treatments. */
+.site-shell{max-width:1450px}
+.home-content .eyebrow{font-size:12px;letter-spacing:.035em;color:#44604e}
+.home-content .lede{font-size:clamp(18px,1.45vw,22px);line-height:1.52;color:#26392e;font-weight:520;max-width:610px}
+.home-content .focus{border-top:1px solid #dce5dd}
+.home-content .focus-row{padding:15px 0;gap:10px;grid-template-columns:26px minmax(0,1fr)}
+.home-content .focus-row .number{font-size:11px;color:#698374}
+.home-content .focus-row h2{font-size:17px;letter-spacing:-.02em}
+.home-content .focus-row p{font-size:14px;line-height:1.45;color:#4c5e52}
+.home-content .about-line{font-size:13px;line-height:1.55;color:#4c5e52}
+.home-content .actions button{font-size:14px}
+.topbar .nav-button,.topbar .join-link{font-size:14px}
+.projects-page > .problem-grid .problem-fact{font-size:14px;line-height:1.5}
+.projects-page > .problem-grid .problem-question{font-size:13.5px;line-height:1.5;color:#44584a}
+.projects-page .problem-card{box-shadow:none!important}
+@media(max-width:900px){
+  .home-content .lede{font-size:18px}
+  .home-content .focus-row p{font-size:14px}
+}
