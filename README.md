@@ -26,4 +26,4 @@ The Vite base path is configured for the GitHub Pages project URL:
 
 `/build-a-better-bedford/`
 
-> This is an unofficial student project and is not an official website of the Town of Bedford or Bedford Public Schools.
+> This is an independent student-run project and not an official Town of Bedford website.

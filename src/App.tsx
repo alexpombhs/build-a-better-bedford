@@ -283,7 +283,7 @@ function App() {
   return <main className="site-shell">
     <header className="topbar">
       <button className="identity identity-button" onClick={() => go('home')} aria-label="Build a Better Bedford home">
-        {page === "home" ? <span className="portfolio-brand"><strong>BBB<span>.</span></strong><small>BEDFORD HIGH SCHOOL<br />CIVIL ENGINEERING CLUB</small></span> : <span className="brand-text">Build a Better Bedford</span>}
+        {page === "home" ? <span className="portfolio-brand"><strong>BBB<span>.</span></strong><small>STUDENT-LED<br />CIVIL ENGINEERING CLUB</small></span> : <span className="brand-text">Build a Better Bedford</span>}
       </button>
 
       <button className="menu-toggle" onClick={() => setMenuOpen(v => !v)} aria-expanded={menuOpen} aria-label="Toggle navigation">
@@ -307,7 +307,7 @@ function App() {
       <div className="portfolio-hero">
         <div className="portfolio-hero-copy">
           <h1>Build a Better Bedford</h1>
-          <p>A student-led civil engineering club at Bedford High School, exploring structural engineering, design, and local infrastructure through research, modeling, and hands-on projects.</p>
+          <p>A student-led civil engineering club exploring structural engineering, design, and local infrastructure through research, modeling, and hands-on projects.</p>
         </div>
         {homepageImage("bridge_sketch_64.png") ? <img className="portfolio-hero-sketch" src={homepageImage("bridge_sketch_64.png")} alt="Conceptual pen sketch of a truss bridge" /> : <div className="portfolio-missing-sketch" role="status">Bridge sketch unavailable</div>}
       </div>
