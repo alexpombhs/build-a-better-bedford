@@ -13,3 +13,23 @@
 .projects-page .problem-grid .bbb-project-card--cta.bbb-ui-card{background:#f7f9fb!important}
 @media(max-width:950px){.projects-page .problem-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.projects-page .problem-grid{grid-template-columns:1fr}}
+
+
+/* Ideas editorial treatment: no synthetic diagrams or icon cards. */
+.projects-page .problem-grid .bbb-project-card.bbb-ui-card{border-radius:4px!important;background:#fff!important;min-height:0!important;overflow:hidden}
+.projects-page .problem-grid .bbb-project-card .bbb-project-card-content{padding:0!important;display:flex;flex-direction:column}
+.bbb-idea-feature{height:112px;position:relative;background:#e9eff2;border-bottom:1px solid #d1dce2;overflow:hidden}
+.bbb-idea-feature-text{height:100%;display:flex;align-items:flex-start;justify-content:space-between;padding:16px 20px;color:#2a485c}
+.bbb-idea-feature-text span{font:600 11px/1.4 Arial,sans-serif;letter-spacing:.075em}
+.bbb-idea-feature-text strong{font:500 62px/.9 Georgia,serif;letter-spacing:-.05em;color:#a0b4bf}
+.bbb-idea-feature.has-photo{height:155px}
+.bbb-idea-feature img{display:block;width:100%;height:100%;object-fit:cover}
+.projects-page .problem-grid .bbb-project-card .bbb-idea-copy{padding:18px 20px 22px!important}
+.projects-page .problem-grid .bbb-project-card .problem-card-top{margin:0}
+.projects-page .problem-grid .bbb-project-card .problem-heading{padding:0;display:block}
+.projects-page .problem-grid .bbb-project-card h2{font:600 19px/1.27 'Space Grotesk',Arial,sans-serif!important;color:#10222e!important}
+.projects-page .problem-grid .bbb-project-card .problem-fact{font-size:14px;line-height:1.45;margin-top:10px}
+.projects-page .problem-grid .bbb-project-card .problem-question{font-size:13px;line-height:1.5;margin-top:9px}
+.projects-page .problem-grid .bbb-project-card .problem-index{position:absolute;top:14px;right:14px;z-index:2;background:white;border-radius:2px;padding:3px 5px;font-size:11px}
+.projects-page .problem-grid .bbb-project-card .idea-edit{z-index:4}
+.projects-page .problem-grid .bbb-project-card--cta.bbb-ui-card .bbb-idea-feature{background:#dce8ee}
