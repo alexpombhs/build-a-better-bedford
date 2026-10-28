@@ -283,7 +283,7 @@ function App() {
   return <main className="site-shell">
     <header className="topbar">
       <button className="identity identity-button" onClick={() => go('home')} aria-label="Build a Better Bedford home">
-        {page === "home" ? <span className="portfolio-brand"><strong>BBB<span>.</span></strong><small>STUDENT-LED<br />CIVIL ENGINEERING CLUB</small></span> : <span className="brand-text">Build a Better Bedford</span>}
+        {page === "home" ? <span className="portfolio-brand"><strong>BBB</strong><small>STUDENT-LED<br />CIVIL ENGINEERING CLUB</small></span> : <span className="brand-text">Build a Better Bedford</span>}
       </button>
 
       <button className="menu-toggle" onClick={() => setMenuOpen(v => !v)} aria-expanded={menuOpen} aria-label="Toggle navigation">
