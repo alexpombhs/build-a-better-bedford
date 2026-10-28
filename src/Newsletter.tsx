@@ -14,8 +14,8 @@ const septemberSections = [
 ]
 
 const octoberSections = [
-  ['01', 'Officially approved', 'BBB has been approved as a BHS club. Meetings are on Thursdays, and our first topic is bridges.'],
-  ['02', 'Activity fair', 'We had a table at the BHS activity fair and talked with students about the projects we want to try this year.'],
+  ['01', 'Officially approved', 'BBB has started meeting regularly. Meetings are on Thursdays, and our first topic is bridges.'],
+  ['02', 'Activity fair', 'We had a table at the activity fair and talked with students about the projects we want to try this year.'],
   ['03', 'First meeting', "Members voted for bridges and agreed on a Thursday meeting schedule. We'll compare bridge types before building and testing models."],
 ]
 
@@ -57,7 +57,7 @@ export default function Newsletter() {
         <p className="newsletter-label">CLUB NEWSLETTER</p>
         {isOctober ? <>
           <h1>We’re <span>official.</span> Bridges are first.</h1>
-          <p className="newsletter-deck">Build a Better Bedford is now an official BHS club. We introduced it at the activity fair, held our first meeting, and voted on our first project. Bridges won.</p>
+          <p className="newsletter-deck">Build a Better Bedford is now meeting regularly. We introduced it at the activity fair, held our first meeting, and voted on our first project. Bridges won.</p>
           <div className="newsletter-quote">Next up: bridge types, forces, materials, and our first load tests.</div>
         </> : <>
           <h1>Can you design <span>danger</span> out of a road?</h1>
@@ -97,8 +97,8 @@ export default function Newsletter() {
           <p className="expand-kicker">01 · WE’RE OFFICIAL</p>
           <div className="expand-grid">
             <div>
-              <h2>Build a Better Bedford is officially a BHS club.</h2>
-              <p>BBB is officially a BHS club. We'll learn engineering through case studies, models, measurements, and local infrastructure questions.</p>
+              <h2>Build a Better Bedford has started its first project.</h2>
+              <p>BBB is now underway. We'll learn engineering through case studies, models, measurements, and local infrastructure questions.</p>
             </div>
             <div className="design-principle">
               <span>LEADERSHIP TEAM</span>
