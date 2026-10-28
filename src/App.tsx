@@ -168,7 +168,7 @@ function App() {
     title: idea.title,
     fact: idea.subtitle,
     question: idea.description,
-    photoUrl: idea.photo_url,
+    photoUrl: idea.title.trim().toLowerCase() === 'turning electronics into safety guards' ? null : idea.photo_url,
     submitterName: idea.submitter_name,
   }))
   // Community submissions come first, followed by the built-in project prompts.
@@ -370,10 +370,7 @@ function App() {
               <div className="problem-heading"><h2>{problem.title}</h2></div>
             </div>
           <p className="problem-fact">{problem.fact}</p>
-          {problem.isSubmitted ? <details className="idea-description-details">
-            <summary>Read idea</summary>
-            <p className="problem-question">{problem.question}</p>
-          </details> : <p className="problem-question">{problem.question}</p>}
+          <p className="problem-question">{problem.question}</p>
           {problem.submitterName && <p className="idea-byline">Idea by {problem.submitterName}</p>}
           {problem.cta && <button className="idea-cta" onClick={openNewIdea}>Bring your idea <span>→</span></button>}
           </div>
