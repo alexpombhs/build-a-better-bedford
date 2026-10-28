@@ -1,5 +1,6 @@
 import { UiBox, UiCard, UiCardContent, UiText } from './components/atoms/MuiPrimitives'
 import './about.css'
+import PageHeading from './components/PageHeading'
 
 type Detail = { label: string; value: string; note?: string }
 const team: Detail[] = [
@@ -36,12 +37,7 @@ function InfoPanel({title,items}:{title:string;items:Detail[]}) {
 
 export default function AboutPage({onJoin}:{onJoin:()=>void}) {
   return <UiBox className="bbb-about-page">
-    <UiBox className="bbb-about-intro">
-      <UiText variant="h3" className="bbb-about-title">The club</UiText>
-      <UiText variant="body1" className="bbb-about-description">
-        Build a Better Bedford is a student-led civil engineering club. We study real structures and infrastructure, build models, run tests, and learn from people working in the field.
-      </UiText>
-    </UiBox>
+    <PageHeading className="bbb-about-intro" title="The club" description="Build a Better Bedford is a student-led civil engineering club. We study real structures and infrastructure, build models, run tests, and learn from people working in the field." />
     <UiBox className="bbb-about-grid">
       <InfoPanel title="Club leadership" items={team}/>
       <InfoPanel title="Meetings" items={schedule}/>
