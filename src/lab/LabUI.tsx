@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import PageHeading from '../components/PageHeading'
-import { UiBox, UiCard, UiCardContent, UiSlider, UiStack, UiTab, UiTabs, UiText } from '../components/atoms/MuiPrimitives'
+import ProjectCard from '../components/ProjectCard'
+import { UiBox, UiSlider, UiStack, UiTab, UiTabs, UiText } from '../components/atoms/MuiPrimitives'
 
 export const labColors = { ink:'#10222e', accent:'#294b63', muted:'#465d70', border:'#d3dce2' }
 
@@ -9,13 +10,11 @@ export function SectionHeading({eyebrow,title,description,actions}:{eyebrow?:str
 }
 
 export function LabCard({eyebrow,title,children}:{eyebrow:string;title:string;children:ReactNode}) {
-  return <UiCard variant="outlined" sx={{borderColor:labColors.border,borderRadius:3,height:'100%',boxShadow:'none'}}>
-    <UiCardContent sx={{p:3,'&:last-child':{pb:3}}}>
-      <UiText variant="overline" sx={{color:labColors.accent,fontWeight:800}}>{eyebrow}</UiText>
-      <UiText variant="h6" sx={{fontWeight:750,color:labColors.ink,my:1}}>{title}</UiText>
-      <UiText variant="body2" sx={{color:labColors.muted,lineHeight:1.7}}>{children}</UiText>
-    </UiCardContent>
-  </UiCard>
+  return <ProjectCard>
+    <UiText variant="overline" sx={{color:labColors.accent,fontSize:11,fontWeight:700,letterSpacing:1}}>{eyebrow}</UiText>
+    <UiText variant="h6" sx={{fontFamily:"'Space Grotesk', Arial, sans-serif",fontSize:18,fontWeight:600,color:labColors.ink,my:1}}>{title}</UiText>
+    <UiText variant="body2" sx={{color:labColors.muted,lineHeight:1.55,fontSize:14}}>{children}</UiText>
+  </ProjectCard>
 }
 
 export function LabSlider({label,value,min,max,step=1,unit,onChange}:{label:string;value:number;min:number;max:number;step?:number;unit:string;onChange:(value:number)=>void}){
