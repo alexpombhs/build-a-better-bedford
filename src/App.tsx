@@ -4,6 +4,7 @@ import Newsletter from './Newsletter'
 import AboutPage from './AboutPage'
 import SiteHeader from './components/SiteHeader'
 import PageHeading from './components/PageHeading'
+import ProjectCard from './components/ProjectCard'
 import { EngineeringTabs, EngineeringWorkspace, EngineeringSectionIntro } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
 import crosswalkIcon from './assets/crosswalk.png'
@@ -350,7 +351,7 @@ function App() {
       ) : undefined} />
       {projectTab === 'ideas' ? <>
       <div className="problem-grid">
-        {visibleProjects.map(problem => <article className={problem.cta ? 'problem-card problem-card-cta' : problem.isSubmitted ? 'problem-card submitted-project-card' : 'problem-card'} key={problem.cta ? 'idea-cta' : problem.isSubmitted ? `submitted-${problem.id}` : `project-${problem.number}`}>
+        {visibleProjects.map(problem => <ProjectCard variant={problem.cta ? 'cta' : 'idea'} className={problem.cta ? 'problem-card-cta' : problem.isSubmitted ? 'submitted-project-card' : ''} key={problem.cta ? 'idea-cta' : problem.isSubmitted ? `submitted-${problem.id}` : `project-${problem.number}`}>
           {!problem.cta && <span className={problem.isSubmitted ? 'problem-index problem-index-new' : 'problem-index'}>{problem.number}</span>}
           {problem.isSubmitted && problem.id != null && <button className="idea-edit" onClick={() => {
             const idea = submittedIdeas.find(item => item.id === problem.id)
@@ -373,7 +374,7 @@ function App() {
           </details> : <p className="problem-question">{problem.question}</p>}
           {problem.submitterName && <p className="idea-byline">Idea by {problem.submitterName}</p>}
           {problem.cta && <button className="idea-cta" onClick={openNewIdea}>Bring your idea <span>→</span></button>}
-        </article>)}
+        </ProjectCard>)}
       </div>
 
 
