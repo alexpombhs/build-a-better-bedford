@@ -1,0 +1,12 @@
+.bbb-idea-visual{width:100%;height:130px;overflow:hidden;background:#f5f8fa;border-bottom:1px solid #d3dce2}
+.bbb-idea-visual img,.bbb-idea-visual svg{display:block;width:100%;height:100%;object-fit:cover}
+.projects-page .problem-grid .bbb-project-card.bbb-ui-card{min-height:0!important}
+.projects-page .problem-grid .bbb-project-card.bbb-ui-card .bbb-project-card-content{padding:0!important}
+.projects-page .problem-grid .bbb-project-card .bbb-idea-copy{padding:16px 20px 20px;display:flex;flex-direction:column;flex:1;min-width:0}
+.projects-page .problem-grid .bbb-project-card .problem-heading{display:flex;align-items:start;gap:10px;padding-right:24px}
+.projects-page .problem-grid .bbb-project-card .problem-card-top{position:relative}
+.projects-page .problem-grid .bbb-project-card .problem-index{top:16px;right:0}
+.projects-page .problem-grid .bbb-project-card .idea-edit{top:0;right:0}
+.projects-page .problem-grid .bbb-project-card .problem-fact{margin-top:9px}
+.projects-page .problem-grid .bbb-project-card .problem-question{margin-top:7px}
+.projects-page .problem-grid .bbb-project-card--cta .bbb-idea-visual{background:#f5f8fa}
