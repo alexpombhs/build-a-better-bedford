@@ -5,8 +5,6 @@ import AboutPage from './AboutPage'
 import SiteHeader from './components/SiteHeader'
 import PageHeading from './components/PageHeading'
 import ProjectCard from './components/ProjectCard'
-import IdeaVisual from './components/IdeaVisual'
-import './components/IdeaVisual.css'
 import { EngineeringTabs, EngineeringWorkspace, EngineeringSectionIntro } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
 import crosswalkIcon from './assets/crosswalk.png'
@@ -359,11 +357,14 @@ function App() {
             const idea = submittedIdeas.find(item => item.id === problem.id)
             if (idea) openEditIdea(idea)
           }} aria-label={`Edit ${problem.title}`} title="Edit idea">✎</button>}
-          <IdeaVisual
-            topic={problem.cta ? 'idea' : problem.isSubmitted ? 'submitted' : ({'01':'crosswalk','02':'dogpark','03':'electricity','04':'roadwork','05':'bathroom','06':'bikepath','07':'trails','08':'flood'} as const)[problem.number as '01'|'02'|'03'|'04'|'05'|'06'|'07'|'08']}
-            photo={problem.photoUrl}
-            title={problem.title}
-          />
+          <div className={problem.photoUrl ? 'bbb-idea-feature has-photo' : 'bbb-idea-feature'}>
+            {problem.photoUrl
+              ? <img src={problem.photoUrl} alt="" loading="lazy" />
+              : <div className="bbb-idea-feature-text">
+                  <span>{problem.cta ? 'YOUR IDEA' : problem.isSubmitted ? 'STUDENT IDEA' : 'BEDFORD / IDEAS'}</span>
+                  <strong>{problem.cta ? '+' : problem.isSubmitted ? 'NEW' : problem.number}</strong>
+                </div>}
+          </div>
           <div className="bbb-idea-copy">
             <div className="problem-card-top">
               <div className="problem-heading"><h2>{problem.title}</h2></div>
