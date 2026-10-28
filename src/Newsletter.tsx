@@ -14,7 +14,7 @@ const septemberSections = [
 ]
 
 const octoberSections = [
-  ['01', 'Officially approved', 'BBB has started meeting regularly. Meetings are on Thursdays, and our first topic is bridges.'],
+  ['01', 'Club update', 'BBB has started meeting regularly. Meetings are on Thursdays, and our first topic is bridges.'],
   ['02', 'Activity fair', 'We had a table at the activity fair and talked with students about the projects we want to try this year.'],
   ['03', 'First meeting', "Members voted for bridges and agreed on a Thursday meeting schedule. We'll compare bridge types before building and testing models."],
 ]
