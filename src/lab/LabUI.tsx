@@ -1,17 +1,11 @@
 import type { ReactNode } from 'react'
+import PageHeading from '../components/PageHeading'
 import { UiBox, UiCard, UiCardContent, UiSlider, UiStack, UiTab, UiTabs, UiText } from '../components/atoms/MuiPrimitives'
 
 export const labColors = { ink:'#10222e', accent:'#294b63', muted:'#465d70', border:'#d3dce2' }
 
 export function SectionHeading({eyebrow,title,description,actions}:{eyebrow?:string;title:string;description:string;actions?:ReactNode}) {
-  return <UiBox className="bbb-section-heading" sx={{display:'flex',justifyContent:'space-between',alignItems:{xs:'flex-start',md:'center'},flexWrap:{xs:'wrap',md:'nowrap'},gap:2,mb:{xs:3,md:3.5}}}>
-    <UiBox className="bbb-section-heading-copy" sx={{maxWidth:780,minWidth:0}}>
-      {eyebrow && <UiText variant="overline" sx={{color:labColors.accent,fontWeight:750,letterSpacing:1.5,fontSize:11}}>{eyebrow}</UiText>}
-      <UiText variant="h3" sx={{fontFamily:'Georgia, serif',fontWeight:600,color:labColors.ink,fontSize:{xs:32,md:42},lineHeight:1.14,mt:0.8,mb:1.1}}>{title}</UiText>
-      <UiText sx={{color:labColors.muted,lineHeight:1.6,fontSize:{xs:14,md:16}}}>{description}</UiText>
-    </UiBox>
-    {actions && <UiBox className="bbb-section-heading-actions" sx={{flexShrink:0,ml:{md:'auto'}}}>{actions}</UiBox>}
-  </UiBox>
+  return <PageHeading eyebrow={eyebrow} title={title} description={description} actions={actions} className="bbb-section-heading" />
 }
 
 export function LabCard({eyebrow,title,children}:{eyebrow:string;title:string;children:ReactNode}) {
