@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap');
 /* Approved BBB portfolio homepage mock — isolated from legacy homepage styles. */
 .portfolio-home{width:100%;max-width:1440px;margin:0 auto;padding:38px 0 44px;display:flex;flex-direction:column;gap:26px;color:#10222e}
 .site-shell:has(.portfolio-home){height:auto!important;min-height:100svh!important;overflow:visible!important}
@@ -52,3 +53,11 @@
 .portfolio-project:has(.portfolio-missing-image):after{display:none}
 .portfolio-project:has(.portfolio-missing-image) .portfolio-project-copy{background:#e9eef1;color:#10222e}
 .portfolio-project:has(.portfolio-missing-image) .portfolio-project-arrow{color:#10222e}
+
+.portfolio-hero-copy h1,.portfolio-project-copy strong,.portfolio-detail strong,.portfolio-brand strong{
+  font-family:'Space Grotesk','Avenir Next',Arial,sans-serif!important;
+}
+.portfolio-hero-copy h1{font-weight:700!important;letter-spacing:-.052em!important}
+.portfolio-project-copy strong{font-weight:600!important;letter-spacing:-.035em!important}
+.portfolio-detail strong{font-weight:600!important}
+.portfolio-brand strong{font-weight:700!important;letter-spacing:-.065em!important}
