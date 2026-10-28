@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import Newsletter from './Newsletter'
 import AboutPage from './AboutPage'
+import SiteHeader from './components/SiteHeader'
 import { EngineeringTabs, EngineeringWorkspace, EngineeringSectionIntro } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
 import crosswalkIcon from './assets/crosswalk.png'
@@ -119,7 +120,6 @@ const labels: Record<Page, string> = {
 
 function App() {
   const [page, setPage] = useState<Page>('home')
-  const [menuOpen, setMenuOpen] = useState(false)
   const [projectPage, setProjectPage] = useState(0)
   const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>('ideas')
   const [ideaOpen, setIdeaOpen] = useState(false)
@@ -276,28 +276,19 @@ function App() {
 
   const go = (next: Page) => {
     setPage(next)
-    setMenuOpen(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return <main className="site-shell">
-    <header className="topbar">
-      <button className="identity identity-button" onClick={() => go('home')} aria-label="Build a Better Bedford home">
-        <span className="portfolio-brand"><strong>BBB</strong><small>STUDENT-LED<br />CIVIL ENGINEERING CLUB</small></span>
-      </button>
-
-      <button className="menu-toggle" onClick={() => setMenuOpen(v => !v)} aria-expanded={menuOpen} aria-label="Toggle navigation">
-        <span></span><span></span><span></span>
-      </button>
-
-      <nav className={menuOpen ? 'nav-menu open' : 'nav-menu'} aria-label="Main navigation">
-        <button className={page === 'projects' && projectTab === 'ideas' ? 'nav-button active-link' : 'nav-button'} onClick={() => {go('projects');setProjectTab('ideas')}}>Projects</button>
-        <button className={page === 'projects' && projectTab !== 'ideas' ? 'nav-button active-link' : 'nav-button'} onClick={() => {go('projects');setProjectTab('simulators')}}>Lab</button>
-        <button className={page === 'newsletter' ? 'nav-button active-link' : 'nav-button'} onClick={() => go('newsletter')}>Newsletter</button>
-        <button className={page === 'about' ? 'nav-button active-link' : 'nav-button'} onClick={() => go('about')}>About</button>
-        <button className="join-link" onClick={joinClub}>Join the Club</button>
-      </nav>
-    </header>
+    <SiteHeader
+      active={page === 'projects' ? (projectTab === 'ideas' ? 'projects' : 'lab') : page === 'newsletter' ? 'newsletter' : page === 'about' ? 'about' : 'home'}
+      onNavigate={section => {
+        if (section === 'lab') { setProjectTab('simulators'); go('projects') }
+        else if (section === 'projects') { setProjectTab('ideas'); go('projects') }
+        else go(section)
+      }}
+      onJoin={joinClub}
+    />
 
     {page === 'home' && <section className="portfolio-home">
       <div className="portfolio-hero">
