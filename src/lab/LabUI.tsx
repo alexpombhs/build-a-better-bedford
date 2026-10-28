@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { UiBox, UiCard, UiCardContent, UiSlider, UiStack, UiTab, UiTabs, UiText } from '../components/atoms/MuiPrimitives'
 
-export const labColors = { ink:'#173f2d', accent:'#2f684b', muted:'#61766a', border:'#d7e0da' }
+export const labColors = { ink:'#10222e', accent:'#294b63', muted:'#465d70', border:'#d3dce2' }
 
 export function SectionHeading({eyebrow,title,description,actions}:{eyebrow?:string;title:string;description:string;actions?:ReactNode}) {
   return <UiBox className="bbb-section-heading" sx={{display:'flex',justifyContent:'space-between',alignItems:{xs:'flex-start',md:'center'},flexWrap:{xs:'wrap',md:'nowrap'},gap:2,mb:{xs:3,md:3.5}}}>
