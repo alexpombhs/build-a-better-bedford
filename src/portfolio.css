@@ -75,3 +75,29 @@
 .portfolio-bridge .portfolio-project-arrow{bottom:6%;width:44px;height:44px}
 .portfolio-home{padding-top:32px}
 @media(max-width:760px){.portfolio-brand strong{font-size:34px}.portfolio-hero-copy h1{font-size:clamp(36px,8vw,52px)!important}.portfolio-lab .portfolio-project-copy{padding:28px 56px 15px 5.5%}}
+
+
+/* Typography revision v2 — visibly different from the original extra-bold mock. */
+.site-shell:has(.portfolio-home) .portfolio-hero-copy h1{
+  font-family:Georgia,'Times New Roman',serif!important;
+  font-weight:400!important;
+  font-size:clamp(40px,4.2vw,65px)!important;
+  letter-spacing:-.038em!important;
+  line-height:1.12!important;
+}
+.site-shell:has(.portfolio-home) .portfolio-brand strong{
+  font-family:'Space Grotesk',Arial,sans-serif!important;
+  font-weight:600!important;
+  letter-spacing:-.06em!important;
+}
+.site-shell:has(.portfolio-home) .portfolio-brand strong::before,
+.site-shell:has(.portfolio-home) .portfolio-brand strong::after{
+  content:none!important;display:none!important;
+}
+.site-shell:has(.portfolio-home) .portfolio-project-copy strong{
+  font-family:'Space Grotesk',Arial,sans-serif!important;
+  font-weight:500!important;
+}
+@media(max-width:760px){
+  .site-shell:has(.portfolio-home) .portfolio-hero-copy h1{font-size:clamp(38px,8vw,52px)!important}
+}
