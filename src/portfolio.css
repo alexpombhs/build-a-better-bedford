@@ -153,3 +153,43 @@
   }
   .site-shell .topbar .menu-toggle span{background:#10222e!important}
 }
+
+
+/* GLOBAL PAGE SURFACE: same background and centered width across all routes. */
+:root{--bbb-page-bg:#fff;--bbb-text:#10222e;--bbb-secondary:#465d70;--bbb-divider:#d3dce2;--bbb-link:#10222e}
+html,body,#root{background:var(--bbb-page-bg)!important}
+body::before{display:none!important}
+.site-shell,
+.site-shell:has(.portfolio-home),
+.site-shell:has(.projects-page),
+.site-shell:has(.newsletter-page),
+.site-shell:has(.bbb-about-page){
+  background:var(--bbb-page-bg)!important;
+  color:var(--bbb-text);
+  width:100%!important;
+  max-width:1360px!important;
+  margin-inline:auto!important;
+  padding-inline:clamp(16px,3.2vw,40px)!important;
+}
+.site-shell .topbar,
+.site-shell:has(.portfolio-home) .topbar{
+  width:100%!important;
+  background:var(--bbb-page-bg)!important;
+  border-bottom:1px solid var(--bbb-divider)!important;
+}
+.site-shell .topbar .nav-button{font-family:inherit!important;font-weight:500!important;color:var(--bbb-text)!important}
+.site-shell .topbar .join-link{font-family:inherit!important;font-weight:600!important}
+.site-shell footer{background:transparent!important;color:var(--bbb-secondary)!important;border-top:1px solid var(--bbb-divider)!important}
+.site-shell .projects-page,.site-shell .bbb-about-page,.site-shell .newsletter-library,.site-shell .newsletter-page,
+.site-shell .engineering-lab,.site-shell .bbb-section-heading{background:transparent!important;color:var(--bbb-text)!important}
+.projects-page .bbb-ui-tabs,.projects-page .MuiTabs-root{background:transparent!important}
+.projects-page .MuiTab-root{color:var(--bbb-secondary)!important;font-weight:550!important}
+.projects-page .MuiTab-root.Mui-selected{color:var(--bbb-text)!important}
+.projects-page .MuiTabs-indicator{background-color:var(--bbb-text)!important}
+.projects-page .bbb-section-heading h1,.projects-page .bbb-section-heading h2,
+.projects-page .bbb-section-heading-title,.bbb-about-title{color:var(--bbb-text)!important}
+.projects-page .bbb-section-heading p,.bbb-about-description{color:var(--bbb-secondary)!important}
+@media(max-width:760px){
+ .site-shell,.site-shell:has(.portfolio-home),.site-shell:has(.projects-page),
+ .site-shell:has(.newsletter-page),.site-shell:has(.bbb-about-page){padding-inline:18px!important}
+}
