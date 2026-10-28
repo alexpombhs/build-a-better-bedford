@@ -101,3 +101,55 @@
 @media(max-width:760px){
   .site-shell:has(.portfolio-home) .portfolio-hero-copy h1{font-size:clamp(38px,8vw,52px)!important}
 }
+
+
+/* Shared atomic header at the top, with a viewport-contained desktop homepage. */
+.site-shell{--bbb-shared-header:76px}
+.site-shell .topbar{
+  position:relative!important;top:auto!important;
+  flex:0 0 var(--bbb-shared-header)!important;
+  height:var(--bbb-shared-header)!important;
+  min-height:var(--bbb-shared-header)!important;
+  width:100%;background:#fff!important;
+  border-bottom:1px solid #d3dce2!important;
+  z-index:60!important;
+}
+.site-shell .topbar .portfolio-brand strong{font-family:'Space Grotesk',Arial,sans-serif!important;font-weight:600!important;color:#10222e!important}
+.site-shell .topbar .nav-menu{background:transparent!important;box-shadow:none!important;border:0!important}
+.site-shell .topbar .nav-button{color:#10222e!important;opacity:1!important;font-size:14px!important}
+.site-shell .topbar .join-link{background:#10222e!important;color:#fff!important;border-radius:4px!important}
+.site-shell:has(.portfolio-home){padding-top:0!important;background:#fff!important}
+@media(min-width:1101px) and (min-height:680px){
+  body:has(.portfolio-home){overflow-y:hidden!important}
+  .site-shell:has(.portfolio-home){
+    height:100svh!important;min-height:0!important;max-height:100svh!important;
+    overflow:hidden!important;display:grid!important;
+    grid-template-rows:var(--bbb-shared-header) minmax(0,1fr) auto!important;
+  }
+  .site-shell:has(.portfolio-home) .portfolio-home{
+    min-height:0!important;height:100%!important;overflow:hidden!important;
+    padding:clamp(12px,1.6vh,22px) 0 clamp(7px,1vh,14px)!important;
+    gap:clamp(10px,1.5vh,20px)!important;
+    display:grid!important;grid-template-rows:minmax(130px,.75fr) minmax(0,1.55fr) auto!important;
+  }
+  .portfolio-hero{min-height:0!important;height:100%;grid-template-columns:minmax(0,1.4fr) minmax(240px,.88fr)}
+  .portfolio-hero-sketch{max-height:100%!important}
+  .portfolio-hero-copy h1{font-size:clamp(34px,min(4.2vw,6vh),61px)!important;margin-bottom:9px!important}
+  .portfolio-hero-copy p{font-size:clamp(14px,1.25vw,18px)!important;line-height:1.38!important}
+  .portfolio-projects{height:100%;min-height:0!important}
+  .portfolio-project{height:100%!important;aspect-ratio:auto!important}
+  .portfolio-project-copy strong{font-size:clamp(19px,2vw,28px)!important}
+  .portfolio-details{padding-top:clamp(11px,1.6vh,22px)!important}
+  .portfolio-detail{gap:13px!important}
+  .portfolio-detail strong{font-size:clamp(15px,1.3vw,20px)!important}
+  .portfolio-detail p{font-size:clamp(12px,1vw,15px)!important;line-height:1.32!important}
+  .site-shell:has(.portfolio-home) footer{padding:6px 0!important;min-height:0!important}
+}
+@media(max-width:760px){
+  .site-shell{--bbb-shared-header:72px}
+  .site-shell .topbar .nav-menu.open{
+    background:#fff!important;border:1px solid #d3dce2!important;
+    box-shadow:0 12px 25px rgba(0,0,0,.1)!important;
+  }
+  .site-shell .topbar .menu-toggle span{background:#10222e!important}
+}
