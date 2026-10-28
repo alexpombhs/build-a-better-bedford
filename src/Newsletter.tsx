@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PageHeading from './components/PageHeading'
 import roadSolution from './assets/road_solution.png'
 
 // Add new published issues here when their articles are ready.
@@ -53,17 +54,13 @@ export default function Newsletter() {
     <section className={expanded ? 'newsletter-page expanded' : 'newsletter-page'}>
     <div className="newsletter-clean">
       <div className="newsletter-intro">
-        <p className="eyebrow">{selectedIssue.month.toUpperCase()} · ISSUE {selectedIssue.number}</p>
-        <p className="newsletter-label">CLUB NEWSLETTER</p>
-        {isOctober ? <>
-          <h1>We’re <span>official.</span> Bridges are first.</h1>
-          <p className="newsletter-deck">Build a Better Bedford is now meeting regularly. We introduced it at the activity fair, held our first meeting, and voted on our first project. Bridges won.</p>
-          <div className="newsletter-quote">Next up: bridge types, forces, materials, and our first load tests.</div>
-        </> : <>
-          <h1>Can you design <span>danger</span> out of a road?</h1>
-          <p className="newsletter-deck">A look at how design, urbanism and engineering can make safer behavior easier and more intuitive.</p>
-          <div className="newsletter-quote">If the environment influences behavior, engineering can help make the safer choice the easier choice.</div>
-        </>}
+        <PageHeading
+          eyebrow={`${selectedIssue.month.toUpperCase()} · ISSUE ${selectedIssue.number}`}
+          title={selectedIssue.title}
+          description={isOctober
+            ? 'Build a Better Bedford is now meeting regularly. We introduced it at the activity fair, held our first meeting, and voted on our first project. Bridges won.'
+            : 'A look at how design, urbanism and engineering can make safer behavior easier and more intuitive.'}
+        />
       </div>
 
       <div className="newsletter-notes">
