@@ -3,6 +3,7 @@ import { supabase } from './supabase'
 import Newsletter from './Newsletter'
 import AboutPage from './AboutPage'
 import SiteHeader from './components/SiteHeader'
+import PageHeading from './components/PageHeading'
 import { EngineeringTabs, EngineeringWorkspace, EngineeringSectionIntro } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
 import crosswalkIcon from './assets/crosswalk.png'
@@ -292,10 +293,7 @@ function App() {
 
     {page === 'home' && <section className="portfolio-home">
       <div className="portfolio-hero">
-        <div className="portfolio-hero-copy">
-          <h1>Build a Better Bedford</h1>
-          <p>A student-led civil engineering club exploring structural engineering, design, and local infrastructure through research, modeling, and hands-on projects.</p>
-        </div>
+        <PageHeading className="portfolio-hero-copy" title="Build a Better Bedford" description="A student-led civil engineering club exploring structural engineering, design, and local infrastructure through research, modeling, and hands-on projects." />
         {homepageImage("bridge_sketch_64.png") ? <img className="portfolio-hero-sketch" src={homepageImage("bridge_sketch_64.png")} alt="Conceptual pen sketch of a truss bridge" /> : <div className="portfolio-missing-sketch" role="status">Bridge sketch unavailable</div>}
       </div>
       <div className="portfolio-projects">
