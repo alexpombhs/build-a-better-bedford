@@ -9,7 +9,7 @@ const team: Detail[] = [
 ]
 const schedule: Detail[] = [
   {label:'When',value:'Thursdays, 2:30–3:30 PM'},
-  {label:'Where',value:'Guidance Office, BHS'},
+  {label:'Where',value:'Guidance Office'},
   {label:'Next meeting',value:'Thursday, October 29, 2026'},
 ]
 
@@ -39,7 +39,7 @@ export default function AboutPage({onJoin}:{onJoin:()=>void}) {
     <UiBox className="bbb-about-intro">
       <UiText variant="h3" className="bbb-about-title">The club</UiText>
       <UiText variant="body1" className="bbb-about-description">
-        Build a Better Bedford is a student-led civil engineering club at Bedford High School. We study real structures and infrastructure, build models, run tests, and learn from people working in the field.
+        Build a Better Bedford is a student-led civil engineering club. We study real structures and infrastructure, build models, run tests, and learn from people working in the field.
       </UiText>
     </UiBox>
     <UiBox className="bbb-about-grid">
@@ -51,7 +51,7 @@ export default function AboutPage({onJoin}:{onJoin:()=>void}) {
       <button className="bbb-about-join" onClick={onJoin}>Join the club <span aria-hidden="true">→</span></button>
     </UiBox>
     <UiText variant="body2" className="bbb-about-disclaimer">
-      This is a student-run webpage/account that is not managed or endorsed by the Bedford Public Schools.
+      This is an independent, student-run website.
     </UiText>
   </UiBox>
 }
