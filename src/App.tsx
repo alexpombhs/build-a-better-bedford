@@ -5,6 +5,7 @@ import AboutPage from './AboutPage'
 import SiteHeader from './components/SiteHeader'
 import PageHeading from './components/PageHeading'
 import ProjectCard from './components/ProjectCard'
+import { UiIconButton } from './components/atoms/MuiPrimitives'
 import './components/IdeaFlip.css'
 import { EngineeringTabs, EngineeringWorkspace, EngineeringSectionIntro } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
@@ -341,7 +342,7 @@ function App() {
           disabled={projectPage === projectPageCount - 1}
           aria-label="Next project page"
         >→</button>
-      </div><button type="button" className="idea-add-toolbar" onClick={openNewIdea} aria-label="Add an idea" title="Add an idea">+</button></div>
+      </div><UiIconButton className="idea-add-toolbar" onClick={openNewIdea} aria-label="Add an idea" title="Add an idea" size="small"><span aria-hidden="true" className="idea-add-glyph">+</span></UiIconButton></div>
       ) : undefined} />
       {projectTab === 'ideas' ? <>
       <div className="problem-grid">
