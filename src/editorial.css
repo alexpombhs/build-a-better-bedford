@@ -53,8 +53,8 @@ body{background:var(--bbb-paper);color:var(--bbb-ink)}
 .projects-page .problem-grid .problem-question{font-size:13px!important;color:var(--bbb-muted)!important}
 .projects-page .problem-grid .road-sign{background:transparent;box-shadow:none}
 .bbb-about-page{width:min(1100px,100%);padding-top:55px}
-.bbb-about-grid{gap:0;border-top:1px solid var(--bbb-ink);border-left:1px solid var(--bbb-line)}
-.bbb-about-panel{border:0!important;border-right:1px solid var(--bbb-line)!important;border-bottom:1px solid var(--bbb-line)!important;border-radius:0!important;background:transparent!important}
+/* About grid uses its shared card layout from about.css, with no enclosing border. */
+/* About card borders and radius are controlled by the shared ProjectCard component. */
 .bbb-about-title{color:var(--bbb-ink)!important}
 .bbb-about-description{color:#324b3d!important}
 .bbb-about-join{border-radius:3px!important}
