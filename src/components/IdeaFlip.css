@@ -50,3 +50,22 @@
  .projects-page .problem-grid:has(.bbb-flip-card){gap:16px!important}
  .projects-page .problem-grid .bbb-flip-card.bbb-ui-card{height:250px!important}
 }
+
+
+/* Every pagination/action control now shares the same MUI IconButton geometry. */
+.ideas-toolbar{display:flex!important;align-items:center!important;gap:9px}
+.ideas-toolbar .project-pagination,.ideas-toolbar .pagination-pages{display:flex!important;align-items:center!important;gap:7px!important}
+.ideas-toolbar .project-pagination .bbb-ui-icon-button,
+.ideas-toolbar .idea-add-toolbar.bbb-ui-icon-button{
+  box-sizing:border-box!important;flex:0 0 34px!important;width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  padding:0!important;margin:0!important;border:1px solid #cbd6dc!important;border-radius:7px!important;
+  background:#fff!important;color:#10222e!important;line-height:1!important;font:500 14px/1 Arial,sans-serif!important;
+  transform:none!important;vertical-align:middle!important;
+}
+.ideas-toolbar .project-pagination .bbb-ui-icon-button.active{
+  background:#173e2e!important;color:#fff!important;border-color:#173e2e!important;
+}
+.ideas-toolbar .project-pagination .bbb-ui-icon-button.Mui-disabled{opacity:.38!important}
+.ideas-toolbar .project-pagination .bbb-ui-icon-button:hover:not(.Mui-disabled):not(.active),
+.ideas-toolbar .idea-add-toolbar.bbb-ui-icon-button:hover{background:#e9eff2!important}
