@@ -55,3 +55,16 @@
 .bbb-about-join{background:#10222e;border-radius:4px}
 .bbb-about-join:hover{background:#294b63}
 @media(max-width:800px){.bbb-about-grid{gap:16px}}
+
+/* Fix header divider intersecting the leadership and meetings cards. */
+.bbb-about-page .bbb-about-intro{margin-bottom:28px!important}
+.bbb-about-page .bbb-about-grid{
+  border-top:0!important;
+  border-bottom:0!important;
+  padding-top:0!important;
+  margin-top:0!important;
+  gap:24px!important;
+}
+.bbb-about-page .bbb-about-grid::before,.bbb-about-page .bbb-about-grid::after{content:none!important;display:none!important}
+.bbb-about-page .bbb-about-panel{position:relative;border-top:1px solid #d3dce2!important}
+@media(max-width:800px){.bbb-about-page .bbb-about-grid{gap:16px!important}}
