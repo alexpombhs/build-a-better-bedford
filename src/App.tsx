@@ -326,7 +326,7 @@ function App() {
           )}
         </div>
         <UiIconButton className="pagination-arrow" onClick={() => setProjectPage(page => Math.min(projectPageCount - 1, page + 1))} disabled={projectPage === projectPageCount - 1} aria-label="Next project page" size="small"><span aria-hidden="true">→</span></UiIconButton>
-      </div><UiIconButton className="idea-add-toolbar" onClick={openNewIdea} aria-label="Add an idea" title="Add an idea" size="small"><span aria-hidden="true" className="idea-add-glyph">+</span></UiIconButton></div>
+      <UiIconButton className="idea-add-toolbar" onClick={openNewIdea} aria-label="Add an idea" title="Add an idea" size="small"><span aria-hidden="true" className="idea-add-glyph">+</span></UiIconButton></div></div>
       ) : undefined} />
       {projectTab === 'ideas' ? <>
       <div className="problem-grid">
