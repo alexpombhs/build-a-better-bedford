@@ -15,9 +15,9 @@ const septemberSections = [
 ]
 
 const octoberSections = [
-  ['01', 'Club update', 'BBB has started meeting regularly. Meetings are on Thursdays, and our first topic is bridges.'],
+  ['01', 'Club update', 'BBB has started meeting regularly. Meetings are on Mondays, and our first topic is bridges.'],
   ['02', 'Activity fair', 'We had a table at the activity fair and talked with students about the projects we want to try this year.'],
-  ['03', 'First meeting', "Members voted for bridges and agreed on a Thursday meeting schedule. We'll compare bridge types before building and testing models."],
+  ['03', 'First meeting', "Members voted for bridges and agreed on a Monday meeting schedule. We'll compare bridge types before building and testing models."],
 ]
 
 export default function Newsletter() {
@@ -131,7 +131,7 @@ export default function Newsletter() {
             <div>
               <h2>First up: bridges</h2>
               <p>Bridges pull together statics, tension and compression, material properties, geometry, environmental constraints, cost, and failure analysis. We'll start with those basics and then build and test models.</p>
-              <p>At our next meeting on <strong>Thursday, October 29</strong>, we’ll look at famous bridges around the world and ask why engineers chose particular shapes, materials and structural systems.</p>
+              <p>At our next meeting on <strong>Monday, November 2</strong>, we’ll look at famous bridges around the world and ask why engineers chose particular shapes, materials and structural systems.</p>
               <p className="solution-note">After that: spaghetti bridge models and load testing.</p>
             </div>
             <div className="design-principle">
