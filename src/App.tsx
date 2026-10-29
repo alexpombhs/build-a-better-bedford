@@ -353,7 +353,7 @@ function App() {
               <div className="bbb-flip-front">
                 <div className={problem.photoUrl ? 'bbb-idea-feature has-photo' : 'bbb-idea-feature'}>
                   {problem.photoUrl ? <img src={problem.photoUrl} alt="" loading="lazy" /> : <div className="bbb-idea-feature-text">
-                    <span>{problem.isSubmitted ? 'STUDENT IDEA' : 'BEDFORD / IDEAS'}</span>
+                    <span>STUDENT IDEA</span>
                     <strong>{problem.isSubmitted ? 'NEW' : problem.number}</strong>
                   </div>}
                 </div>
