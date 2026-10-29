@@ -125,6 +125,7 @@ function App() {
   const [projectPage, setProjectPage] = useState(0)
   const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>('ideas')
   const [ideaOpen, setIdeaOpen] = useState(false)
+  const [flippedIdeas, setFlippedIdeas] = useState<string[]>([])
   const [ideaForm, setIdeaForm] = useState<IdeaForm>(emptyIdea)
   const [ideaPhoto, setIdeaPhoto] = useState<File | null>(null)
   const [ideaPhotoPreview, setIdeaPhotoPreview] = useState('')
@@ -160,7 +161,6 @@ function App() {
     recordVisit()
   }, [page])
   const projectsPerPage = 6
-  const ideaCard = projectProblems.find(problem => problem.cta)!
   const submittedProjectCards: ProjectCard[] = submittedIdeas.map((idea) => ({
     id: idea.id,
     number: 'NEW',
@@ -171,17 +171,10 @@ function App() {
     photoUrl: idea.title.trim().toLowerCase() === 'turning electronics into safety guards' ? null : idea.photo_url,
     submitterName: idea.submitter_name,
   }))
-  // Community submissions come first, followed by the built-in project prompts.
   const regularProjects = [...submittedProjectCards, ...projectProblems.filter(problem => !problem.cta)]
-  // Six cards total per page: five projects + the always-visible idea CTA.
-  const regularProjectsPerPage = projectsPerPage - 1
-  const projectPageCount = Math.max(1, Math.ceil(regularProjects.length / regularProjectsPerPage))
-  const pageProjects = regularProjects.slice(
-    projectPage * regularProjectsPerPage,
-    (projectPage + 1) * regularProjectsPerPage,
-  )
-  // The CTA occupies one of the six grid slots on every page.
-  const visibleProjects = [...pageProjects, ideaCard].slice(0, projectsPerPage)
+  const projectPageCount = Math.max(1, Math.ceil(regularProjects.length / projectsPerPage))
+  const visibleProjects = regularProjects.slice(projectPage * projectsPerPage, (projectPage + 1) * projectsPerPage)
+  const toggleIdea = (key: string) => setFlippedIdeas(current => current.includes(key) ? current.filter(item => item !== key) : [...current, key])
 
   useEffect(() => {
     supabase.from('project_ideas').select('id,title,subtitle,description,submitter_name,photo_url').order('created_at', { ascending: false })
@@ -322,8 +315,8 @@ function App() {
       <div className="projects-heading projects-toolbar">
         <EngineeringTabs active={projectTab} onChange={setProjectTab} />
       </div>
-      <EngineeringSectionIntro tab={projectTab} actions={projectTab === 'ideas' && projectPageCount > 1 ? (
-<div className="project-pagination" aria-label="Project pages">
+      <EngineeringSectionIntro tab={projectTab} actions={projectTab === 'ideas' ? (
+<div className="ideas-toolbar"><div className="project-pagination" aria-label="Project pages">
         <button
           className="pagination-arrow"
           onClick={() => setProjectPage(page => Math.max(0, page - 1))}
@@ -347,34 +340,44 @@ function App() {
           disabled={projectPage === projectPageCount - 1}
           aria-label="Next project page"
         >→</button>
-      </div>
+      </div><button type="button" className="idea-add-toolbar" onClick={openNewIdea} aria-label="Add an idea" title="Add an idea">+</button></div>
       ) : undefined} />
       {projectTab === 'ideas' ? <>
       <div className="problem-grid">
-        {visibleProjects.map(problem => <ProjectCard variant={problem.cta ? 'cta' : 'idea'} className={problem.cta ? 'problem-card-cta' : problem.isSubmitted ? 'submitted-project-card' : ''} key={problem.cta ? 'idea-cta' : problem.isSubmitted ? `submitted-${problem.id}` : `project-${problem.number}`}>
-          {!problem.cta && <span className={problem.isSubmitted ? 'problem-index problem-index-new' : 'problem-index'}>{problem.number}</span>}
-          {problem.isSubmitted && problem.id != null && <button className="idea-edit" onClick={() => {
-            const idea = submittedIdeas.find(item => item.id === problem.id)
-            if (idea) openEditIdea(idea)
-          }} aria-label={`Edit ${problem.title}`} title="Edit idea">✎</button>}
-          <div className={problem.photoUrl ? 'bbb-idea-feature has-photo' : 'bbb-idea-feature'}>
-            {problem.photoUrl
-              ? <img src={problem.photoUrl} alt="" loading="lazy" />
-              : <div className="bbb-idea-feature-text">
-                  <span>{problem.cta ? 'YOUR IDEA' : problem.isSubmitted ? 'STUDENT IDEA' : 'BEDFORD / IDEAS'}</span>
-                  <strong>{problem.cta ? '+' : problem.isSubmitted ? 'NEW' : problem.number}</strong>
-                </div>}
-          </div>
-          <div className="bbb-idea-copy">
-            <div className="problem-card-top">
-              <div className="problem-heading"><h2>{problem.title}</h2></div>
+        {visibleProjects.map(problem => {
+          const key = problem.isSubmitted ? `submitted-${problem.id}` : `project-${problem.number}`
+          const flipped = flippedIdeas.includes(key)
+          return <ProjectCard variant="idea" className={`bbb-flip-card ${flipped ? 'is-flipped' : ''}`} key={key}>
+            <div className="bbb-flip-inner">
+              <div className="bbb-flip-front">
+                <div className={problem.photoUrl ? 'bbb-idea-feature has-photo' : 'bbb-idea-feature'}>
+                  {problem.photoUrl ? <img src={problem.photoUrl} alt="" loading="lazy" /> : <div className="bbb-idea-feature-text">
+                    <span>{problem.isSubmitted ? 'STUDENT IDEA' : 'BEDFORD / IDEAS'}</span>
+                    <strong>{problem.isSubmitted ? 'NEW' : problem.number}</strong>
+                  </div>}
+                </div>
+                <div className="bbb-idea-copy">
+                  <h2>{problem.title}</h2>
+                  <p className="problem-fact">{problem.fact}</p>
+                  {problem.submitterName && <p className="idea-byline">Idea by {problem.submitterName}</p>}
+                  <button type="button" className="bbb-flip-action" onClick={() => toggleIdea(key)} aria-label={`Read more about ${problem.title}`}>Read more <span aria-hidden="true">→</span></button>
+                </div>
+              </div>
+              <div className="bbb-flip-back" aria-hidden={!flipped}>
+                <div className="bbb-flip-back-copy">
+                  <span className="bbb-flip-kicker">THE IDEA</span>
+                  <h2>{problem.title}</h2>
+                  <p className="problem-question">{problem.question}</p>
+                  <button type="button" className="bbb-flip-action" onClick={() => toggleIdea(key)} tabIndex={flipped ? 0 : -1} aria-label={`Return to summary of ${problem.title}`}>← Back</button>
+                </div>
+              </div>
             </div>
-          <p className="problem-fact">{problem.fact}</p>
-          <p className="problem-question">{problem.question}</p>
-          {problem.submitterName && <p className="idea-byline">Idea by {problem.submitterName}</p>}
-          {problem.cta && <button className="idea-cta" onClick={openNewIdea}>Bring your idea <span>→</span></button>}
-          </div>
-        </ProjectCard>)}
+            {problem.isSubmitted && problem.id != null && <button className="idea-edit bbb-flip-edit" onClick={() => {
+              const idea = submittedIdeas.find(item => item.id === problem.id)
+              if (idea) openEditIdea(idea)
+            }} aria-label={`Edit ${problem.title}`} title="Edit idea">✎</button>}
+          </ProjectCard>
+        })}
       </div>
 
 
