@@ -22,3 +22,30 @@
 .bbb-flip-edit{z-index:5!important;top:auto!important;bottom:11px!important;right:13px!important;background:#fff;border-radius:4px}
 @media(prefers-reduced-motion:reduce){.bbb-flip-inner{transition:none}}
 @media(max-width:760px){.ideas-toolbar{width:100%}.bbb-flip-back-copy{max-height:400px}}
+
+
+/* Compact, airy Ideas grid without changing the shared card component. */
+.projects-page .problem-grid:has(.bbb-flip-card){
+  gap:22px 24px!important;
+  padding:4px 0 20px!important;
+  align-items:stretch;
+}
+.projects-page .problem-grid .bbb-flip-card.bbb-ui-card{min-height:245px!important;height:245px!important;border-radius:7px!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-project-card-content{height:245px!important;min-height:0!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-inner,
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-front,
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back{height:245px!important;min-height:0!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature{height:82px!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature.has-photo{height:82px!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature-text{padding:11px 16px!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature-text strong{font-size:45px!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-copy{padding:12px 16px 14px!important;min-height:0}
+.projects-page .problem-grid .bbb-flip-card h2{font-size:17px!important;line-height:1.24!important}
+.projects-page .problem-grid .bbb-flip-card .problem-fact{font-size:13px!important;line-height:1.4!important;margin-top:6px!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-action{font-size:12px;padding-top:7px}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back-copy{padding:16px 18px!important;max-height:245px}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back .problem-question{font-size:13px;line-height:1.43;margin:9px 0 12px}
+@media(max-width:620px){
+ .projects-page .problem-grid:has(.bbb-flip-card){gap:16px!important}
+ .projects-page .problem-grid .bbb-flip-card.bbb-ui-card{height:250px!important}
+}
