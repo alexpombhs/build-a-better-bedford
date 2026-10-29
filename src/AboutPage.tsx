@@ -10,9 +10,9 @@ const team: Detail[] = [
   {label:'Club advisor',value:'Julia Richards'},
 ]
 const schedule: Detail[] = [
-  {label:'When',value:'Thursdays, 2:30–3:30 PM'},
+  {label:'When',value:'Mondays, 2:30–3:30 PM'},
   {label:'Where',value:'Guidance Office'},
-  {label:'Next meeting',value:'Thursday, October 29, 2026'},
+  {label:'Next meeting',value:'Monday, November 2, 2026'},
 ]
 
 function DetailRows({items}:{items:Detail[]}) {
