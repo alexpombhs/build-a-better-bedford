@@ -32,3 +32,26 @@
 .bbb-about-panel{border-radius:10px!important}
 .bbb-about-panel-title{font-size:16px!important}
 .bbb-about-cta{padding:18px 0}
+
+
+/* About panels use the same reusable card tokens as Projects and Lab. */
+.bbb-about-page{width:100%;max-width:none;padding:clamp(20px,3vh,36px) 0 36px}
+.bbb-about-intro{margin-bottom:22px}
+.bbb-about-grid{gap:24px;align-items:stretch}
+.bbb-about-grid .bbb-about-panel.bbb-project-card.bbb-ui-card{
+  background:#fff!important;border:1px solid #d3dce2!important;border-radius:12px!important;
+  box-shadow:none!important;min-height:0!important;height:100%;
+}
+.bbb-about-grid .bbb-about-panel .bbb-project-card-content.bbb-ui-card-content{
+  display:flex;flex-direction:column;flex:1;padding:22px!important;
+}
+.bbb-about-grid .bbb-about-panel-content{padding:0!important;display:flex;flex-direction:column;flex:1}
+.bbb-about-grid .bbb-about-panel-title{font:600 18px/1.3 'Space Grotesk',Arial,sans-serif!important;color:#10222e!important;margin:0 0 12px!important}
+.bbb-about-grid .bbb-about-row{padding:13px 0;border-color:#d3dce2}
+.bbb-about-grid .bbb-about-row-label{font-size:13px!important;font-weight:500!important;color:#465d70!important}
+.bbb-about-grid .bbb-about-value{font-size:15px!important;font-weight:600!important;color:#10222e!important}
+.bbb-about-grid .bbb-about-note{color:#526778!important}
+.bbb-about-cta{border-color:#d3dce2}
+.bbb-about-join{background:#10222e;border-radius:4px}
+.bbb-about-join:hover{background:#294b63}
+@media(max-width:800px){.bbb-about-grid{gap:16px}}
