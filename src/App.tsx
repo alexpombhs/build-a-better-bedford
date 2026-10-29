@@ -53,56 +53,56 @@ const projectProblems: ProjectCard[] = [
     icon: crosswalkIcon,
     title: "Crosswalk safety",
     fact: "Three pedestrian deaths were documented in Bedford during 2022–2024.",
-    question: "Study crossing distance, visibility, speed, and how the road is laid out."
+    question: "If crossing the road feels like a mini game where the objective is simply not getting hit, something is off. We can look at speed, visibility, crossing distance, lighting, and road geometry to see whether the street design is making the safe choice obvious—or weirdly difficult."
   },
   {
     number: '02',
     icon: dogparkIcon,
     title: "Where’s the Dog Park?",
     fact: "Bedford has over 1,100 registered dogs.",
-    question: "Where could one go? Look at available space, access, neighbors, and maintenance."
+    question: "There are lots of dogs in Bedford, but no dedicated dog park. So sidewalks and trails become the unofficial meetup spot. Could a well-designed dog park give dogs room to run and socialize without turning every walk into surprise dog networking?"
   },
   {
     number: '03',
     icon: electricityIcon,
     title: "Why Do Outages Happen?",
     fact: "Storms can disrupt Bedford's electricity supply.",
-    question: "Investigate overhead lines, storm exposure, trees, and how outages could be reduced."
+    question: "Storm starts. Wi-Fi disappears. Chargers become precious artifacts. Why do outages happen so often, and could tree management, undergrounding, microgrids, or smarter grid design make Bedford less dramatic about bad weather?"
   },
   {
     number: '04',
     icon: roadworkIcon,
     title: "Why Is This Road Closed Again?",
     fact: "Road repairs and utility projects repeatedly affect local streets.",
-    question: "Compare paving, utility work, and project schedules to understand repeat closures."
+    question: "The road gets paved. Two months later: cones. Again. At this point the orange barrels have lore. Why does the same street keep getting reopened, and could utility, drainage, sewer, sidewalk, and paving work be coordinated better?"
   },
   {
     number: '05',
     icon: bathroomIcon,
     title: "The public bathroom problem",
     fact: "Public bathrooms must balance privacy, access, and space.",
-    question: "Compare layouts for privacy, accessibility, upkeep, and space."
+    question: "At home, one bathroom works for everyone. In public, suddenly we’re sorting into teams—even when each toilet is already in its own stall. Could better layouts improve privacy, accessibility, safety, and efficiency without making the bathroom experience a whole social system?"
   },
   {
     number: '06',
     icon: bikepathIcon,
     title: "Why Does the Sidewalk End?",
     fact: "Some Bedford walking and cycling connections are incomplete.",
-    question: "Find missing walking and cycling connections, then map possible routes."
+    question: "You’re walking. Everything is fine. Then the sidewalk just… ends. Where do Bedford’s walking and biking routes lose continuity, and how could those missing links be redesigned so getting somewhere doesn’t require improvisation?"
   },
   {
     number: '07',
     icon: trailsIcon,
     title: "Where are the trails?",
     fact: "Local trails and historic sites can be hard to find.",
-    question: "Look at trail access, wayfinding, and how visitors find historic sites."
+    question: "Bedford has trails, historic places, and cool infrastructure, but sometimes you only find out they exist after someone’s parent mentions them. Could signs, maps, trail connections, or digital wayfinding make local history feel less like hidden side quests?"
   },
   {
     number: '08',
     icon: floodIcon,
     title: "Why Does This Spot Flood?",
     fact: "Heavy rain can overwhelm local drainage systems.",
-    question: "Follow the water: grading, pavement, drains, and where runoff collects."
+    question: "Rain falls. Giant puddle appears. Somebody’s sneaker is sacrificed. Could greener streets, rain gardens, permeable surfaces, or better drainage help Bedford manage stormwater without turning random corners into temporary ponds?"
   },
   {
     number: '',
