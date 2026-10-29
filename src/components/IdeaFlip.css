@@ -1,7 +1,8 @@
 /* The same ProjectCard surface, with two accessible readable faces. */
 .ideas-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:10px}
-.idea-add-toolbar{width:38px;height:38px;border:1px solid #10222e;border-radius:6px;background:#10222e;color:#fff;font-size:25px;line-height:1;cursor:pointer}
-.idea-add-toolbar:hover{background:#294b63}
+.ideas-toolbar .idea-add-toolbar.bbb-ui-icon-button{width:34px;height:34px;min-width:34px;padding:0;border:1px solid #cbd6dc;border-radius:7px;background:#fff;color:#10222e;display:inline-flex;align-items:center;justify-content:center;box-shadow:none;cursor:pointer}
+.ideas-toolbar .idea-add-toolbar.bbb-ui-icon-button:hover{background:#e9eff2;border-color:#9caeb9}
+.idea-add-glyph{display:block;font:400 21px/1 Arial,sans-serif;transform:translateY(-1px)}
 .ideas-toolbar .project-pagination{margin:0!important}
 .projects-page .problem-grid .bbb-flip-card.bbb-ui-card{min-height:300px!important;position:relative;perspective:1000px}
 .projects-page .problem-grid .bbb-flip-card .bbb-project-card-content{display:block!important;width:100%;height:100%;flex:1;padding:0!important}
