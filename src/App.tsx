@@ -319,29 +319,13 @@ function App() {
       </div>
       <EngineeringSectionIntro tab={projectTab} actions={projectTab === 'ideas' ? (
 <div className="ideas-toolbar"><div className="project-pagination" aria-label="Project pages">
-        <button
-          className="pagination-arrow"
-          onClick={() => setProjectPage(page => Math.max(0, page - 1))}
-          disabled={projectPage === 0}
-          aria-label="Previous project page"
-        >←</button>
+        <UiIconButton className="pagination-arrow" onClick={() => setProjectPage(page => Math.max(0, page - 1))} disabled={projectPage === 0} aria-label="Previous project page" size="small"><span aria-hidden="true">←</span></UiIconButton>
         <div className="pagination-pages">
           {Array.from({ length: projectPageCount }, (_, index) =>
-            <button
-              key={index}
-              className={projectPage === index ? 'pagination-page active' : 'pagination-page'}
-              onClick={() => setProjectPage(index)}
-              aria-label={`Project page ${index + 1}`}
-              aria-current={projectPage === index ? 'page' : undefined}
-            >{index + 1}</button>
+            <UiIconButton key={index} className={projectPage === index ? 'pagination-page active' : 'pagination-page'} onClick={() => setProjectPage(index)} aria-label={`Project page ${index + 1}`} aria-current={projectPage === index ? 'page' : undefined} size="small">{index + 1}</UiIconButton>
           )}
         </div>
-        <button
-          className="pagination-arrow"
-          onClick={() => setProjectPage(page => Math.min(projectPageCount - 1, page + 1))}
-          disabled={projectPage === projectPageCount - 1}
-          aria-label="Next project page"
-        >→</button>
+        <UiIconButton className="pagination-arrow" onClick={() => setProjectPage(page => Math.min(projectPageCount - 1, page + 1))} disabled={projectPage === projectPageCount - 1} aria-label="Next project page" size="small"><span aria-hidden="true">→</span></UiIconButton>
       </div><UiIconButton className="idea-add-toolbar" onClick={openNewIdea} aria-label="Add an idea" title="Add an idea" size="small"><span aria-hidden="true" className="idea-add-glyph">+</span></UiIconButton></div>
       ) : undefined} />
       {projectTab === 'ideas' ? <>
