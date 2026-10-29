@@ -29,7 +29,6 @@ export default function FunicularSimulator() {
   const horizontal=peak/sag
   const xs=[0,...nodes.map(p=>p.x),span]
   const ys=moments.map(m=>m/horizontal)
-  const coords=xs.map((x,i)=>[75+490*x/span,98+Math.min(185,ys[i]/span*490)] as const)
   // For drawing, scale physical sag consistently to the canvas.
   const screen=xs.map((x,i)=>[75+490*x/span,98+ys[i]*30] as const)
   const polyline=screen.map(([x,y])=>`${x},${y}`).join(' ')
