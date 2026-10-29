@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap');
+/* Approved BBB portfolio homepage mock — isolated from legacy homepage styles. */
+.portfolio-home{width:100%;max-width:1440px;margin:0 auto;padding:38px 0 44px;display:flex;flex-direction:column;gap:26px;color:#10222e}
+.site-shell:has(.portfolio-home){height:auto!important;min-height:100svh!important;overflow:visible!important}
+.site-shell:has(.portfolio-home) .topbar{border-bottom:1px solid #d4dce1!important;background:#fff!important}
+.site-shell:has(.portfolio-home) .topbar .brand-text{color:#10222e!important}
+.site-shell:has(.portfolio-home) .topbar .nav-button{color:#10222e!important;opacity:1!important}
+.site-shell:has(.portfolio-home) .topbar .join-link{background:#10222e!important;color:white!important}
+.site-shell:has(.portfolio-home){background:#fff!important}
+.portfolio-hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.88fr);align-items:center;gap:20px;min-height:220px}
+.portfolio-hero-copy h1{font-size:clamp(42px,5.1vw,78px);font-weight:800;line-height:1.08;letter-spacing:-.055em;color:#081922;margin:0 0 16px}
+.portfolio-hero-copy p{font-size:clamp(16px,1.5vw,22px);line-height:1.5;max-width:765px;color:#445a6d;margin:0}
+.portfolio-hero-sketch{width:100%;max-height:240px;object-fit:contain;mix-blend-mode:multiply}
+.portfolio-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.portfolio-project{position:relative;display:block;text-align:left;cursor:pointer;min-width:0;width:100%;padding:0;overflow:hidden;border:0;border-radius:2px;aspect-ratio:1.72;background:#eef1f3;color:#10222e}
+.portfolio-project>img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .2s ease}
+.portfolio-project:hover>img{transform:scale(1.025)}
+.portfolio-project:focus-visible{outline:3px solid #365f80;outline-offset:3px}
+.portfolio-bridge:after{content:"";position:absolute;inset:38% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.72));pointer-events:none}
+.portfolio-project-copy{position:absolute;left:6%;bottom:7%;display:flex;flex-direction:column;gap:8px;z-index:1;max-width:80%}
+.portfolio-project-copy strong{font-size:clamp(22px,2.3vw,35px);line-height:1.1;letter-spacing:-.035em}
+.portfolio-project-copy small{font-size:clamp(10px,1vw,14px);letter-spacing:.09em;line-height:1.3}
+.portfolio-bridge .portfolio-project-copy{color:#fff}
+.portfolio-project-arrow{position:absolute;bottom:7%;right:5%;width:48px;height:48px;display:grid;place-items:center;border:2px solid currentColor;border-radius:50%;font-size:28px;line-height:1;z-index:1}
+.portfolio-bridge .portfolio-project-arrow{color:white}
+.portfolio-details{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #d3dce2;padding-top:35px;gap:0}
+.portfolio-detail{display:flex;align-items:flex-start;gap:20px;padding:0 28px;border-right:1px solid #d3dce2}
+.portfolio-detail:first-child{padding-left:12px}
+.portfolio-detail:last-child{border-right:none}
+.portfolio-detail-icon{font-size:30px;line-height:1;color:#243f54;min-width:33px}
+.portfolio-detail small{display:block;font-size:12px;letter-spacing:.05em;color:#536779;margin:0 0 10px}
+.portfolio-detail strong{display:block;font-size:clamp(17px,1.5vw,23px);letter-spacing:-.025em;line-height:1.23;color:#10222e}
+.portfolio-detail p{font-size:clamp(13px,1.3vw,18px);line-height:1.46;color:#40556a;margin:6px 0 0}
+@media(max-width:900px){.portfolio-hero{grid-template-columns:1fr 35%}.portfolio-home{padding-top:28px}.portfolio-detail{padding:0 15px;gap:10px}.portfolio-detail-icon{font-size:23px;min-width:25px}}
+@media(max-width:700px){.portfolio-hero{grid-template-columns:1fr}.portfolio-hero-sketch{max-height:160px;object-position:left}.portfolio-projects{grid-template-columns:1fr;gap:16px}.portfolio-project{aspect-ratio:1.6}.portfolio-details{grid-template-columns:1fr;padding-top:5px}.portfolio-detail,.portfolio-detail:first-child{padding:22px 0;border-right:0;border-bottom:1px solid #d3dce2}.portfolio-detail:last-child{border-bottom:0}.portfolio-hero-copy h1{font-size:clamp(38px,9vw,58px)}.portfolio-home{gap:20px}}
+
+
+.site-shell:has(.portfolio-home) .topbar{min-height:96px!important;height:96px!important;padding:0 2px!important}
+.portfolio-brand{display:flex;align-items:center;gap:20px;color:#10222e}
+.portfolio-brand strong{font-weight:850;font-size:42px;letter-spacing:-.075em;line-height:1}
+.portfolio-brand strong span{color:#a07d45}
+.portfolio-brand small{font-size:12px;line-height:1.35;letter-spacing:.035em;font-weight:500;color:#425466;border-left:1px solid #d3dbe1;padding-left:20px;text-align:left}
+.site-shell:has(.portfolio-home) .topbar .nav-button{font-size:16px!important;font-weight:500!important}
+.site-shell:has(.portfolio-home) .topbar .nav-menu{gap:clamp(17px,2.2vw,34px)!important}
+.site-shell:has(.portfolio-home) .topbar .join-link{padding:13px 25px!important;font-size:15px!important;border-radius:4px!important}
+@media(max-width:900px){.portfolio-brand strong{font-size:32px}.portfolio-brand small{font-size:10px;padding-left:11px}.site-shell:has(.portfolio-home) .topbar .nav-button{font-size:13px!important}.site-shell:has(.portfolio-home) .topbar .join-link{font-size:13px!important;padding:9px 12px!important}}
+@media(max-width:760px){.site-shell:has(.portfolio-home) .topbar{height:76px!important;min-height:76px!important}.portfolio-brand small{display:none}.portfolio-brand strong{font-size:36px}}
+
+
+/* Explicit missing-asset state; never substitute the club logo for project imagery. */
+.portfolio-missing-image{display:grid;width:100%;height:100%;place-items:center;padding:24px;background:#e9eef1;color:#485e6f;font-size:15px;font-weight:600}
+.portfolio-missing-sketch{min-height:160px;display:grid;place-items:center;color:#647783;font-size:14px;border:1px dashed #c5d1d8}
+.portfolio-project:has(.portfolio-missing-image):after{display:none}
+.portfolio-project:has(.portfolio-missing-image) .portfolio-project-copy{background:#e9eef1;color:#10222e}
+.portfolio-project:has(.portfolio-missing-image) .portfolio-project-arrow{color:#10222e}
+
+.portfolio-hero-copy h1,.portfolio-project-copy strong,.portfolio-detail strong,.portfolio-brand strong{
+  font-family:'Space Grotesk','Avenir Next',Arial,sans-serif!important;
+}
+.portfolio-hero-copy h1{font-weight:700!important;letter-spacing:-.052em!important}
+.portfolio-project-copy strong{font-weight:600!important;letter-spacing:-.035em!important}
+.portfolio-detail strong{font-weight:600!important}
+.portfolio-brand strong{font-weight:700!important;letter-spacing:-.065em!important}
+
+
+/* Refinements based on the 28 Oct screenshot. Keep the approved image composition. */
+.portfolio-brand strong::after{content:none!important;display:none!important}
+.portfolio-brand strong{font-family:'Space Grotesk',Arial,sans-serif!important;font-weight:600!important;font-size:38px;letter-spacing:-.06em!important}
+.portfolio-hero-copy h1{font-family:'Space Grotesk',Arial,sans-serif!important;font-size:clamp(40px,4.25vw,66px)!important;font-weight:600!important;letter-spacing:-.045em!important;line-height:1.11!important}
+.portfolio-hero-copy p{font-size:clamp(16px,1.35vw,20px);line-height:1.53}
+.portfolio-project-copy strong{font-size:clamp(21px,2vw,30px)!important;font-weight:600!important}
+.portfolio-lab .portfolio-project-copy{left:0;right:0;bottom:0;max-width:none;padding:34px 65px 22px 5.5%;background:linear-gradient(0deg,rgba(248,250,251,.98),rgba(248,250,251,.9) 65%,rgba(248,250,251,0))}
+.portfolio-lab .portfolio-project-arrow{z-index:2;right:5%;bottom:6%;width:44px;height:44px}
+.portfolio-bridge .portfolio-project-copy{bottom:6%;padding-right:15px}
+.portfolio-bridge .portfolio-project-arrow{bottom:6%;width:44px;height:44px}
+.portfolio-home{padding-top:32px}
+@media(max-width:760px){.portfolio-brand strong{font-size:34px}.portfolio-hero-copy h1{font-size:clamp(36px,8vw,52px)!important}.portfolio-lab .portfolio-project-copy{padding:28px 56px 15px 5.5%}}
+
+
+/* Typography revision v2 — visibly different from the original extra-bold mock. */
+.site-shell:has(.portfolio-home) .portfolio-hero-copy h1{
+  font-family:Georgia,'Times New Roman',serif!important;
+  font-weight:400!important;
+  font-size:clamp(40px,4.2vw,65px)!important;
+  letter-spacing:-.038em!important;
+  line-height:1.12!important;
+}
+.site-shell:has(.portfolio-home) .portfolio-brand strong{
+  font-family:'Space Grotesk',Arial,sans-serif!important;
+  font-weight:600!important;
+  letter-spacing:-.06em!important;
+}
+.site-shell:has(.portfolio-home) .portfolio-brand strong::before,
+.site-shell:has(.portfolio-home) .portfolio-brand strong::after{
+  content:none!important;display:none!important;
+}
+.site-shell:has(.portfolio-home) .portfolio-project-copy strong{
+  font-family:'Space Grotesk',Arial,sans-serif!important;
+  font-weight:500!important;
+}
+@media(max-width:760px){
+  .site-shell:has(.portfolio-home) .portfolio-hero-copy h1{font-size:clamp(38px,8vw,52px)!important}
+}
+
+
+/* Shared atomic header at the top, with a viewport-contained desktop homepage. */
+.site-shell{--bbb-shared-header:76px}
+.site-shell .topbar{
+  position:relative!important;top:auto!important;
+  flex:0 0 var(--bbb-shared-header)!important;
+  height:var(--bbb-shared-header)!important;
+  min-height:var(--bbb-shared-header)!important;
+  width:100%;background:#fff!important;
+  border-bottom:1px solid #d3dce2!important;
+  z-index:60!important;
+}
+.site-shell .topbar .portfolio-brand strong{font-family:'Space Grotesk',Arial,sans-serif!important;font-weight:600!important;color:#10222e!important}
+.site-shell .topbar .nav-menu{background:transparent!important;box-shadow:none!important;border:0!important}
+.site-shell .topbar .nav-button{color:#10222e!important;opacity:1!important;font-size:14px!important}
+.site-shell .topbar .join-link{background:#10222e!important;color:#fff!important;border-radius:4px!important}
+.site-shell:has(.portfolio-home){padding-top:0!important;background:#fff!important}
+@media(min-width:1101px) and (min-height:680px){
+  body:has(.portfolio-home){overflow-y:hidden!important}
+  .site-shell:has(.portfolio-home){
+    height:100svh!important;min-height:0!important;max-height:100svh!important;
+    overflow:hidden!important;display:grid!important;
+    grid-template-rows:var(--bbb-shared-header) minmax(0,1fr) auto!important;
+  }
+  .site-shell:has(.portfolio-home) .portfolio-home{
+    min-height:0!important;height:100%!important;overflow:hidden!important;
+    padding:clamp(12px,1.6vh,22px) 0 clamp(7px,1vh,14px)!important;
+    gap:clamp(10px,1.5vh,20px)!important;
+    display:grid!important;grid-template-rows:minmax(130px,.75fr) minmax(0,1.55fr) auto!important;
+  }
+  .portfolio-hero{min-height:0!important;height:100%;grid-template-columns:minmax(0,1.4fr) minmax(240px,.88fr)}
+  .portfolio-hero-sketch{max-height:100%!important}
+  .portfolio-hero-copy h1{font-size:clamp(34px,min(4.2vw,6vh),61px)!important;margin-bottom:9px!important}
+  .portfolio-hero-copy p{font-size:clamp(14px,1.25vw,18px)!important;line-height:1.38!important}
+  .portfolio-projects{height:100%;min-height:0!important}
+  .portfolio-project{height:100%!important;aspect-ratio:auto!important}
+  .portfolio-project-copy strong{font-size:clamp(19px,2vw,28px)!important}
+  .portfolio-details{padding-top:clamp(11px,1.6vh,22px)!important}
+  .portfolio-detail{gap:13px!important}
+  .portfolio-detail strong{font-size:clamp(15px,1.3vw,20px)!important}
+  .portfolio-detail p{font-size:clamp(12px,1vw,15px)!important;line-height:1.32!important}
+  .site-shell:has(.portfolio-home) footer{padding:6px 0!important;min-height:0!important}
+}
+@media(max-width:760px){
+  .site-shell{--bbb-shared-header:72px}
+  .site-shell .topbar .nav-menu.open{
+    background:#fff!important;border:1px solid #d3dce2!important;
+    box-shadow:0 12px 25px rgba(0,0,0,.1)!important;
+  }
+  .site-shell .topbar .menu-toggle span{background:#10222e!important}
+}
+
+
+/* GLOBAL PAGE SURFACE: same background and centered width across all routes. */
+:root{--bbb-page-bg:#fff;--bbb-text:#10222e;--bbb-secondary:#465d70;--bbb-divider:#d3dce2;--bbb-link:#10222e}
+html,body,#root{background:var(--bbb-page-bg)!important}
+body::before{display:none!important}
+.site-shell,
+.site-shell:has(.portfolio-home),
+.site-shell:has(.projects-page),
+.site-shell:has(.newsletter-page),
+.site-shell:has(.bbb-about-page){
+  background:var(--bbb-page-bg)!important;
+  color:var(--bbb-text);
+  width:100%!important;
+  max-width:1360px!important;
+  margin-inline:auto!important;
+  padding-inline:clamp(16px,3.2vw,40px)!important;
+}
+.site-shell .topbar,
+.site-shell:has(.portfolio-home) .topbar{
+  width:100%!important;
+  background:var(--bbb-page-bg)!important;
+  border-bottom:1px solid var(--bbb-divider)!important;
+}
+.site-shell .topbar .nav-button{font-family:inherit!important;font-weight:500!important;color:var(--bbb-text)!important}
+.site-shell .topbar .join-link{font-family:inherit!important;font-weight:600!important}
+.site-shell footer{background:transparent!important;color:var(--bbb-secondary)!important;border-top:1px solid var(--bbb-divider)!important}
+.site-shell .projects-page,.site-shell .bbb-about-page,.site-shell .newsletter-library,.site-shell .newsletter-page,
+.site-shell .engineering-lab,.site-shell .bbb-section-heading{background:transparent!important;color:var(--bbb-text)!important}
+.projects-page .bbb-ui-tabs,.projects-page .MuiTabs-root{background:transparent!important}
+.projects-page .MuiTab-root{color:var(--bbb-secondary)!important;font-weight:550!important}
+.projects-page .MuiTab-root.Mui-selected{color:var(--bbb-text)!important}
+.projects-page .MuiTabs-indicator{background-color:var(--bbb-text)!important}
+.projects-page .bbb-section-heading h1,.projects-page .bbb-section-heading h2,
+.projects-page .bbb-section-heading-title,.bbb-about-title{color:var(--bbb-text)!important}
+.projects-page .bbb-section-heading p,.bbb-about-description{color:var(--bbb-secondary)!important}
+@media(max-width:760px){
+ .site-shell,.site-shell:has(.portfolio-home),.site-shell:has(.projects-page),
+ .site-shell:has(.newsletter-page),.site-shell:has(.bbb-about-page){padding-inline:18px!important}
+}

@@ -1,9 +1,10 @@
 import { useState } from 'react'
+import PageHeading from './components/PageHeading'
 import roadSolution from './assets/road_solution.png'
 
 // Add new published issues here when their articles are ready.
 const issues = [
-  { id: '2026-10', month: 'October 2026', number: '02', title: 'We’re official — and we’re building bridges' },
+  { id: '2026-10', month: 'October 2026', number: '02', title: "We're official. Bridges are first." },
   { id: '2026-09', month: 'September 2026', number: '01', title: 'Can you design danger out of a road?' },
 ] as const
 
@@ -14,9 +15,9 @@ const septemberSections = [
 ]
 
 const octoberSections = [
-  ['01', 'Officially approved', 'Build a Better Bedford is now an official BHS club. That means we can move from planning into a full year of exploring civil engineering through hands-on projects, design challenges and local questions.'],
-  ['02', 'Activity fair', 'We introduced the club at the activity fair, shared what BBB is about and invited students who are curious about engineering, design, building and problem-solving to join us.'],
-  ['03', 'First meeting', 'At our first meeting, members chose bridges as our first major topic and set a regular Thursday meeting time. Next up: learning why bridges take the shapes they do, then testing those ideas ourselves.'],
+  ['01', 'Club update', 'BBB has started meeting regularly. Meetings are on Mondays, and our first topic is bridges.'],
+  ['02', 'Activity fair', 'We had a table at the activity fair and talked with students about the projects we want to try this year.'],
+  ['03', 'First meeting', "Members voted for bridges and agreed on a Monday meeting schedule. We'll compare bridge types before building and testing models."],
 ]
 
 export default function Newsletter() {
@@ -48,22 +49,18 @@ export default function Newsletter() {
           <strong>{issue.title}</strong>
         </button>)}
       </nav>
-      <p className="archive-coming">More issues will appear here as they are published.</p>
+      <p className="archive-coming">New issues appear here each month.</p>
     </aside>
     <section className={expanded ? 'newsletter-page expanded' : 'newsletter-page'}>
     <div className="newsletter-clean">
       <div className="newsletter-intro">
-        <p className="eyebrow">{selectedIssue.month.toUpperCase()} · ISSUE {selectedIssue.number}</p>
-        <p className="newsletter-label">MONTHLY FIELD NOTE</p>
-        {isOctober ? <>
-          <h1>We’re <span>official</span> — and we’re building bridges.</h1>
-          <p className="newsletter-deck">October turned Build a Better Bedford from an idea into an official club — with a leadership team, an activity fair debut, a first meeting and our first engineering project ready to begin.</p>
-          <div className="newsletter-quote">Start with a question. Learn the engineering. Build something. Test it. Improve it.</div>
-        </> : <>
-          <h1>Can you design <span>danger</span> out of a road?</h1>
-          <p className="newsletter-deck">A look at how design, urbanism and engineering can make safer behavior easier and more intuitive.</p>
-          <div className="newsletter-quote">If the environment influences behavior, engineering can help make the safer choice the easier choice.</div>
-        </>}
+        <PageHeading
+          eyebrow={`${selectedIssue.month.toUpperCase()} · ISSUE ${selectedIssue.number}`}
+          title={selectedIssue.title}
+          description={isOctober
+            ? 'Build a Better Bedford is now meeting regularly. We introduced it at the activity fair, held our first meeting, and voted on our first project. Bridges won.'
+            : 'A look at how design, urbanism and engineering can make safer behavior easier and more intuitive.'}
+        />
       </div>
 
       <div className="newsletter-notes">
@@ -97,8 +94,8 @@ export default function Newsletter() {
           <p className="expand-kicker">01 · WE’RE OFFICIAL</p>
           <div className="expand-grid">
             <div>
-              <h2>Build a Better Bedford is officially a BHS club.</h2>
-              <p>After starting the year as an idea, BBB has now been approved as an official club. Our goal is simple: use civil engineering as a way to learn how the built world works, then turn that knowledge into experiments, models and ideas connected to real places around us.</p>
+              <h2>Build a Better Bedford has started its first project.</h2>
+              <p>BBB is now underway. We'll learn engineering through case studies, models, measurements, and local infrastructure questions.</p>
             </div>
             <div className="design-principle">
               <span>LEADERSHIP TEAM</span>
@@ -112,8 +109,8 @@ export default function Newsletter() {
           <p className="expand-kicker">02 · ACTIVITY FAIR</p>
           <div className="expand-grid">
             <div>
-              <h2>Our first public introduction.</h2>
-              <p>We took part in the BHS activity fair and introduced students to what Build a Better Bedford is trying to do: explore civil engineering through hands-on work, creative problem-solving and questions that connect engineering to everyday life.</p>
+              <h2>At the activity fair</h2>
+              <p>We introduced BBB at the activity fair, talked about bridge building and other project ideas, and invited students to join.</p>
             </div>
             <div>
               <h3>What students can expect</h3>
@@ -132,10 +129,10 @@ export default function Newsletter() {
           <p className="expand-kicker">03 · OUR FIRST PROJECT</p>
           <div className="solution-layout">
             <div>
-              <h2>Bridges won the vote.</h2>
-              <p>Bridge engineering is a great first project because it combines math, physics, structural engineering, environmental science, materials science, architecture, sustainability and disaster planning in one structure you can actually build and test.</p>
-              <p>At our next meeting on <strong>Thursday, October 29</strong>, we’ll look at famous bridges around the world and ask why engineers chose particular shapes, materials and structural systems.</p>
-              <p className="solution-note">Then we move from looking to building: spaghetti bridges, hot glue, tape and load testing.</p>
+              <h2>First up: bridges</h2>
+              <p>Bridges pull together statics, tension and compression, material properties, geometry, environmental constraints, cost, and failure analysis. We'll start with those basics and then build and test models.</p>
+              <p>At our next meeting on <strong>Monday, November 2</strong>, we’ll look at famous bridges around the world and ask why engineers chose particular shapes, materials and structural systems.</p>
+              <p className="solution-note">After that: spaghetti bridge models and load testing.</p>
             </div>
             <div className="design-principle">
               <span>THE CHALLENGE</span>
@@ -156,7 +153,7 @@ export default function Newsletter() {
 
             <article className="inspiration-card">
               <div className="inspiration-top"><span>BEYOND BRIDGES</span><span>THIS YEAR</span></div>
-              <h3>Build, test, redesign — then look local.</h3>
+              <h3>After bridges</h3>
               <p>Bridges are the starting point. Throughout the year we’ll explore more areas of civil engineering, experiment with different designs and investigate real-world challenges in Bedford that engineering might help us understand.</p>
             </article>
           </div>

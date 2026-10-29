@@ -163,3 +163,22 @@
 /* Clearly labeled issue archive control, without a generic navigation hamburger. */
 .newsletter-issue-tab{width:auto;min-height:44px;height:auto;justify-content:center;padding:10px 15px;gap:9px;white-space:nowrap}
 .newsletter-issue-tab .issue-tab-symbol{font-size:21px;line-height:1}
+
+
+/* Newsletter reads like a club publication, not a marketing landing page. */
+.newsletter-library .newsletter-intro h1{font-family:inherit;letter-spacing:-.045em;line-height:1.08;font-weight:780}
+.newsletter-library .newsletter-deck{line-height:1.55;max-width:660px}
+.newsletter-library .newsletter-quote{font-weight:500}
+.newsletter-library .newsletter-note p{line-height:1.6}
+
+
+/* A practical school publication: less magazine hero, more readable updates. */
+.newsletter-library .newsletter-intro h1{font-family:inherit!important;font-size:clamp(36px,4vw,56px)!important;line-height:1.12!important;font-weight:750!important;letter-spacing:-.035em!important}
+.newsletter-library .newsletter-label{font-size:12px;letter-spacing:.04em;font-weight:700}
+.newsletter-library .newsletter-deck{font-size:17px!important;line-height:1.6!important;color:#385043}
+.newsletter-library .newsletter-quote{margin-top:16px;padding:0;border:0;font-size:14px;color:#4b6253}
+.newsletter-library .newsletter-note h2{font-size:18px;letter-spacing:-.015em}
+.newsletter-library .newsletter-note p{font-size:14px;line-height:1.55;color:#465a4d}
+.newsletter-library .newsletter-notes-head{letter-spacing:.04em}
+.newsletter-library .archive-item strong{line-height:1.35}
+.newsletter-library .newsletter-drawer-toggle{font-size:14px}

@@ -24,3 +24,47 @@
 .site-shell:has(.bbb-about-page){height:auto;min-height:100svh;overflow:visible;grid-template-rows:auto 1fr auto}
 
 .bbb-about-disclaimer{display:block;max-width:850px;margin-top:18px!important;color:#78857c;font-size:12px!important;line-height:1.6!important}
+
+
+/* Alex voice: editorial, direct, and consistent with the site's UI typography. */
+.bbb-about-title{font-family:inherit!important;font-weight:780!important;letter-spacing:-.045em!important;font-size:clamp(34px,4vw,52px)!important}
+.bbb-about-description{max-width:670px;font-size:17px!important;line-height:1.55!important;color:#3b5446}
+.bbb-about-panel{border-radius:10px!important}
+.bbb-about-panel-title{font-size:16px!important}
+.bbb-about-cta{padding:18px 0}
+
+
+/* About panels use the same reusable card tokens as Projects and Lab. */
+.bbb-about-page{width:100%;max-width:none;padding:clamp(20px,3vh,36px) 0 36px}
+.bbb-about-intro{margin-bottom:22px}
+.bbb-about-grid{gap:24px;align-items:stretch}
+.bbb-about-grid .bbb-about-panel.bbb-project-card.bbb-ui-card{
+  background:#fff!important;border:1px solid #d3dce2!important;border-radius:12px!important;
+  box-shadow:none!important;min-height:0!important;height:100%;
+}
+.bbb-about-grid .bbb-about-panel .bbb-project-card-content.bbb-ui-card-content{
+  display:flex;flex-direction:column;flex:1;padding:22px!important;
+}
+.bbb-about-grid .bbb-about-panel-content{padding:0!important;display:flex;flex-direction:column;flex:1}
+.bbb-about-grid .bbb-about-panel-title{font:600 18px/1.3 'Space Grotesk',Arial,sans-serif!important;color:#10222e!important;margin:0 0 12px!important}
+.bbb-about-grid .bbb-about-row{padding:13px 0;border-color:#d3dce2}
+.bbb-about-grid .bbb-about-row-label{font-size:13px!important;font-weight:500!important;color:#465d70!important}
+.bbb-about-grid .bbb-about-value{font-size:15px!important;font-weight:600!important;color:#10222e!important}
+.bbb-about-grid .bbb-about-note{color:#526778!important}
+.bbb-about-cta{border-color:#d3dce2}
+.bbb-about-join{background:#10222e;border-radius:4px}
+.bbb-about-join:hover{background:#294b63}
+@media(max-width:800px){.bbb-about-grid{gap:16px}}
+
+/* Fix header divider intersecting the leadership and meetings cards. */
+.bbb-about-page .bbb-about-intro{margin-bottom:28px!important}
+.bbb-about-page .bbb-about-grid{
+  border-top:0!important;
+  border-bottom:0!important;
+  padding-top:0!important;
+  margin-top:0!important;
+  gap:24px!important;
+}
+.bbb-about-page .bbb-about-grid::before,.bbb-about-page .bbb-about-grid::after{content:none!important;display:none!important}
+.bbb-about-page .bbb-about-panel{position:relative;border-top:1px solid #d3dce2!important}
+@media(max-width:800px){.bbb-about-page .bbb-about-grid{gap:16px!important}}

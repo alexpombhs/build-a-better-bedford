@@ -1,10 +1,10 @@
 import type { ComponentProps } from 'react'
-import { Box, Card, CardContent, Paper, Slider, Stack, Tab, Tabs, Typography } from '@mui/material'
+import { Box, Card, CardContent, IconButton, Paper, Slider, Stack, Tab, Tabs, Typography } from '@mui/material'
 
 /** Atomic MUI boundary. Screens and organisms must import wrappers, never MUI directly. */
 const classes = {
   box:'bbb-ui-box', surface:'bbb-ui-surface', card:'bbb-ui-card',
-  cardContent:'bbb-ui-card-content', stack:'bbb-ui-stack', text:'bbb-ui-text',
+  cardContent:'bbb-ui-card-content', iconButton:'bbb-ui-icon-button', stack:'bbb-ui-stack', text:'bbb-ui-text',
   slider:'bbb-ui-slider', tab:'bbb-ui-tab', tabs:'bbb-ui-tabs',
 }
 const cx=(base:string, custom?:string)=>[base,custom].filter(Boolean).join(' ')
@@ -17,3 +17,5 @@ export function UiText({className,...props}:ComponentProps<typeof Typography>){r
 export function UiSlider({className,...props}:ComponentProps<typeof Slider>){return <Slider {...props} className={cx(classes.slider,className)} />}
 export function UiTab({className,...props}:ComponentProps<typeof Tab>){return <Tab {...props} className={cx(classes.tab,className)} />}
 export function UiTabs({className,...props}:ComponentProps<typeof Tabs>){return <Tabs {...props} className={cx(classes.tabs,className)} />}
+
+export function UiIconButton({className,...props}:ComponentProps<typeof IconButton>){return <IconButton {...props} className={cx(classes.iconButton,className)} />}

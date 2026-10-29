@@ -1,0 +1,71 @@
+/* The same ProjectCard surface, with two accessible readable faces. */
+.ideas-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+.ideas-toolbar .idea-add-toolbar.bbb-ui-icon-button{width:34px;height:34px;min-width:34px;padding:0;border:1px solid #cbd6dc;border-radius:7px;background:#fff;color:#10222e;display:inline-flex;align-items:center;justify-content:center;box-shadow:none;cursor:pointer}
+.ideas-toolbar .idea-add-toolbar.bbb-ui-icon-button:hover{background:#e9eff2;border-color:#9caeb9}
+.idea-add-glyph{display:block;font:400 21px/1 Arial,sans-serif;transform:translateY(-1px)}
+.ideas-toolbar .project-pagination{margin:0!important}
+.projects-page .problem-grid .bbb-flip-card.bbb-ui-card{min-height:300px!important;position:relative;perspective:1000px}
+.projects-page .problem-grid .bbb-flip-card .bbb-project-card-content{display:block!important;width:100%;height:100%;flex:1;padding:0!important}
+.bbb-flip-inner{display:grid;width:100%;height:100%;min-height:300px;transform-style:preserve-3d;transition:transform .45s ease}
+.bbb-flip-card.is-flipped .bbb-flip-inner{transform:rotateY(180deg)}
+.bbb-flip-front,.bbb-flip-back{grid-area:1/1;display:flex;flex-direction:column;min-width:0;min-height:300px;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:#fff}
+.bbb-flip-back{transform:rotateY(180deg)}
+.bbb-flip-front .bbb-idea-feature{flex-shrink:0}
+.bbb-flip-front .bbb-idea-copy{flex:1;display:flex;flex-direction:column}
+.bbb-flip-back-copy{display:flex;flex-direction:column;flex:1;padding:23px 22px 20px;overflow:auto;max-height:360px}
+.bbb-flip-kicker{font:600 11px/1.3 Arial,sans-serif;letter-spacing:.09em;color:#526778;margin-bottom:12px}
+.bbb-flip-back h2{font:600 19px/1.3 'Space Grotesk',Arial,sans-serif;color:#10222e;margin:0}
+.bbb-flip-back .problem-question{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.5;color:#465d70;margin:14px 0 16px}
+.bbb-flip-action{display:inline-flex;align-items:center;gap:8px;margin-top:auto;align-self:flex-start;border:0;background:transparent;color:#294b63;font:600 13px/1.3 Arial,sans-serif;cursor:pointer;padding:10px 0 0}
+.bbb-flip-action:hover{text-decoration:underline}
+.bbb-flip-card.is-flipped .bbb-flip-front{pointer-events:none;visibility:hidden}
+.bbb-flip-card:not(.is-flipped) .bbb-flip-back{pointer-events:none;visibility:hidden}
+.bbb-flip-edit{z-index:5!important;top:auto!important;bottom:11px!important;right:13px!important;background:#fff;border-radius:4px}
+@media(prefers-reduced-motion:reduce){.bbb-flip-inner{transition:none}}
+@media(max-width:760px){.ideas-toolbar{width:100%}.bbb-flip-back-copy{max-height:400px}}
+
+
+/* Compact, airy Ideas grid without changing the shared card component. */
+.projects-page .problem-grid:has(.bbb-flip-card){
+  gap:22px 24px!important;
+  padding:4px 0 20px!important;
+  align-items:stretch;
+}
+.projects-page .problem-grid .bbb-flip-card.bbb-ui-card{min-height:245px!important;height:245px!important;border-radius:7px!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-project-card-content{height:245px!important;min-height:0!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-inner,
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-front,
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back{height:245px!important;min-height:0!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature{height:82px!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature.has-photo{height:82px!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature-text{padding:11px 16px!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature-text strong{font-size:45px!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-copy{padding:12px 16px 14px!important;min-height:0}
+.projects-page .problem-grid .bbb-flip-card h2{font-size:17px!important;line-height:1.24!important}
+.projects-page .problem-grid .bbb-flip-card .problem-fact{font-size:13px!important;line-height:1.4!important;margin-top:6px!important}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-action{font-size:12px;padding-top:7px}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back-copy{padding:16px 18px!important;max-height:245px}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back .problem-question{font-size:13px;line-height:1.43;margin:9px 0 12px}
+@media(max-width:620px){
+ .projects-page .problem-grid:has(.bbb-flip-card){gap:16px!important}
+ .projects-page .problem-grid .bbb-flip-card.bbb-ui-card{height:250px!important}
+}
+
+
+/* Every pagination/action control now shares the same MUI IconButton geometry. */
+.ideas-toolbar{display:flex!important;align-items:center!important;gap:9px}
+.ideas-toolbar .project-pagination,.ideas-toolbar .pagination-pages{display:flex!important;align-items:center!important;gap:7px!important}
+.ideas-toolbar .project-pagination .bbb-ui-icon-button,
+.ideas-toolbar .idea-add-toolbar.bbb-ui-icon-button{
+  box-sizing:border-box!important;flex:0 0 34px!important;width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  padding:0!important;margin:0!important;border:1px solid #cbd6dc!important;border-radius:7px!important;
+  background:#fff!important;color:#10222e!important;line-height:1!important;font:500 14px/1 Arial,sans-serif!important;
+  transform:none!important;vertical-align:middle!important;
+}
+.ideas-toolbar .project-pagination .bbb-ui-icon-button.active{
+  background:#173e2e!important;color:#fff!important;border-color:#173e2e!important;
+}
+.ideas-toolbar .project-pagination .bbb-ui-icon-button.Mui-disabled{opacity:.38!important}
+.ideas-toolbar .project-pagination .bbb-ui-icon-button:hover:not(.Mui-disabled):not(.active),
+.ideas-toolbar .idea-add-toolbar.bbb-ui-icon-button:hover{background:#e9eff2!important}
