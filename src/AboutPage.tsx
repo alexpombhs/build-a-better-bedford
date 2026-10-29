@@ -1,6 +1,7 @@
-import { UiBox, UiCard, UiCardContent, UiText } from './components/atoms/MuiPrimitives'
+import { UiBox, UiText } from './components/atoms/MuiPrimitives'
 import './about.css'
 import PageHeading from './components/PageHeading'
+import ProjectCard from './components/ProjectCard'
 
 type Detail = { label: string; value: string; note?: string }
 const team: Detail[] = [
@@ -27,12 +28,12 @@ function DetailRows({items}:{items:Detail[]}) {
 }
 
 function InfoPanel({title,items}:{title:string;items:Detail[]}) {
-  return <UiCard variant="outlined" className="bbb-about-panel">
-    <UiCardContent className="bbb-about-panel-content">
+  return <ProjectCard className="bbb-about-panel">
+    <UiBox className="bbb-about-panel-content">
       <UiText variant="h6" className="bbb-about-panel-title">{title}</UiText>
       <DetailRows items={items}/>
-    </UiCardContent>
-  </UiCard>
+    </UiBox>
+  </ProjectCard>
 }
 
 export default function AboutPage({onJoin}:{onJoin:()=>void}) {
