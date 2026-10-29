@@ -38,7 +38,7 @@ export function EngineeringSectionIntro({tab,actions}:{tab:Tab;actions?:ReactNod
 }
 
 export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
-  const [simulator,setSimulator] = useState<'beam'|'funicular'>('beam')
+  const [simulator,setSimulator] = useState<'beam'|'funicular'>('funicular')
   const [load,setLoad]=useState(10)
   const [position,setPosition]=useState(50)
   const [span,setSpan]=useState(6)
@@ -50,8 +50,8 @@ export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
   if(tab==='hands-on') return <UiBox sx={{pb:4}}><UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',md:'repeat(3,minmax(0,1fr))'},gap:2}}><LabCard eyebrow="BRIDGES" title="Paper beam challenge">Compare flat and folded paper spanning the same gap, using small weights.</LabCard><LabCard eyebrow="STRUCTURES" title="Triangle vs. square">Build straw frames and gently compare how their shapes resist deformation.</LabCard><LabCard eyebrow="ROAD DESIGN" title="Crosswalk model">Compare tabletop street layouts with toy cars for visibility and crossing distance.</LabCard></UiBox></UiBox>
   return <UiBox sx={{pb:4}}>
     <UiTabs value={simulator} onChange={(_,value) => setSimulator(value as 'beam'|'funicular')} aria-label="Choose a force simulator" sx={{mb:3,minHeight:40,'& .MuiTabs-indicator':{backgroundColor:labColors.ink}}}>
-      <UiTab value="beam" label="Beam forces" sx={{textTransform:'none',minHeight:40}}/>
       <UiTab value="funicular" label="Funicular cable" sx={{textTransform:'none',minHeight:40}}/>
+      <UiTab value="beam" label="Beam forces" sx={{textTransform:'none',minHeight:40}}/>
     </UiTabs>
     {simulator === 'funicular' ? <FunicularSimulator/> :
     <UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',lg:'minmax(0,1.35fr) minmax(320px,.65fr)'},gap:3}}>
