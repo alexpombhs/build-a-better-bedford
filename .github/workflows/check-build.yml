@@ -1,0 +1,27 @@
+name: Check website build
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Ensure Rollup Linux binary
+        run: |
+          ROLLUP_VERSION=$(node -p "require('./node_modules/rollup/package.json').version")
+          npm install --no-save --ignore-scripts "@rollup/rollup-linux-x64-gnu@$ROLLUP_VERSION"
+      - name: Check TypeScript and bundle
+        run: npm run build
