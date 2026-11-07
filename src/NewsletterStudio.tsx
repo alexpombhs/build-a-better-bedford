@@ -72,7 +72,10 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setBusy(true); setMessage('')
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { shouldCreateUser: true, emailRedirectTo: window.location.href },
+      // Always return to the deployed club website, not the local dev server or
+      // a URL containing a previous (possibly expired) auth error fragment.
+      // Supabase Auth URL Configuration must allow this exact redirect URL.
+      options: { shouldCreateUser: true, emailRedirectTo: 'https://alexpombhs.github.io/build-a-better-bedford/' },
     })
     setMessage(error ? error.message : 'Check your inbox for your sign-in link. Only approved editors can publish.')
     setBusy(false)
