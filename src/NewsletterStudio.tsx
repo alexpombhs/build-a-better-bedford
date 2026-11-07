@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
-import { emptyIssue, IssueView } from './Newsletter'
-import type { NewsletterIssue, NewsletterSection } from './Newsletter'
+import { emptyIssue, IssueView, NewsletterMediaView, embeddedVideoUrl } from './Newsletter'
+import type { NewsletterIssue, NewsletterSection, NewsletterMedia } from './Newsletter'
 
 type Template = 'club' | 'project' | 'announcement'
 const presets: Record<Template, { name: string; sections: NewsletterSection[]; details: NewsletterSection[] }> = {
@@ -17,7 +17,13 @@ const presets: Record<Template, { name: string; sections: NewsletterSection[]; d
   ], details: [] },
 }
 const cleanSections = (sections: NewsletterSection[]) =>
-  sections.map(s => ({ heading: s.heading.trim(), body: s.body.trim() })).filter(s => s.heading || s.body)
+  sections.map(section => ({
+    heading: section.heading.trim(),
+    body: section.body.trim(),
+    media: (section.media ?? []).map(item => ({
+      ...item, alt: item.alt?.trim() ?? '', caption: item.caption?.trim() ?? '',
+    })),
+  })).filter(section => section.heading || section.body || section.media.length)
 const normalize = (issue: NewsletterIssue): NewsletterIssue => ({
   ...issue,
   title: issue.title.trim(), description: issue.description.trim(),
@@ -35,12 +41,15 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [user, setUser] = useState<User | null>(null)
   const [authorized, setAuthorized] = useState(false)
   const [checking, setChecking] = useState(true)
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('bbb_admin')
+  const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
   const [list, setList] = useState<NewsletterIssue[]>([])
   const [draft, setDraft] = useState<NewsletterIssue>(emptyIssue)
   const [preview, setPreview] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [videoInputs, setVideoInputs] = useState<Record<string, string>>({})
   const [newIssue, setNewIssue] = useState(true)
 
   useEffect(() => {
@@ -64,21 +73,38 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     const { data, error } = await supabase.from('newsletters').select('id,month,number,title,description,sections,details,footer,status,published_at').order('id', { ascending: false })
     if (error) { setMessage(error.message); return }
     setList((data ?? []) as NewsletterIssue[])
+    setMessage('')
   }
   useEffect(() => { if (authorized) void loadIssues() }, [authorized])
 
-  const sendLink = async (event: React.FormEvent) => {
+  const signIn = async (event: React.FormEvent) => {
     event.preventDefault()
-    setBusy(true); setMessage('')
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      // Always return to the deployed club website, not the local dev server or
-      // a URL containing a previous (possibly expired) auth error fragment.
-      // Supabase Auth URL Configuration must allow this exact redirect URL.
-      options: { shouldCreateUser: true, emailRedirectTo: 'https://alexpombhs.github.io/build-a-better-bedford/' },
-    })
-    setMessage(error ? error.message : 'Check your inbox for your sign-in link. Only approved editors can publish.')
-    setBusy(false)
+    if (busy) return
+    setBusy(true)
+    setMessage('')
+    try {
+      const { data, error } = await supabase.functions.invoke('newsletter-login', {
+        body: { username: username.trim().toLowerCase(), password },
+      })
+      if (error || !data?.access_token || !data?.refresh_token) {
+        setMessage('Unable to sign in. Check your username and password.')
+        return
+      }
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      })
+      if (sessionError) {
+        setMessage('Sign-in failed. Please try again.')
+        return
+      }
+      setPassword('')
+      setMessage('')
+    } catch {
+      setMessage('Sign-in service unavailable. Please try again.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   const updateField = <K extends keyof NewsletterIssue>(field: K, value: NewsletterIssue[K]) =>
@@ -86,9 +112,63 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const updateSection = (field: 'sections' | 'details', index: number, property: keyof NewsletterSection, value: string) =>
     setDraft(current => ({ ...current, [field]: current[field].map((section, i) => i === index ? { ...section, [property]: value } : section) }))
   const addSection = (field: 'sections' | 'details') =>
-    setDraft(current => ({ ...current, [field]: [...current[field], { heading: '', body: '' }] }))
+    setDraft(current => ({ ...current, [field]: [...current[field], { heading: '', body: '', media: [] }] }))
   const removeSection = (field: 'sections' | 'details', index: number) =>
     setDraft(current => ({ ...current, [field]: current[field].filter((_, i) => i !== index) }))
+  const changeMedia = (field: 'sections' | 'details', sectionIndex: number, mediaIndex: number, patch: Partial<NewsletterMedia>) =>
+    setDraft(current => ({
+      ...current, [field]: current[field].map((section, index) => index !== sectionIndex ? section : ({
+        ...section, media: (section.media ?? []).map((item, i) => i === mediaIndex ? { ...item, ...patch } : item),
+      })),
+    }))
+  const addMedia = (field: 'sections' | 'details', sectionIndex: number, item: NewsletterMedia) =>
+    setDraft(current => ({
+      ...current, [field]: current[field].map((section, index) => index !== sectionIndex ? section : ({
+        ...section, media: [...(section.media ?? []), item],
+      })),
+    }))
+  const removeMedia = (field: 'sections' | 'details', sectionIndex: number, mediaIndex: number) =>
+    setDraft(current => ({
+      ...current, [field]: current[field].map((section, index) => index !== sectionIndex ? section : ({
+        ...section, media: (section.media ?? []).filter((_, i) => i !== mediaIndex),
+      })),
+    }))
+  const uploadMedia = async (field: 'sections' | 'details', sectionIndex: number, file: File) => {
+    if (!validIssueId(draft.id)) { setMessage('Enter a valid issue ID (YYYY-MM) before uploading.'); return }
+    const type = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : null
+    const accepted = ['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm']
+    if (!type || !accepted.includes(file.type)) { setMessage('Use JPG, PNG, WebP, GIF, MP4 or WebM files.'); return }
+    if (file.size > (type === 'image' ? 8 : 30) * 1024 * 1024) {
+      setMessage(type === 'image' ? 'Images must be 8 MB or smaller.' : 'Videos must be 30 MB or smaller. For longer videos, paste a YouTube or Vimeo URL.')
+      return
+    }
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-100) || 'upload'
+    const storagePath = `${draft.id}/${crypto.randomUUID()}-${safeName}`
+    setUploading(true); setMessage('')
+    try {
+      const { error } = await supabase.storage.from('newsletter-media')
+        .upload(storagePath, file, { contentType: file.type, upsert: false })
+      if (error) { setMessage(`Upload failed: ${error.message}`); return }
+      addMedia(field, sectionIndex, {
+        id: crypto.randomUUID(), type, storagePath,
+        alt: type === 'image' ? file.name.replace(/\.[^.]+$/, '') : 'Newsletter video',
+        caption: '',
+      })
+      setMessage('Media uploaded. Save the newsletter draft to keep the attachment.')
+    } catch {
+      setMessage('Upload failed. Please try again.')
+    } finally {
+      setUploading(false)
+    }
+  }
+  const addVideoLink = (field: 'sections' | 'details', sectionIndex: number) => {
+    const key = `${field}-${sectionIndex}`
+    const url = videoInputs[key]?.trim() ?? ''
+    if (!embeddedVideoUrl(url)) { setMessage('Use a valid HTTPS YouTube or Vimeo video link.'); return }
+    addMedia(field, sectionIndex, { id: crypto.randomUUID(), type: 'video', url, alt: 'Newsletter video', caption: '' })
+    setVideoInputs(current => ({ ...current, [key]: '' }))
+    setMessage('Video added. Save the newsletter to keep it.')
+  }
   const chooseTemplate = (type: Template) => {
     const preset = presets[type]
     if ((draft.sections.some(section => section.heading || section.body) || draft.details.some(section => section.heading || section.body)) &&
@@ -102,6 +182,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     if (status === 'published' && (!next.description || !next.sections.length || next.sections.some(section => !section.heading || !section.body))) {
       setMessage('Complete the description and all story sections before publishing.'); return
     }
+    if (uploading) { setMessage('Finish uploading attachments before saving.'); return }
     if (status === 'published' && !window.confirm('Publish this issue to the public newsletter page?')) return
     setBusy(true); setMessage('')
     const payload = { ...next, updated_at: new Date().toISOString() }
@@ -121,8 +202,16 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   if (checking) return <div className="studio-shell"><p role="status">Checking editor access…</p></div>
   if (!user) return <section className="studio-shell studio-login">
     <p className="studio-kicker">BBB EDITORIAL STUDIO</p><h1>Newsletter editor</h1>
-    <p>Sign in to create, edit, and publish club newsletters. Publishing is restricted to approved editors.</p>
-    <form onSubmit={sendLink}><label>Email address<input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="editor@example.com" /></label><button className="studio-primary" disabled={busy}>{busy ? 'Sending…' : 'Email me a sign-in link'}</button></form>
+    <p>Sign in with your editor username and password. No email link required. Only approved editors can publish.</p>
+    <form onSubmit={signIn}>
+      <label>Username
+        <input type="text" autoComplete="username" required minLength={3} maxLength={32} value={username} onChange={e => setUsername(e.target.value)} placeholder="bbb_admin" />
+      </label>
+      <label>Password
+        <input type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} />
+      </label>
+      <button type="submit" className="studio-primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in to newsletter editor'}</button>
+    </form>
     {message && <p role="status">{message}</p>}
   </section>
   if (!authorized) return <section className="studio-shell studio-login">
@@ -137,7 +226,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     <div className="studio-layout">
       <aside className="studio-panel studio-sidebar">
         <button className="studio-primary" type="button" onClick={() => { setDraft(emptyIssue()); setNewIssue(true); setPreview(false); setMessage('') }}>+ New issue</button>
-        <p className="studio-kicker">YOUR ISSUES</p>
+        <p className="studio-kicker">ALL ISSUES · INCLUDING HIDDEN</p>
         {list.map(issue => <button key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => { setDraft(issue); setNewIssue(false); setPreview(false); setMessage('') }}>
           <strong>{issue.month}</strong><span>{issue.title}</span><small>{issue.status.replace('_', ' ')}</small>
         </button>)}
@@ -163,14 +252,43 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
               <div className="studio-section-top"><strong>SECTION {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection(field, index)}>Remove</button></div>
               <label>Section title<input value={section.heading} maxLength={160} onChange={e => updateSection(field, index, 'heading', e.target.value)} /></label>
               <label>Content<textarea rows={5} value={section.body} maxLength={8000} onChange={e => updateSection(field, index, 'body', e.target.value)} /></label>
+              <div className="studio-media-editor">
+                <div className="studio-media-heading"><strong>PHOTOS & VIDEOS</strong><span>Attach media to this section</span></div>
+                {(section.media ?? []).map((item, mediaIndex) =>
+                  <div className="studio-media-item" key={item.id}>
+                    <div className="studio-media-item-preview"><NewsletterMediaView media={item} /></div>
+                    <div className="studio-media-item-controls">
+                      <label>{item.type === 'image' ? 'Image description (alt text)' : 'Video title'}<input maxLength={220} value={item.alt ?? ''} onChange={e => changeMedia(field,index,mediaIndex,{alt:e.target.value})} /></label>
+                      <label>Caption<input maxLength={500} value={item.caption ?? ''} onChange={e => changeMedia(field,index,mediaIndex,{caption:e.target.value})} placeholder="Optional caption or credit" /></label>
+                      <button type="button" className="studio-media-remove" onClick={() => removeMedia(field,index,mediaIndex)}>Remove from newsletter</button>
+                    </div>
+                  </div>
+                )}
+                <div className="studio-media-add">
+                  <label className="studio-file-upload">{uploading ? 'Uploading…' : '+ Upload photo or video'}
+                    <input type="file" disabled={uploading} accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" onChange={event => {
+                      const file = event.target.files?.[0]
+                      if (file) void uploadMedia(field, index, file)
+                      event.target.value = ''
+                    }} />
+                  </label>
+                  <small>JPG, PNG, WebP or GIF up to 8 MB · MP4 or WebM up to 30 MB</small>
+                </div>
+                <div className="studio-media-link">
+                  <label>Or embed a YouTube / Vimeo video
+                    <input type="url" placeholder="https://www.youtube.com/watch?v=…" value={videoInputs[`${field}-${index}`] ?? ''} onChange={e => setVideoInputs(current => ({ ...current, [`${field}-${index}`]: e.target.value }))} />
+                  </label>
+                  <button type="button" className="studio-secondary" onClick={() => addVideoLink(field,index)}>Add video</button>
+                </div>
+              </div>
             </div>)}
           </div>)}
           <label>Footer or credits<textarea rows={2} value={draft.footer} maxLength={800} onChange={e => updateField('footer', e.target.value)} /></label>
         </div>}
         <div className="studio-savebar">
-          <button type="button" className="studio-secondary" disabled={busy} onClick={() => void save('draft')}>Save draft</button>
-          <button type="button" className="studio-secondary" disabled={busy} onClick={() => void save('in_review')}>Send for review</button>
-          <button type="button" className="studio-primary" disabled={busy} onClick={() => void save('published')}>{busy ? 'Saving…' : 'Publish issue'}</button>
+          <button type="button" className="studio-secondary" disabled={busy || uploading} onClick={() => void save('draft')}>Save draft</button>
+          <button type="button" className="studio-secondary" disabled={busy || uploading} onClick={() => void save('in_review')}>Send for review</button>
+          <button type="button" className="studio-primary" disabled={busy || uploading} onClick={() => void save('published')}>{busy ? 'Saving…' : 'Publish issue'}</button>
         </div>
         {message && <p className="studio-message" role="status">{message}</p>}
       </div>
