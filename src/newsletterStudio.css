@@ -105,3 +105,11 @@
 .studio-media-link{display:flex;gap:12px;align-items:end}
 .studio-media-link label{flex:1}
 @media(max-width:650px){.studio-media-item{grid-template-columns:1fr}.studio-media-link{display:grid}.studio-media-item-preview{max-width:100%}}
+
+.studio-account-actions{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px}
+.studio-password-settings{position:relative;border:1px solid #c8d9cb;border-radius:8px;background:#fff;min-width:180px}
+.studio-password-settings summary{cursor:pointer;padding:11px 16px;font-size:13px;font-weight:750;color:#276143}
+.studio-password-settings form{display:grid;gap:10px;min-width:260px;padding:12px 15px 15px}
+.studio-password-settings label{display:grid;gap:6px;font-size:12px;color:#415c4b}
+.studio-password-settings input{font:inherit;border:1px solid #cbd9ce;border-radius:7px;padding:10px}
+@media(max-width:650px){.studio-account-actions{width:100%}}
