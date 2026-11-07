@@ -43,6 +43,11 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [checking, setChecking] = useState(true)
   const [username, setUsername] = useState('bbb_admin')
   const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('')
+  const [loginMethod, setLoginMethod] = useState<'password' | 'email'>('password')
+  const [needsPasswordChange, setNeedsPasswordChange] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
   const [message, setMessage] = useState('')
   const [list, setList] = useState<NewsletterIssue[]>([])
   const [draft, setDraft] = useState<NewsletterIssue>(emptyIssue)
@@ -58,14 +63,15 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       if (!active) return
       setUser(nextUser)
       setChecking(true)
-      if (!nextUser?.email) { setAuthorized(false); setChecking(false); return }
-      const { data, error } = await supabase.from('newsletter_staff').select('email').eq('email', nextUser.email.toLowerCase()).maybeSingle()
+      if (!nextUser?.email) { setAuthorized(false); setNeedsPasswordChange(false); setChecking(false); return }
+      const { data, error } = await supabase.from('newsletter_staff').select('email,must_change_password').eq('email', nextUser.email.toLowerCase()).maybeSingle()
       if (!active) return
       setAuthorized(!error && !!data)
+      setNeedsPasswordChange(!error && Boolean(data?.must_change_password))
       setChecking(false)
     }
     void supabase.auth.getUser().then(({ data }) => check(data.user))
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => { void check(session?.user ?? null) })
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => { setTimeout(() => { void check(session?.user ?? null) }, 0) })
     return () => { active = false; listener.subscription.unsubscribe() }
   }, [])
 
@@ -75,7 +81,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setList((data ?? []) as NewsletterIssue[])
     setMessage('')
   }
-  useEffect(() => { if (authorized) void loadIssues() }, [authorized])
+  useEffect(() => { if (authorized && !needsPasswordChange) void loadIssues() }, [authorized, needsPasswordChange])
 
   const signIn = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -102,6 +108,61 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       setMessage('')
     } catch {
       setMessage('Sign-in service unavailable. Please try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const sendEmailLink = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (busy) return
+    setBusy(true)
+    setMessage('')
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim().toLowerCase(),
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: 'https://alexpombhs.github.io/build-a-better-bedford/',
+        },
+      })
+      setMessage(error ? error.message : 'A sign-in link has been requested. Check your email.')
+    } catch {
+      setMessage('Email sign-in is temporarily unavailable.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const changePassword = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (busy) return
+    if (newPassword !== confirmNewPassword) {
+      setMessage('Passwords do not match.')
+      return
+    }
+    if (newPassword.length < 12 || !/[A-Z]/.test(newPassword) ||
+        !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword) ||
+        !/[^A-Za-z0-9]/.test(newPassword)) {
+      setMessage('Choose 12+ characters including uppercase, lowercase, a number and a symbol.')
+      return
+    }
+    setBusy(true)
+    setMessage('')
+    try {
+      const { data, error } = await supabase.functions.invoke('newsletter-change-password', {
+        body: { password: newPassword },
+      })
+      if (error || !data?.ok) {
+        setMessage('Could not update your password. Try a different password or sign in again.')
+        return
+      }
+      setNewPassword('')
+      setConfirmNewPassword('')
+      setNeedsPasswordChange(false)
+      setMessage('Password saved. The newsletter editor is unlocked.')
+    } catch {
+      setMessage('Could not update password. Please try again.')
     } finally {
       setBusy(false)
     }
@@ -202,21 +263,50 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   if (checking) return <div className="studio-shell"><p role="status">Checking editor access…</p></div>
   if (!user) return <section className="studio-shell studio-login">
     <p className="studio-kicker">BBB EDITORIAL STUDIO</p><h1>Newsletter editor</h1>
-    <p>Sign in with your editor username and password. No email link required. Only approved editors can publish.</p>
-    <form onSubmit={signIn}>
-      <label>Username
-        <input type="text" autoComplete="username" required minLength={3} maxLength={32} value={username} onChange={e => setUsername(e.target.value)} placeholder="bbb_admin" />
-      </label>
-      <label>Password
-        <input type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} />
-      </label>
-      <button type="submit" className="studio-primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in to newsletter editor'}</button>
-    </form>
-    {message && <p role="status">{message}</p>}
+    <p>Approved editors can sign in with a username and password or request an email link.</p>
+    <div className="studio-login-options" role="group" aria-label="Sign-in method">
+      <button type="button" className={loginMethod === 'password' ? 'active' : ''} onClick={() => { setLoginMethod('password'); setMessage('') }}>Username & password</button>
+      <button type="button" className={loginMethod === 'email' ? 'active' : ''} onClick={() => { setLoginMethod('email'); setMessage('') }}>Email link</button>
+    </div>
+    {loginMethod === 'password'
+      ? <form onSubmit={signIn}>
+          <label>Username
+            <input type="text" autoComplete="username" required minLength={3} maxLength={32} value={username} onChange={e => setUsername(e.target.value)} placeholder="bbb_admin" />
+          </label>
+          <label>Password or one-time login code
+            <input type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} />
+          </label>
+          <button type="submit" className="studio-primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in to newsletter editor'}</button>
+        </form>
+      : <form onSubmit={sendEmailLink}>
+          <label>Approved editor email
+            <input type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
+          </label>
+          <button type="submit" className="studio-primary" disabled={busy}>{busy ? 'Sending…' : 'Send sign-in link'}</button>
+          <p className="studio-login-hint">Email links are subject to Supabase email delivery limits and redirect settings.</p>
+        </form>}
+    {message && <p role="status" className="studio-message">{message}</p>}
   </section>
   if (!authorized) return <section className="studio-shell studio-login">
     <h1>Editor access required</h1><p>Your account is signed in, but it has not been approved for newsletter publishing. An administrator must add your email to the newsletter_staff table.</p>
     <button type="button" onClick={() => void supabase.auth.signOut()}>Sign out</button>
+  </section>
+
+  if (needsPasswordChange) return <section className="studio-shell studio-login">
+    <p className="studio-kicker">ACCOUNT SECURITY</p><h1>Set your permanent password</h1>
+    <p>The one-time sign-in is complete. You must replace your temporary password before viewing hidden issues or publishing newsletters.</p>
+    <form onSubmit={changePassword}>
+      <label>New password
+        <input type="password" autoComplete="new-password" required minLength={12} maxLength={128} value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+      </label>
+      <label>Confirm new password
+        <input type="password" autoComplete="new-password" required minLength={12} maxLength={128} value={confirmNewPassword} onChange={e => setConfirmNewPassword(e.target.value)} />
+      </label>
+      <p className="studio-login-hint">Use 12+ characters with uppercase and lowercase letters, a number and a symbol. Choose a password you don't use elsewhere.</p>
+      <button type="submit" className="studio-primary" disabled={busy}>{busy ? 'Saving…' : 'Save password and open editor'}</button>
+      <button type="button" className="studio-secondary" disabled={busy} onClick={() => void supabase.auth.signOut()}>Sign out</button>
+    </form>
+    {message && <p role="status" className="studio-message">{message}</p>}
   </section>
 
   return <section className="studio-shell">
