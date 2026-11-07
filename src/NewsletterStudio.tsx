@@ -35,7 +35,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [user, setUser] = useState<User | null>(null)
   const [authorized, setAuthorized] = useState(false)
   const [checking, setChecking] = useState(true)
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('bbb_admin')
+  const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
   const [list, setList] = useState<NewsletterIssue[]>([])
   const [draft, setDraft] = useState<NewsletterIssue>(emptyIssue)
@@ -67,18 +68,34 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   }
   useEffect(() => { if (authorized) void loadIssues() }, [authorized])
 
-  const sendLink = async (event: React.FormEvent) => {
+  const signIn = async (event: React.FormEvent) => {
     event.preventDefault()
-    setBusy(true); setMessage('')
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      // Always return to the deployed club website, not the local dev server or
-      // a URL containing a previous (possibly expired) auth error fragment.
-      // Supabase Auth URL Configuration must allow this exact redirect URL.
-      options: { shouldCreateUser: true, emailRedirectTo: 'https://alexpombhs.github.io/build-a-better-bedford/' },
-    })
-    setMessage(error ? error.message : 'Check your inbox for your sign-in link. Only approved editors can publish.')
-    setBusy(false)
+    if (busy) return
+    setBusy(true)
+    setMessage('')
+    try {
+      const { data, error } = await supabase.functions.invoke('newsletter-login', {
+        body: { username: username.trim().toLowerCase(), password },
+      })
+      if (error || !data?.access_token || !data?.refresh_token) {
+        setMessage('Unable to sign in. Check your username and password.')
+        return
+      }
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      })
+      if (sessionError) {
+        setMessage('Sign-in failed. Please try again.')
+        return
+      }
+      setPassword('')
+      setMessage('')
+    } catch {
+      setMessage('Sign-in service unavailable. Please try again.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   const updateField = <K extends keyof NewsletterIssue>(field: K, value: NewsletterIssue[K]) =>
@@ -121,8 +138,16 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   if (checking) return <div className="studio-shell"><p role="status">Checking editor access…</p></div>
   if (!user) return <section className="studio-shell studio-login">
     <p className="studio-kicker">BBB EDITORIAL STUDIO</p><h1>Newsletter editor</h1>
-    <p>Sign in to create, edit, and publish club newsletters. Publishing is restricted to approved editors.</p>
-    <form onSubmit={sendLink}><label>Email address<input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="editor@example.com" /></label><button className="studio-primary" disabled={busy}>{busy ? 'Sending…' : 'Email me a sign-in link'}</button></form>
+    <p>Sign in with your editor username and password. No email link required. Only approved editors can publish.</p>
+    <form onSubmit={signIn}>
+      <label>Username
+        <input type="text" autoComplete="username" required minLength={3} maxLength={32} value={username} onChange={e => setUsername(e.target.value)} placeholder="bbb_admin" />
+      </label>
+      <label>Password
+        <input type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} />
+      </label>
+      <button type="submit" className="studio-primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in to newsletter editor'}</button>
+    </form>
     {message && <p role="status">{message}</p>}
   </section>
   if (!authorized) return <section className="studio-shell studio-login">
