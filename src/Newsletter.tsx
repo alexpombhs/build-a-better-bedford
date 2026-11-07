@@ -155,8 +155,8 @@ export default function Newsletter() {
     const email = userData.user?.email?.toLowerCase()
     let isEditor = false
     if (email) {
-      const { data: staff } = await supabase.from('newsletter_staff').select('email').eq('email', email).maybeSingle()
-      isEditor = Boolean(staff)
+      const { data: staff } = await supabase.from('newsletter_staff').select('email,must_change_password').eq('email', email).maybeSingle()
+      isEditor = Boolean(staff && !staff.must_change_password)
     }
     setEditorAuthenticated(isEditor)
     let query = supabase.from('newsletters')
