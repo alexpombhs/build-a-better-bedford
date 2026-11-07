@@ -44,6 +44,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [username, setUsername] = useState('bbb_admin')
   const [password, setPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [needsPasswordChange, setNeedsPasswordChange] = useState(false)
   const [settingPassword, setSettingPassword] = useState(false)
   const [message, setMessage] = useState('')
   const [list, setList] = useState<NewsletterIssue[]>([])
@@ -88,6 +90,11 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       const { data, error } = await supabase.functions.invoke('newsletter-login', {
         body: { username: username.trim().toLowerCase(), password },
       })
+      if (!error && data?.password_change_required) {
+        setNeedsPasswordChange(true)
+        setMessage('')
+        return
+      }
       if (error || !data?.access_token || !data?.refresh_token) {
         setMessage('Unable to sign in. Check your username and password.')
         return
@@ -104,6 +111,51 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       setMessage('')
     } catch {
       setMessage('Sign-in service unavailable. Please try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const completeFirstLogin = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (busy) return
+    if (newPassword.length < 12 || newPassword !== confirmPassword) {
+      setMessage('Choose a password of at least 12 characters and confirm it exactly.')
+      return
+    }
+    setBusy(true)
+    setMessage('')
+    try {
+      const { data, error } = await supabase.functions.invoke('newsletter-login', {
+        body: {
+          action: 'finish_setup',
+          username: username.trim().toLowerCase(),
+          password,
+          new_password: newPassword,
+        },
+      })
+      if (error || !data?.access_token || !data?.refresh_token) {
+        setMessage(data?.error || 'The temporary password has expired or could not be used.')
+        return
+      }
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      })
+      if (sessionError) {
+        setMessage('Password saved, but automatic sign-in failed. Sign in again using your new password.')
+        setNeedsPasswordChange(false)
+        setPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+        return
+      }
+      setNeedsPasswordChange(false)
+      setPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch {
+      setMessage('Password setup failed. Please retry.')
     } finally {
       setBusy(false)
     }
@@ -219,6 +271,22 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   }
 
   if (checking) return <div className="studio-shell"><p role="status">Checking editor access…</p></div>
+  if (!user && needsPasswordChange) return <section className="studio-shell studio-login">
+    <p className="studio-kicker">ONE-TIME ADMIN SETUP</p>
+    <h1>Choose your permanent password</h1>
+    <p>Your temporary credential is valid for one password change only. Set a strong password to activate your editor login.</p>
+    <form onSubmit={completeFirstLogin}>
+      <label>New password (12+ characters)
+        <input type="password" autoComplete="new-password" minLength={12} required value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+      </label>
+      <label>Confirm new password
+        <input type="password" autoComplete="new-password" minLength={12} required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+      </label>
+      <button className="studio-primary" type="submit" disabled={busy}>{busy ? 'Saving…' : 'Set password and sign in'}</button>
+      <button className="studio-secondary" type="button" disabled={busy} onClick={() => { setNeedsPasswordChange(false); setPassword(''); setNewPassword(''); setConfirmPassword(''); setMessage('') }}>Back to sign in</button>
+    </form>
+    {message && <p role="status">{message}</p>}
+  </section>
   if (!user) return <section className="studio-shell studio-login">
     <p className="studio-kicker">BBB EDITORIAL STUDIO</p><h1>Newsletter editor</h1>
     <p>Sign in with your editor username and password. No email link required. Only approved editors can publish.</p>
