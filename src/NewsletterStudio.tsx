@@ -43,6 +43,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [checking, setChecking] = useState(true)
   const [username, setUsername] = useState('bbb_admin')
   const [password, setPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [settingPassword, setSettingPassword] = useState(false)
   const [message, setMessage] = useState('')
   const [list, setList] = useState<NewsletterIssue[]>([])
   const [draft, setDraft] = useState<NewsletterIssue>(emptyIssue)
@@ -104,6 +106,23 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       setMessage('Sign-in service unavailable. Please try again.')
     } finally {
       setBusy(false)
+    }
+  }
+
+  const setEditorPassword = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (newPassword.length < 12) { setMessage('Choose a password with at least 12 characters.'); return }
+    setSettingPassword(true)
+    setMessage('')
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) { setMessage(`Could not set password: ${error.message}`); return }
+      setNewPassword('')
+      setMessage('Password updated in Supabase Auth. Use bbb_admin and this password next time.')
+    } catch {
+      setMessage('Could not set password. Please try again.')
+    } finally {
+      setSettingPassword(false)
     }
   }
 
@@ -221,7 +240,16 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
 
   return <section className="studio-shell">
     <div className="studio-header"><div><p className="studio-kicker">BUILD A BETTER BEDFORD / EDITORIAL</p><h1>Newsletter studio</h1><p>Draft, review and publish club updates directly on the site.</p></div>
-      <button type="button" className="studio-secondary" onClick={() => void supabase.auth.signOut()}>Sign out</button>
+      <div className="studio-account-actions">
+        <details className="studio-password-settings">
+          <summary>Change editor password</summary>
+          <form onSubmit={setEditorPassword}>
+            <label>New password (12+ characters)<input type="password" autoComplete="new-password" minLength={12} required value={newPassword} onChange={e => setNewPassword(e.target.value)} /></label>
+            <button type="submit" className="studio-secondary" disabled={settingPassword}>{settingPassword ? 'Saving…' : 'Save password to Supabase'}</button>
+          </form>
+        </details>
+        <button type="button" className="studio-secondary" onClick={() => void supabase.auth.signOut()}>Sign out</button>
+      </div>
     </div>
     <div className="studio-layout">
       <aside className="studio-panel studio-sidebar">
