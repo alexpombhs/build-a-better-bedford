@@ -108,15 +108,14 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
   return <section className={`newsletter-page newsletter-layout-${layout}`}>
     {issue.status !== 'published' && <p className="newsletter-private-banner">PRIVATE PREVIEW · {issue.status === 'draft' ? 'DRAFT' : 'IN REVIEW'} · NOT VISIBLE TO VISITORS</p>}
     <div className="newsletter-clean">
-      <header className="newsletter-intro">
-        <PageHeading eyebrow={`${issue.month.toUpperCase()} · ISSUE ${issue.number}`} title={issue.title || 'Untitled issue'} description={issue.description} />
-      </header>
       <div className={hasSideRail ? 'newsletter-editorial-grid has-sidebar' : 'newsletter-editorial-grid'}>
         <div className="newsletter-editorial-main">
+          <header className="newsletter-intro">
+            <PageHeading eyebrow={`${issue.month.toUpperCase()} · ISSUE ${issue.number}`} title={issue.title || 'Untitled issue'} description={issue.description} />
+          </header>
           <div className="newsletter-notes">
             <div className="newsletter-notes-head"><span>THE STORY</span><span>BUILD A BETTER BEDFORD</span></div>
             {issue.sections.map((section, index) => <article className="newsletter-note" key={index} id={sectionId(index)}>
-              <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
               <div className="newsletter-section-content">
                 <Typography component="h2" variant="h6">{section.heading}</Typography>
                 <Typography component="p" variant="body1">{section.body}</Typography>
