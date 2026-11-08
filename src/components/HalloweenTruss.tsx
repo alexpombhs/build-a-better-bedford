@@ -1,144 +1,188 @@
 import { useEffect, useRef } from 'react'
+import * as THREE from 'three'
 import './HalloweenTruss.css'
 
-type Point3 = readonly [number, number, number]
-type Beam = { from: number; to: number; material: 'rib' | 'hoop' | 'brace' | 'stem' }
-
-// A pumpkin-shaped spatial framework, not an image rotated in 2D.
-// Meridians curve from top to base, horizontal hoops stabilize the frame,
-// and a few diagonal braces give it a recognizable engineering character.
-const vertices: Point3[] = []
-const beams: Beam[] = []
-const ribs = 10
-const rings = 9
-for (let band = 0; band < rings; band++) {
-  const phi = (band + 1) * Math.PI / (rings + 1)
-  const y = 0.81 * Math.cos(phi)
-  const radius = 0.94 * Math.pow(Math.sin(phi), 0.62)
-  for (let rib = 0; rib < ribs; rib++) {
-    const theta = rib * 2 * Math.PI / ribs
-    const lobe = 1 + 0.065 * Math.cos(10 * theta)
-    vertices.push([radius * lobe * Math.cos(theta), y, radius * lobe * Math.sin(theta)])
-    if (band > 0) beams.push({ from: (band - 1) * ribs + rib, to: band * ribs + rib, material: 'rib' })
-    if (band === 2 || band === 4 || band === 6) beams.push({
-      from: band * ribs + rib,
-      to: band * ribs + (rib + 1) % ribs,
-      material: 'hoop',
-    })
-    if ((band === 3 || band === 5) && rib % 2 === 0) beams.push({
-      from: (band - 1) * ribs + rib,
-      to: band * ribs + (rib + 1) % ribs,
-      material: 'brace',
-    })
-  }
-}
-const top = vertices.push([0, 0.84, 0]) - 1
-const bottom = vertices.push([0, -0.84, 0]) - 1
-for (let rib = 0; rib < ribs; rib++) {
-  beams.push({ from: top, to: rib, material: 'rib' })
-  beams.push({ from: (rings - 1) * ribs + rib, to: bottom, material: 'rib' })
-}
-const stemBase = vertices.push([0, 0.83, 0]) - 1
-const stemBend = vertices.push([0.03, 1.0, 0.02]) - 1
-const stemTip = vertices.push([0.13, 1.1, 0.03]) - 1
-beams.push({ from: stemBase, to: stemBend, material: 'stem' })
-beams.push({ from: stemBend, to: stemTip, material: 'stem' })
-
-function draw(ctx: CanvasRenderingContext2D, width: number, height: number, angle: number) {
-  ctx.clearRect(0, 0, width, height)
-  const tilt = -0.20
-  const projected = vertices.map(([x, y, z]) => {
-    const rx = x * Math.cos(angle) + z * Math.sin(angle)
-    const rz = z * Math.cos(angle) - x * Math.sin(angle)
-    const ry = y * Math.cos(tilt) - rz * Math.sin(tilt)
-    const depth = y * Math.sin(tilt) + rz * Math.cos(tilt)
-    const scale = 2.9 / (2.9 - depth * 0.34)
-    const radius = Math.min(width * 0.39, height * 0.40)
-    return { x: width * 0.5 + rx * radius * scale, y: height * 0.52 - ry * radius * scale, z: depth }
-  })
-
-  const ordered = beams.map(beam => ({
-    ...beam,
-    a: projected[beam.from],
-    b: projected[beam.to],
-    depth: (projected[beam.from].z + projected[beam.to].z) * 0.5,
-  })).sort((a, b) => a.depth - b.depth)
-
-  for (const beam of ordered) {
-    const front = Math.max(0, Math.min(1, (beam.depth + 1) * 0.5))
-    const opacity = 0.23 + front * 0.7
-    ctx.beginPath()
-    ctx.moveTo(beam.a.x, beam.a.y)
-    ctx.lineTo(beam.b.x, beam.b.y)
-    ctx.lineWidth = beam.material === 'stem' ? 2.7 : beam.material === 'brace' ? 0.85 : 1.15 + front * 0.5
-    ctx.lineCap = 'round'
-    ctx.strokeStyle = beam.material === 'stem'
-      ? `rgba(49, 106, 77, ${0.60 + front * 0.35})`
-      : beam.material === 'brace'
-        ? `rgba(52, 119, 136, ${opacity * 0.65})`
-        : beam.material === 'hoop'
-          ? `rgba(122, 83, 50, ${opacity * 0.75})`
-          : `rgba(193, 103, 40, ${opacity})`
-    ctx.stroke()
-  }
-
-  // Only the front structural joints are drawn, for a calm CAD-like look.
-  projected.slice(0, rings * ribs).forEach(point => {
-    if (point.z < 0.25) return
-    ctx.beginPath()
-    ctx.arc(point.x, point.y, 1.15, 0, 2 * Math.PI)
-    ctx.fillStyle = '#b87744'
-    ctx.fill()
-  })
-}
-
+// Real Three.js geometry and shadow-casting beams, inspired by the WebGL
+// approach in the supplied blog. No copied scene code or flat SVG rotation.
 export default function HalloweenTruss() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const mountRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    const ctx = canvas?.getContext('2d')
-    if (!canvas || !ctx) return
+    const container = mountRef.current
+    if (!container) return
 
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-    let frame = 0
-    let start = 0
-
-    const render = (timestamp = 0) => {
-      const rect = canvas.getBoundingClientRect()
-      const width = Math.max(1, rect.width)
-      const height = Math.max(1, rect.height)
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
-        canvas.width = Math.round(width * dpr)
-        canvas.height = Math.round(height * dpr)
-      }
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      if (!start) start = timestamp
-      draw(ctx, width, height, reducedMotion.matches ? 0.45 : 0.45 + (timestamp - start) * 0.00020)
-      if (!reducedMotion.matches) frame = requestAnimationFrame(render)
+    let renderer: THREE.WebGLRenderer
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' })
+    } catch {
+      // Gracefully leave the static fallback for browsers without WebGL.
+      container.dataset.webglUnavailable = 'true'
+      return
     }
 
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    renderer.outputColorSpace = THREE.SRGBColorSpace
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.55
+    renderer.domElement.setAttribute('aria-hidden', 'true')
+    renderer.domElement.className = 'halloween-truss-canvas'
+    container.appendChild(renderer.domElement)
+
+    const scene = new THREE.Scene()
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 40)
+    camera.position.set(2.75, 2.3, 5.5)
+    camera.lookAt(0, 0.02, 0)
+
+    const fill = new THREE.AmbientLight(0xffffff, 1.8)
+    scene.add(fill)
+    const key = new THREE.DirectionalLight(0xfff2df, 4)
+    key.position.set(-3.3, 5, 3.4)
+    key.castShadow = true
+    key.shadow.mapSize.set(1024, 1024)
+    key.shadow.camera.left = -3.1
+    key.shadow.camera.right = 3.1
+    key.shadow.camera.top = 3.1
+    key.shadow.camera.bottom = -3.1
+    key.shadow.camera.near = 0.5
+    key.shadow.camera.far = 13
+    key.shadow.bias = -0.0002
+    key.shadow.normalBias = 0.015
+    key.shadow.radius = 3
+    scene.add(key)
+
+    const materials = {
+      rib: new THREE.MeshStandardMaterial({ color: 0xcf7b35, metalness: 0.22, roughness: 0.45 }),
+      brace: new THREE.MeshStandardMaterial({ color: 0x66847b, metalness: 0.32, roughness: 0.48 }),
+      hoop: new THREE.MeshStandardMaterial({ color: 0xa66a37, metalness: 0.22, roughness: 0.58 }),
+      stem: new THREE.MeshStandardMaterial({ color: 0x3d7854, metalness: 0.1, roughness: 0.58 }),
+    }
+    const pumpkin = new THREE.Group()
+    scene.add(pumpkin)
+    const geometries: THREE.BufferGeometry[] = []
+
+    const addBeam = (points: THREE.Vector3[], radius: number, material: THREE.Material) => {
+      const curve = new THREE.CatmullRomCurve3(points)
+      const geometry = new THREE.TubeGeometry(curve, Math.max(10, points.length * 3), radius, 6, false)
+      geometries.push(geometry)
+      const beam = new THREE.Mesh(geometry, material)
+      beam.castShadow = true
+      beam.receiveShadow = true
+      pumpkin.add(beam)
+    }
+
+    // Ten meridional ribs and three lateral hoops make a pumpkin-shaped
+    // structural framework. Diagonal bracing adds a civil-engineering detail.
+    const ribCount = 10
+    const bandCount = 15
+    const pointAt = (phi: number, theta: number) => {
+      const radius = 0.88 * Math.pow(Math.sin(phi), 0.62)
+      const fluting = 1 + 0.055 * Math.cos(ribCount * theta)
+      return new THREE.Vector3(
+        radius * fluting * Math.cos(theta),
+        0.77 * Math.cos(phi),
+        radius * fluting * Math.sin(theta),
+      )
+    }
+
+    for (let rib = 0; rib < ribCount; rib++) {
+      const theta = rib * Math.PI * 2 / ribCount
+      const points = Array.from({ length: bandCount + 1 }, (_, i) => pointAt(i * Math.PI / bandCount, theta))
+      addBeam(points, 0.017, materials.rib)
+    }
+
+    for (const band of [0.3, 0.5, 0.7]) {
+      const phi = Math.PI * band
+      const points = Array.from({ length: 61 }, (_, i) => pointAt(phi, i * Math.PI * 2 / 60))
+      addBeam(points, 0.009, materials.hoop)
+    }
+
+    for (const band of [0.35, 0.65]) {
+      for (let rib = 0; rib < ribCount; rib += 2) {
+        const startPhi = Math.PI * band
+        const endPhi = Math.PI * (band + 0.12)
+        addBeam([
+          pointAt(startPhi, rib * Math.PI * 2 / ribCount),
+          pointAt((startPhi + endPhi) / 2, (rib + 0.5) * Math.PI * 2 / ribCount),
+          pointAt(endPhi, (rib + 1) * Math.PI * 2 / ribCount),
+        ], 0.007, materials.brace)
+      }
+    }
+
+    addBeam([
+      new THREE.Vector3(0, 0.77, 0),
+      new THREE.Vector3(0.02, 0.91, 0),
+      new THREE.Vector3(0.11, 1.03, 0.04),
+    ], 0.037, materials.stem)
+
+    // This plane receives actual shadows cast by the Three.js mesh geometry.
+    const floorGeometry = new THREE.PlaneGeometry(20, 20)
+    const floorMaterial = new THREE.ShadowMaterial({ color: 0x4e3c2b, opacity: 0.25 })
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial)
+    floor.rotation.x = -Math.PI / 2
+    floor.position.y = -0.84
+    floor.receiveShadow = true
+    scene.add(floor)
+
+    const resize = () => {
+      const width = Math.max(1, container.clientWidth)
+      const height = Math.max(1, container.clientHeight)
+      renderer.setSize(width, height, false)
+      camera.aspect = width / height
+      camera.updateProjectionMatrix()
+      renderer.render(scene, camera)
+    }
+    const observer = new ResizeObserver(resize)
+    observer.observe(container)
+    resize()
+
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    let frame = 0
+    let previous = 0
+    let active = true
+    const render = (timestamp: number) => {
+      if (!active) return
+      if (!previous) previous = timestamp
+      if (!motion.matches) pumpkin.rotation.y += Math.min((timestamp - previous) / 1000, 0.1) * 0.22
+      previous = timestamp
+      renderer.render(scene, camera)
+      if (!motion.matches) frame = requestAnimationFrame(render)
+    }
     const restart = () => {
       cancelAnimationFrame(frame)
-      start = 0
+      previous = 0
       frame = requestAnimationFrame(render)
     }
+    const onVisibility = () => {
+      if (document.hidden) cancelAnimationFrame(frame)
+      else restart()
+    }
+    motion.addEventListener('change', restart)
+    document.addEventListener('visibilitychange', onVisibility)
     restart()
-    reducedMotion.addEventListener('change', restart)
+
     return () => {
+      active = false
       cancelAnimationFrame(frame)
-      reducedMotion.removeEventListener('change', restart)
+      observer.disconnect()
+      motion.removeEventListener('change', restart)
+      document.removeEventListener('visibilitychange', onVisibility)
+      geometries.forEach(geometry => geometry.dispose())
+      floorGeometry.dispose()
+      floorMaterial.dispose()
+      Object.values(materials).forEach(material => material.dispose())
+      renderer.dispose()
+      renderer.domElement.remove()
     }
   }, [])
 
   return (
     <figure className="halloween-truss">
-      <div className="halloween-truss-stage" role="img" aria-label="Slowly rotating three-dimensional pumpkin-shaped engineering truss with orange ribs and green stem">
-        <canvas ref={canvasRef} className="halloween-truss-canvas" aria-hidden="true" />
-        <span className="halloween-truss-shadow" aria-hidden="true" />
+      <div ref={mountRef} className="halloween-truss-stage" role="img" aria-label="Slowly rotating 3D pumpkin-shaped engineering truss casting a soft shadow on the floor">
+        <span className="halloween-truss-fallback" aria-hidden="true">Structural pumpkin · 3D model</span>
       </div>
-      <figcaption>Pumpkin truss · seasonal structural study</figcaption>
+      <figcaption>Pumpkin truss · light, structure &amp; shadow</figcaption>
     </figure>
   )
 }
