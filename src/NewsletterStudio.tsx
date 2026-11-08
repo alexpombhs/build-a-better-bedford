@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { NewsletterRichEditor } from './components/NewsletterRichEditor'
+import type { NewsletterEditorHandle } from './components/NewsletterRichEditor'
 import { UiDialog, UiDialogTitle, UiDialogContent, UiDialogActions, UiSelect, UiTextField } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
@@ -87,6 +89,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [preview, setPreview] = useState(false)
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const editorRefs = useRef<Record<number,NewsletterEditorHandle|null>>({})
   const [mediaTarget, setMediaTarget] = useState<{ field: 'sections' | 'details'; sectionIndex: number; mediaIndex?: number } | null>(null)
   const [mediaMode, setMediaMode] = useState<'upload' | 'embed'>('upload')
   const [mediaFile, setMediaFile] = useState<File | null>(null)
@@ -347,10 +350,12 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         setMediaError('Enter a valid HTTPS YouTube or Vimeo video URL.')
         return
       }
+      const mediaId=crypto.randomUUID()
       addMedia(field, sectionIndex, {
-        id: crypto.randomUUID(), type: 'video', url,
+        id: mediaId, type: 'video', url,
         alt: mediaAlt.trim() || 'Newsletter video', caption: mediaCaption.trim(),
       })
+      if(field==='details')editorRefs.current[sectionIndex]?.insertMedia(mediaId)
       setMessage('Video added to the draft. Save the newsletter to keep it.')
       closeMediaDialog()
       return
@@ -377,11 +382,13 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         contentType: file.type, upsert: false,
       })
       if (error) { setMediaError(`Upload failed: ${error.message}`); return }
+      const mediaId=crypto.randomUUID()
       addMedia(field, sectionIndex, {
-        id: crypto.randomUUID(), type, storagePath,
+        id: mediaId, type, storagePath,
         alt: mediaAlt.trim() || (type === 'image' ? file.name.replace(/\.[^.]+$/, '') : 'Newsletter video'),
         caption: mediaCaption.trim(),
       })
+      if(field==='details')editorRefs.current[sectionIndex]?.insertMedia(mediaId)
       setMediaTarget(null)
       setMediaFile(null)
       setMessage('Media uploaded and added to the draft. Save the newsletter to keep it.')
@@ -597,11 +604,14 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                 />
               </div>
               {newsletterSectionPlacement(section) === 'main' && <label>Optional index summary (saved, currently hidden)<textarea rows={2} maxLength={800} value={section.summary ?? draft.sections.find(item => item.heading === section.heading)?.body ?? ''} onChange={e => updateSection('details', index, 'summary', e.target.value)} /></label>}
-              <label>Article text<textarea rows={6} value={section.body} maxLength={8000} onChange={e => updateSection('details', index, 'body', e.target.value)} /></label>
+              <NewsletterRichEditor
+                key={draft.id + ':' + index}
+                ref={instance => {editorRefs.current[index]=instance}}
+                value={section.body}
+                onChange={value => updateSection('details',index,'body',value)}
+                onAddMedia={() => openMediaDialog('details',index)}
+              />
               <div className="studio-inline-media">
-                <button type="button" className="studio-add-media-button" onClick={() => openMediaDialog('details',index)}>
-                  <span aria-hidden="true">＋</span> Add photo or video
-                </button>
                 {(section.media ?? []).length > 0 && <div className="studio-attachment-list" aria-label="Attached media">
                   {(section.media ?? []).map((item, mediaIndex) => <div className="studio-attachment" key={item.id}>
                     <span className="studio-attachment-name">{item.type === 'image' ? 'Photo' : 'Video'}{item.caption ? ` · ${item.caption}` : item.alt ? ` · ${item.alt}` : ''}</span>
