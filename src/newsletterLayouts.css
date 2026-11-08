@@ -380,3 +380,48 @@
 
 /* Keep section summaries in newsletter data without displaying them in the compact TOC. */
 .newsletter-page .newsletter-toc-description { display:none; }
+
+/* Seasonal editorial feature lives in the right-hand rail, not the main story. */
+.newsletter-page .newsletter-side-story.newsletter-halloween-feature {
+  margin:12px 0 20px;
+  padding:18px 16px 20px;
+  border:1px solid #ead9b7;
+  border-radius:14px;
+  background:linear-gradient(150deg,#fff8ed 0%,#fffbf5 72%,#f4f8f1 100%);
+  box-shadow:0 3px 12px rgba(71,54,19,.05);
+}
+.newsletter-page .newsletter-halloween-eyebrow {
+  display:block;
+  margin-bottom:10px;
+  color:#98632c;
+  font-size:.6875rem;
+  font-weight:750;
+  letter-spacing:.08em;
+  line-height:1.4;
+}
+.newsletter-page .newsletter-halloween-feature h2 {
+  margin:0 0 13px;
+  color:#593c22;
+  font-size:1.0625rem;
+  font-weight:700;
+  line-height:1.3;
+}
+.newsletter-page .newsletter-halloween-copy {
+  display:grid;
+  gap:13px;
+}
+.newsletter-page .newsletter-halloween-copy p {
+  margin:0;
+  color:#5b554a;
+  font-size:.8125rem;
+  line-height:1.6;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.newsletter-page .newsletter-halloween-copy .newsletter-halloween-joke {
+  padding:11px 12px;
+  border-left:3px solid #d89c54;
+  border-radius:0 8px 8px 0;
+  background:rgba(255,255,255,.78);
+  color:#513d2b;
+}
