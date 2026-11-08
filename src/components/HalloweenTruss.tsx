@@ -2,72 +2,92 @@ import { useEffect, useRef } from 'react'
 import './HalloweenTruss.css'
 
 type Point3 = readonly [number, number, number]
-type Edge = readonly [number, number]
+type Beam = { from: number; to: number; material: 'rib' | 'hoop' | 'brace' | 'stem' }
 
-// An icosahedron has actual 3D vertices and structural edges. Each frame
-// projects those points onto the canvas, rather than spinning a flat SVG.
-const goldenRatio = (1 + Math.sqrt(5)) / 2
-const rawVertices: Point3[] = [
-  [0, -1, -goldenRatio], [0, -1, goldenRatio],
-  [0, 1, -goldenRatio], [0, 1, goldenRatio],
-  [-1, -goldenRatio, 0], [-1, goldenRatio, 0],
-  [1, -goldenRatio, 0], [1, goldenRatio, 0],
-  [-goldenRatio, 0, -1], [goldenRatio, 0, -1],
-  [-goldenRatio, 0, 1], [goldenRatio, 0, 1],
-]
-const vertices = rawVertices.map(([x, y, z]): Point3 => {
-  const length = Math.hypot(x, y, z)
-  return [x / length, y / length, z / length]
-})
-const edges: Edge[] = vertices.flatMap((a, i) =>
-  vertices.slice(i + 1).flatMap((b, offset) => {
-    const distance = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
-    return distance < 1.1 ? [[i, i + offset + 1] as Edge] : []
-  }),
-)
+// A pumpkin-shaped spatial framework, not an image rotated in 2D.
+// Meridians curve from top to base, horizontal hoops stabilize the frame,
+// and a few diagonal braces give it a recognizable engineering character.
+const vertices: Point3[] = []
+const beams: Beam[] = []
+const ribs = 10
+const rings = 9
+for (let band = 0; band < rings; band++) {
+  const phi = (band + 1) * Math.PI / (rings + 1)
+  const y = 0.81 * Math.cos(phi)
+  const radius = 0.94 * Math.pow(Math.sin(phi), 0.62)
+  for (let rib = 0; rib < ribs; rib++) {
+    const theta = rib * 2 * Math.PI / ribs
+    const lobe = 1 + 0.065 * Math.cos(10 * theta)
+    vertices.push([radius * lobe * Math.cos(theta), y, radius * lobe * Math.sin(theta)])
+    if (band > 0) beams.push({ from: (band - 1) * ribs + rib, to: band * ribs + rib, material: 'rib' })
+    if (band === 2 || band === 4 || band === 6) beams.push({
+      from: band * ribs + rib,
+      to: band * ribs + (rib + 1) % ribs,
+      material: 'hoop',
+    })
+    if ((band === 3 || band === 5) && rib % 2 === 0) beams.push({
+      from: (band - 1) * ribs + rib,
+      to: band * ribs + (rib + 1) % ribs,
+      material: 'brace',
+    })
+  }
+}
+const top = vertices.push([0, 0.84, 0]) - 1
+const bottom = vertices.push([0, -0.84, 0]) - 1
+for (let rib = 0; rib < ribs; rib++) {
+  beams.push({ from: top, to: rib, material: 'rib' })
+  beams.push({ from: (rings - 1) * ribs + rib, to: bottom, material: 'rib' })
+}
+const stemBase = vertices.push([0, 0.83, 0]) - 1
+const stemBend = vertices.push([0.03, 1.0, 0.02]) - 1
+const stemTip = vertices.push([0.13, 1.1, 0.03]) - 1
+beams.push({ from: stemBase, to: stemBend, material: 'stem' })
+beams.push({ from: stemBend, to: stemTip, material: 'stem' })
 
-function paint(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  angle: number,
-) {
+function draw(ctx: CanvasRenderingContext2D, width: number, height: number, angle: number) {
   ctx.clearRect(0, 0, width, height)
-
-  const tilt = -0.25
-  const yaw = angle
+  const tilt = -0.20
   const projected = vertices.map(([x, y, z]) => {
-    const rotatedX = x * Math.cos(yaw) + z * Math.sin(yaw)
-    const rotatedZ = z * Math.cos(yaw) - x * Math.sin(yaw)
-    const rotatedY = y * Math.cos(tilt) - rotatedZ * Math.sin(tilt)
-    const depth = y * Math.sin(tilt) + rotatedZ * Math.cos(tilt)
-    const perspective = 2.9 / (2.9 - depth * 0.35)
-    const radius = Math.min(width * 0.31, height * 0.37)
-    return { x: width / 2 + rotatedX * radius * perspective, y: height * 0.48 + rotatedY * radius * perspective, z: depth }
+    const rx = x * Math.cos(angle) + z * Math.sin(angle)
+    const rz = z * Math.cos(angle) - x * Math.sin(angle)
+    const ry = y * Math.cos(tilt) - rz * Math.sin(tilt)
+    const depth = y * Math.sin(tilt) + rz * Math.cos(tilt)
+    const scale = 2.9 / (2.9 - depth * 0.34)
+    const radius = Math.min(width * 0.39, height * 0.40)
+    return { x: width * 0.5 + rx * radius * scale, y: height * 0.52 - ry * radius * scale, z: depth }
   })
 
-  // Rear braces are subtle; front braces get crisp depth and definition.
-  const ordered = edges.map(([from, to], i) => ({
-    from: projected[from], to: projected[to], depth: (projected[from].z + projected[to].z) / 2, index: i,
+  const ordered = beams.map(beam => ({
+    ...beam,
+    a: projected[beam.from],
+    b: projected[beam.to],
+    depth: (projected[beam.from].z + projected[beam.to].z) * 0.5,
   })).sort((a, b) => a.depth - b.depth)
 
-  for (const edge of ordered) {
-    const front = Math.max(0, Math.min(1, (edge.depth + 1) / 2))
+  for (const beam of ordered) {
+    const front = Math.max(0, Math.min(1, (beam.depth + 1) * 0.5))
+    const opacity = 0.23 + front * 0.7
     ctx.beginPath()
-    ctx.moveTo(edge.from.x, edge.from.y)
-    ctx.lineTo(edge.to.x, edge.to.y)
-    ctx.lineWidth = 0.9 + front * 0.8
-    ctx.strokeStyle = edge.index % 7 === 0
-      ? `rgba(53, 132, 152, ${0.36 + front * 0.48})`
-      : `rgba(52, 65, 60, ${0.22 + front * 0.7})`
+    ctx.moveTo(beam.a.x, beam.a.y)
+    ctx.lineTo(beam.b.x, beam.b.y)
+    ctx.lineWidth = beam.material === 'stem' ? 2.7 : beam.material === 'brace' ? 0.85 : 1.15 + front * 0.5
+    ctx.lineCap = 'round'
+    ctx.strokeStyle = beam.material === 'stem'
+      ? `rgba(49, 106, 77, ${0.60 + front * 0.35})`
+      : beam.material === 'brace'
+        ? `rgba(52, 119, 136, ${opacity * 0.65})`
+        : beam.material === 'hoop'
+          ? `rgba(122, 83, 50, ${opacity * 0.75})`
+          : `rgba(193, 103, 40, ${opacity})`
     ctx.stroke()
   }
 
-  projected.forEach(point => {
-    if (point.z < 0.05) return
+  // Only the front structural joints are drawn, for a calm CAD-like look.
+  projected.slice(0, rings * ribs).forEach(point => {
+    if (point.z < 0.25) return
     ctx.beginPath()
-    ctx.arc(point.x, point.y, 1.4, 0, Math.PI * 2)
-    ctx.fillStyle = '#4d625a'
+    ctx.arc(point.x, point.y, 1.15, 0, 2 * Math.PI)
+    ctx.fillStyle = '#b87744'
     ctx.fill()
   })
 }
@@ -95,8 +115,7 @@ export default function HalloweenTruss() {
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       if (!start) start = timestamp
-      const angle = reducedMotion.matches ? 0.42 : 0.42 + (timestamp - start) * 0.00024
-      paint(ctx, width, height, angle)
+      draw(ctx, width, height, reducedMotion.matches ? 0.45 : 0.45 + (timestamp - start) * 0.00020)
       if (!reducedMotion.matches) frame = requestAnimationFrame(render)
     }
 
@@ -115,11 +134,11 @@ export default function HalloweenTruss() {
 
   return (
     <figure className="halloween-truss">
-      <div className="halloween-truss-stage" role="img" aria-label="Slowly rotating three-dimensional wireframe engineering sculpture">
+      <div className="halloween-truss-stage" role="img" aria-label="Slowly rotating three-dimensional pumpkin-shaped engineering truss with orange ribs and green stem">
         <canvas ref={canvasRef} className="halloween-truss-canvas" aria-hidden="true" />
         <span className="halloween-truss-shadow" aria-hidden="true" />
       </div>
-      <figcaption>Structural geometry · icosahedron study</figcaption>
+      <figcaption>Pumpkin truss · seasonal structural study</figcaption>
     </figure>
   )
 }
