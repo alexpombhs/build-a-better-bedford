@@ -184,3 +184,25 @@
 @media(max-width:800px){
   .studio-template-options {grid-template-columns:1fr}
 }
+
+/* The editor separates a section's placement from its visual treatment. */
+.studio-section-options {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  padding:6px 0 2px;
+  align-items:start;
+}
+.studio-section-options .bbb-ui-select {
+  min-width:0;
+}
+.studio-section-options .MuiFormLabel-root {
+  font-weight:500;
+}
+.studio-section-options .MuiSelect-select {
+  font-size:14px;
+  font-weight:400;
+}
+@media(max-width:620px) {
+  .studio-section-options {grid-template-columns:minmax(0,1fr);}
+}
