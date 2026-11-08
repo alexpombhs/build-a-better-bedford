@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { NewsletterRichEditor } from './components/NewsletterRichEditor'
 import { MediaFilePicker } from './components/MediaFilePicker'
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined'
 import type { NewsletterEditorHandle } from './components/NewsletterRichEditor'
 import { UiDialog, UiDialogTitle, UiDialogContent, UiDialogActions, UiSelect, UiTextField } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
@@ -527,7 +530,16 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         <button className="studio-primary" type="button" onClick={() => { setDraft(emptyIssue()); setNewIssue(true); setPreview(false); setMessage('') }}>+ New issue</button>
         <p className="studio-kicker">ALL ISSUES · INCLUDING HIDDEN</p>
         {list.map(issue => <button key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => { setDraft(forEditing(issue)); setNewIssue(false); setPreview(false); setMessage('') }}>
-          <strong>{issue.month}</strong><span>{issue.title}</span><small>{issue.status.replace('_', ' ')}</small>
+          <span className="studio-issue-title">{issue.title || 'Untitled issue'}</span>
+          <span className="studio-issue-meta">
+            <span className="studio-issue-month">{issue.month}</span>
+            <span className={`studio-issue-state studio-issue-state-${issue.status}`}>
+              {issue.status === 'published' ? <CheckCircleOutlineIcon fontSize="inherit" aria-hidden="true" />
+                : issue.status === 'in_review' ? <ScheduleOutlinedIcon fontSize="inherit" aria-hidden="true" />
+                : <EditOutlinedIcon fontSize="inherit" aria-hidden="true" />}
+              <span>{issue.status === 'in_review' ? 'In review' : issue.status === 'published' ? 'Published' : 'Draft'}</span>
+            </span>
+          </span>
         </button>)}
       </aside>
       <div className="studio-main">
