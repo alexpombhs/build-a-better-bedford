@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import PageHeading from './components/PageHeading'
 import { supabase } from './supabase'
-import NewsletterStudio from './NewsletterStudio'
 import roadSolution from './assets/road_solution.png'
 import './newsletterStudio.css'
 
@@ -147,7 +146,6 @@ export default function Newsletter() {
   const [issues, setIssues] = useState<NewsletterIssue[]>([initialOctober])
   const [selected, setSelected] = useState(initialOctober.id)
   const [archiveOpen, setArchiveOpen] = useState(false)
-  const [studioOpen, setStudioOpen] = useState(false)
   const [editorAuthenticated, setEditorAuthenticated] = useState(false)
   const [error, setError] = useState('')
   const refresh = async () => {
@@ -172,13 +170,9 @@ export default function Newsletter() {
     setIssues(visible)
     setSelected(previous => visible.some(issue => issue.id === previous) ? previous : (visible[0]?.id ?? ''))
   }
-  useEffect(() => { void refresh() }, [studioOpen])
+  useEffect(() => { void refresh() }, [])
   const chosen = issues.find(issue => issue.id === selected)
   return <div>
-    <div className="newsletter-public-toolbar">
-      <button type="button" className="newsletter-editor-entry" onClick={() => setStudioOpen(v => !v)}>{studioOpen ? '← Back to newsletters' : 'Newsletter editor'}</button>
-    </div>
-    {studioOpen ? <NewsletterStudio onPublished={() => { setStudioOpen(false); void refresh() }} /> :
     <div className={archiveOpen ? 'newsletter-library archive-visible' : 'newsletter-library'}>
       <button className="newsletter-issue-tab" type="button" aria-expanded={archiveOpen} onClick={() => setArchiveOpen(v => !v)}>▤ <span>Browse issues</span></button>
       {archiveOpen && <div className="newsletter-archive-scrim" onClick={() => setArchiveOpen(false)} />}
@@ -193,6 +187,6 @@ export default function Newsletter() {
       </aside>
       {error && <p role="status" className="newsletter-load-message">{error}</p>}
       {chosen ? <IssueView issue={chosen} /> : <div className="newsletter-empty"><PageHeading title="No published issues yet" description="Check back for updates from Build a Better Bedford." /></div>}
-    </div>}
+    </div>
   </div>
 }
