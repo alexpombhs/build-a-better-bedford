@@ -7,6 +7,8 @@ import HalloweenTruss from './components/HalloweenTruss'
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined'
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined'
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import { supabase } from './supabase'
 import roadSolution from './assets/road_solution.png'
 import './newsletterStudio.css'
@@ -94,7 +96,19 @@ function embeddedVideoUrl(value: string): string | null {
     return null
   }
 }
-export { embeddedVideoUrl }
+// A Google Maps contributor video cannot be played in a third-party iframe.
+// Offer a labeled preview that takes readers to the exact original clip instead.
+function externalGoogleMapsVideoUrl(value: string): string | null {
+  try {
+    const url = new URL(value)
+    if (url.protocol !== 'https:' || !['google.com', 'www.google.com'].includes(url.hostname)) return null
+    if (url.pathname !== '/search' || !url.hash.startsWith('#lpg=') || !url.hash.includes(',ik:')) return null
+    return url.href
+  } catch {
+    return null
+  }
+}
+export { embeddedVideoUrl, externalGoogleMapsVideoUrl }
 
 export function NewsletterMediaView({ media }: { media: NewsletterMedia }) {
   const [signedUrl, setSignedUrl] = useState('')
@@ -116,13 +130,25 @@ export function NewsletterMediaView({ media }: { media: NewsletterMedia }) {
 
   const imageUrl = media.asset === 'road-solution' ? roadSolution : signedUrl
   const embedded = media.type === 'video' && media.url ? embeddedVideoUrl(media.url) : null
+  const googleMapsClip = media.type === 'video' && media.url ? externalGoogleMapsVideoUrl(media.url) : null
   return <figure className="newsletter-media">
     {media.type === 'image' && imageUrl && <img loading="lazy" src={imageUrl} alt={media.alt || 'Newsletter illustration'} />}
     {media.type === 'video' && media.storagePath && signedUrl &&
       <video src={signedUrl} controls playsInline preload="metadata" aria-label={media.alt || 'Newsletter video'} />}
     {media.type === 'video' && embedded &&
       <div className="newsletter-video-frame"><iframe src={embedded} title={media.alt || 'Newsletter video'} loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div>}
-    {(!imageUrl && media.type === 'image' || media.type === 'video' && !signedUrl && !embedded) &&
+    {googleMapsClip && <a className="newsletter-external-video" href={googleMapsClip} target="_blank" rel="noopener noreferrer"
+      aria-label={(media.alt || 'Bridge video') + ' — watch the original clip on Google Maps (opens in new tab)'}>
+      <span className="newsletter-external-video-poster">
+        <span className="newsletter-external-video-source">CONTRIBUTOR VIDEO · GOOGLE MAPS · 0:12</span>
+        <span className="newsletter-external-video-icon"><PlayCircleOutlineIcon aria-hidden="true" /></span>
+        <span className="newsletter-external-video-overlay">Hart–Desiato Bridge</span>
+        <span className="newsletter-external-video-subtitle">A look at the timber supports beneath the bridge</span>
+      </span>
+      <span className="newsletter-external-video-action">Watch the original video on Google Maps <OpenInNewIcon aria-hidden="true" fontSize="inherit" /></span>
+      <span className="newsletter-external-video-description">Video opens on Google Maps; it cannot play directly on this site.</span>
+    </a>}
+    {(!imageUrl && media.type === 'image' || media.type === 'video' && !signedUrl && !embedded && !googleMapsClip) &&
       <p className="newsletter-media-placeholder" role="status">{loadingError ? 'This attachment could not be loaded.' : 'Loading attachment…'}</p>}
     {media.caption && <figcaption>{media.caption}</figcaption>}
   </figure>
