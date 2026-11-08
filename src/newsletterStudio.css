@@ -268,3 +268,64 @@
 @media(max-width:850px) {
   .studio-section-options {grid-template-columns:minmax(0,1fr);}
 }
+
+/* Compact media tool; details are now handled in a focused dialog. */
+.studio-inline-media {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:10px;
+  margin-top:2px;
+}
+.studio-add-media-button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:8px 11px;
+  color:#365f49;
+  background:#fff;
+  border:1px solid #cddcd0;
+  border-radius:7px;
+  font-size:12px;
+  font-weight:500;
+  cursor:pointer;
+}
+.studio-add-media-button:hover {background:#f3f8f4;border-color:#8eb49b}
+.studio-add-media-button:focus-visible,
+.studio-attachment-action:focus-visible {outline:2px solid #397653;outline-offset:2px}
+.studio-add-media-button span {font-size:17px;line-height:1}
+.studio-attachment-list {display:grid;gap:6px;width:100%}
+.studio-attachment {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:9px;
+  padding:7px 10px;
+  border:1px solid #e2e9e3;
+  border-radius:7px;
+  background:#fbfcfb;
+}
+.studio-attachment-name {
+  flex:1 1 150px;
+  min-width:0;
+  overflow-wrap:anywhere;
+  color:#4e6355;
+  font-size:12px;
+}
+.studio-attachment-action {
+  padding:4px;
+  background:none;
+  border:0;
+  font-size:12px;
+  font-weight:500;
+  color:#326449;
+  cursor:pointer;
+}
+.studio-attachment-remove {color:#9b6251}
+.studio-media-dialog-fields {display:grid;gap:18px;padding:7px 0}
+.studio-dialog-file {display:grid;gap:8px}
+.studio-dialog-file label {font-size:13px;font-weight:500;color:#425e49}
+.studio-dialog-file input {max-width:100%;font:inherit;font-size:13px}
+.studio-dialog-file small {font-size:11px;color:#637a69;line-height:1.5}
+.studio-media-dialog-error {color:#a13c32;font-size:13px;margin:0}
