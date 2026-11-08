@@ -64,8 +64,13 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     let active = true
     const check = async (nextUser: User | null) => {
       if (!active) return
-      setUser(nextUser)
       setChecking(true)
+      setAuthorized(false)
+      setList([])
+      setDraft(emptyIssue())
+      setNewIssue(true)
+      setPreview(false)
+      setUser(nextUser)
       if (!nextUser?.email) { setAuthorized(false); setNeedsPasswordChange(false); setChecking(false); return }
       const { data, error } = await supabase.from('newsletter_staff').select('email,must_change_password').eq('email', nextUser.email.toLowerCase()).maybeSingle()
       if (!active) return
