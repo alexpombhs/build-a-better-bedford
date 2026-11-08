@@ -101,8 +101,12 @@ export function NewsletterMediaView({ media }: { media: NewsletterMedia }) {
 export type NewsletterLayout = 'article' | 'feature'
 
 export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssue; layout?: NewsletterLayout }) {
-  const mainDetails = issue.details.filter(section => section.placement !== 'sidebar')
-  const sideDetails = issue.details.filter(section => section.placement === 'sidebar')
+  // Older newsletters stored the Halloween feature as a main-article section.
+  // Present it in the secondary rail without rewriting or deleting saved content.
+  const isHalloweenFeature = (section: NewsletterSection) =>
+    /halloween/i.test(section.heading) && /joke|skeleton|haunted|ghost/i.test(section.body)
+  const mainDetails = issue.details.filter(section => section.placement !== 'sidebar' && !isHalloweenFeature(section))
+  const sideDetails = issue.details.filter(section => section.placement === 'sidebar' || isHalloweenFeature(section))
   const articleSections = mainDetails.length > 0 ? mainDetails : issue.sections
   const contents = issue.sections.length > 0 ? issue.sections : mainDetails
   const hasSideRail = contents.length > 0 || sideDetails.length > 0
@@ -150,11 +154,19 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
           </nav>}
           {sideDetails.length > 0 && <div className="newsletter-side-stories">
             <div className="newsletter-side-heading">ON THE SIDE</div>
-            {sideDetails.map((section, index) => <section className="newsletter-side-story" key={index}>
-              <Typography component="h2" variant="subtitle1">{section.heading}</Typography>
-              <Typography component="p" variant="body2">{section.body}</Typography>
-              {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
-            </section>)}
+            {sideDetails.map((section, index) => {
+              const halloween = isHalloweenFeature(section)
+              return <section className={halloween ? 'newsletter-side-story newsletter-halloween-feature' : 'newsletter-side-story'} key={index}>
+                {halloween && <span className="newsletter-halloween-eyebrow" aria-hidden="true">🎃 CLUB CORNER</span>}
+                <Typography component="h2" variant="subtitle1">{section.heading}</Typography>
+                {halloween
+                  ? <div className="newsletter-halloween-copy">{section.body.split(/\\n\\s*\\n/).filter(Boolean).map((paragraph, paragraphIndex) =>
+                      <p className={/^(Why |Because )/i.test(paragraph.trim()) ? 'newsletter-halloween-joke' : undefined} key={paragraphIndex}>{paragraph}</p>
+                    )}</div>
+                  : <Typography component="p" variant="body2">{section.body}</Typography>}
+                {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
+              </section>
+            })}
           </div>}
         </aside>}
       </div>
