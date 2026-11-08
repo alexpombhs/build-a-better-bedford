@@ -173,19 +173,21 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
           </div>}
           {isOctober2026 && <section className="newsletter-nerd-facts" aria-label="Did you know? Bedford dog facts">
             <div className="newsletter-side-heading">DID YOU KNOW?</div>
-            <div className="newsletter-nerd-fact">
+            <ol className="newsletter-nerd-fact-list">
+              <li className="newsletter-nerd-fact">
               <h3>About one registered dog for every five Bedford households</h3>
               <p>Bedford had 1,162 registered dogs in August 2026—roughly 20 dogs for every 100 households.</p>
               <a href="https://thebedfordcitizen.org/2026/08/bedford-home-to-many-four-legged-friends/" target="_blank" rel="noopener noreferrer">Read more <span aria-hidden="true">↗</span></a>
-            </div>
-            <div className="newsletter-nerd-fact">
+              </li>
+              <li className="newsletter-nerd-fact">
               <h3>Bedford once planned a dog park</h3>
               <p>The town formed a Dog Park Task Force and approved preliminary funding, but the proposal faced concerns about location and community impacts.</p>
               <div className="newsletter-nerd-links">
                 <a href="https://www.bedfordma.gov/ArchiveCenter/ViewFile/Item/215" target="_blank" rel="noopener noreferrer">Read more <span aria-hidden="true">↗</span></a>
                 <a href="https://cdn.thebedfordcitizen.org/wp-content/uploads/2018/05/ad-hoc-Dog-Park-Task-Force-Recommendations-to-the-Selectmen-05292018.pdf" target="_blank" rel="noopener noreferrer">Proposed locations <span aria-hidden="true">↗</span></a>
               </div>
-            </div>
+              </li>
+            </ol>
           </section>}
         </aside>}
       </div>
