@@ -36,6 +36,19 @@ const cleanSections = (sections: NewsletterSection[]) =>
       ...item, alt: item.alt?.trim() ?? '', caption: item.caption?.trim() ?? '',
     })),
   })).filter(section => section.heading || section.body || section.media.length)
+// Older newsletters may only contain the legacy sections array. Adapt them
+// for editing without changing what is stored until the user explicitly saves.
+const forEditing = (issue: NewsletterIssue): NewsletterIssue => ({
+  ...issue,
+  details: issue.details.length > 0 ? issue.details.map(section => ({
+    ...section,
+    summary: section.summary ?? issue.sections.find(item => item.heading.trim().toLowerCase() === section.heading.trim().toLowerCase())?.body ?? '',
+  })) : issue.sections.map(section => ({
+    ...section,
+    placement: 'main' as const,
+    summary: section.body ? '' : undefined,
+  })),
+})
 const normalize = (issue: NewsletterIssue): NewsletterIssue => ({
   ...issue,
   title: issue.title.trim(), description: issue.description.trim(),
@@ -505,7 +518,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       <aside className="studio-panel studio-sidebar">
         <button className="studio-primary" type="button" onClick={() => { setDraft(emptyIssue()); setNewIssue(true); setPreview(false); setMessage('') }}>+ New issue</button>
         <p className="studio-kicker">ALL ISSUES · INCLUDING HIDDEN</p>
-        {list.map(issue => <button key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => { setDraft(issue); setNewIssue(false); setPreview(false); setMessage('') }}>
+        {list.map(issue => <button key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => { setDraft(forEditing(issue)); setNewIssue(false); setPreview(false); setMessage('') }}>
           <strong>{issue.month}</strong><span>{issue.title}</span><small>{issue.status.replace('_', ' ')}</small>
         </button>)}
       </aside>
