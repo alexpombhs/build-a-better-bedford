@@ -1,6 +1,6 @@
 import { useId } from 'react'
 import type { ComponentProps } from 'react'
-import { Box, ButtonBase, Card, CardContent, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Slider, Stack, Tab, Tabs, Typography } from '@mui/material'
+import { Box, ButtonBase, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Slider, Stack, Tab, Tabs, Typography } from '@mui/material'
 
 /** Atomic MUI boundary. Screens and organisms must import wrappers, never MUI directly. */
 const classes = {
@@ -49,3 +49,9 @@ export function UiSelect({ label, value, options, onValueChange, className, disa
     </Select>
   </FormControl>
 }
+
+/** Dialog atoms keep editorial workflows inside the shared MUI layer. */
+export function UiDialog(props: ComponentProps<typeof Dialog>){return <Dialog {...props} />}
+export function UiDialogTitle(props: ComponentProps<typeof DialogTitle>){return <DialogTitle {...props} />}
+export function UiDialogContent(props: ComponentProps<typeof DialogContent>){return <DialogContent {...props} />}
+export function UiDialogActions(props: ComponentProps<typeof DialogActions>){return <DialogActions {...props} />}
