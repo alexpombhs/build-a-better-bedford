@@ -468,14 +468,14 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         <button type="button" className="studio-secondary" onClick={() => void supabase.auth.signOut()}>Sign out</button>
       </div>
     </div>
-    <div className="studio-layout">
-      <aside className="studio-panel studio-sidebar">
+    <div className={preview ? "studio-layout studio-layout-preview" : "studio-layout"}>
+      {!preview && <aside className="studio-panel studio-sidebar">
         <button className="studio-primary" type="button" onClick={() => { setDraft(emptyIssue()); setNewIssue(true); setPreview(false); setMessage('') }}>+ New issue</button>
         <p className="studio-kicker">ALL ISSUES · INCLUDING HIDDEN</p>
         {list.map(issue => <button key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => { setDraft(issue); setNewIssue(false); setPreview(false); setMessage('') }}>
           <strong>{issue.month}</strong><span>{issue.title}</span><small>{issue.status.replace('_', ' ')}</small>
         </button>)}
-      </aside>
+      </aside>}
       <div className="studio-main">
         <div className="studio-actions">
           <div className="studio-tabs"><button type="button" className={!preview ? 'active' : ''} onClick={() => setPreview(false)}>Edit</button><button type="button" className={preview ? 'active' : ''} onClick={() => setPreview(true)}>Preview</button></div>
