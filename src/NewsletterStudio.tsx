@@ -482,8 +482,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <span className="studio-status">{draft.status.replace('_', ' ')}</span>
         </div>
         {preview ? <div className="studio-preview-area">
-          <p className="studio-layout-description">Preview of the published article layout. Nothing is published until you choose “Publish issue.”</p>
-          <div className="studio-preview"><IssueView issue={draft} layout="article" /></div>
+          <p className="studio-layout-description">Article preview: main content and side panel, without site navigation. Nothing is published until you choose “Publish issue.”</p>
+          <div className="studio-preview"><IssueView issue={draft} layout="article" editorPreview /></div>
         </div> : <div className="studio-panel studio-form">
           <h2>Issue details</h2>
           <div className="studio-fields-two">
