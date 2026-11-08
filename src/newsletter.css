@@ -173,3 +173,40 @@
 .newsletter-library .newsletter-notes-head{letter-spacing:.04em}
 .newsletter-library .archive-item strong{line-height:1.35}
 .newsletter-library .newsletter-drawer-toggle{font-size:14px}
+
+/* The numbered contents appear only in the secondary column; article text
+   lives below the heading and is never duplicated in the contents list. */
+.newsletter-library .newsletter-notes-head { justify-content:flex-start; }
+.newsletter-library .newsletter-note { grid-template-columns:28px minmax(0,1fr);gap:10px; }
+.newsletter-library .newsletter-note a,
+.newsletter-library .newsletter-toc-label {
+  display:block;
+  color:#214834;
+  font-size:13px;
+  font-weight:600;
+  line-height:1.4;
+  text-decoration:none;
+}
+.newsletter-library .newsletter-note a:hover { text-decoration:underline; }
+.newsletter-library .newsletter-note a:focus-visible { outline:2px solid #2f684b;outline-offset:3px; }
+.newsletter-library .newsletter-expand-panel { padding-top:0; }
+.newsletter-library .newsletter-expand-panel .design-problem {
+  max-width:850px;
+  scroll-margin-top:100px;
+}
+.newsletter-library .newsletter-expand-panel .design-problem h2 {
+  margin:0 0 10px;
+  font-size:clamp(21px,2vw,28px);
+  font-weight:700;
+  letter-spacing:-.02em;
+  line-height:1.25;
+  color:#173c2b;
+}
+.newsletter-library .newsletter-article-body {
+  margin:0;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  color:#465a4d;
+  font-size:15px;
+  line-height:1.7;
+}
