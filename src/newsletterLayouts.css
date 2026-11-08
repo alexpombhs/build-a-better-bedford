@@ -655,9 +655,9 @@
 .newsletter-page .newsletter-article-copy > .newsletter-leadership-team {
   display:flex;
   flex-direction:column;
-  gap:0;
+  gap:3px;
   margin:2px 0 4px;
-  padding:8px 14px;
+  padding:9px 14px;
   border-left:2px solid #b8cebd;
   border-radius:0 8px 8px 0;
   background:#f6f9f6;
@@ -671,9 +671,6 @@
   padding:7px 0;
   font-size:.875rem;
   line-height:1.4;
-}
-.newsletter-page .newsletter-leadership-team .newsletter-leadership-person + .newsletter-leadership-person {
-  border-top:1px solid #e5ece6;
 }
 .newsletter-page .newsletter-leadership-icon {
   display:flex;
