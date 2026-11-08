@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import Newsletter from './Newsletter'
+import NewsletterStudio from './NewsletterStudio'
 import AboutPage from './AboutPage'
 import SiteHeader from './components/SiteHeader'
 import PageHeading from './components/PageHeading'
@@ -30,7 +31,20 @@ const homepageImage = (name: string): string | undefined => {
 }
 
 
-type Page = 'home' | 'about' | 'what-we-do' | 'projects' | 'newsletter' | 'join'
+type Page = 'home' | 'about' | 'what-we-do' | 'projects' | 'lab' | 'newsletter' | 'join' | 'admin'
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
+const pagePaths: Record<Page, string> = {
+  home: '/', about: '/about', 'what-we-do': '/what-we-do', projects: '/projects',
+  lab: '/lab', newsletter: '/newsletter', join: '/join', admin: '/admin',
+}
+const pageFromLocation = (): Page => {
+  const pathname = window.location.pathname
+  const relative = pathname.startsWith(basePath + '/') ? pathname.slice(basePath.length) : pathname
+  const normalized = relative.replace(/\/+$/, '') || '/'
+  return (Object.keys(pagePaths) as Page[]).find(page => pagePaths[page] === normalized) ?? 'home'
+}
+
 type SubmittedIdea = { id:number; title:string; subtitle:string; description:string; submitter_name:string|null; photo_url:string|null }
 type ProjectCard = {
   id?: number
@@ -120,12 +134,25 @@ const labels: Record<Page, string> = {
   projects: 'Projects',
   newsletter: 'Newsletter',
   join: 'Join the Club',
+  lab: 'Lab',
+  admin: 'Newsletter editor',
 }
 
 function App() {
-  const [page, setPage] = useState<Page>('home')
+  const [page, setPage] = useState<Page>(pageFromLocation)
   const [projectPage, setProjectPage] = useState(0)
-  const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>('ideas')
+  const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>(() => pageFromLocation() === 'lab' ? 'simulators' : 'ideas')
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const next = pageFromLocation()
+      setPage(next)
+      if (next === 'lab') setProjectTab('simulators')
+      if (next === 'projects') setProjectTab('ideas')
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
   const [ideaOpen, setIdeaOpen] = useState(false)
   const [flippedIdeas, setFlippedIdeas] = useState<string[]>([])
   const [ideaForm, setIdeaForm] = useState<IdeaForm>(emptyIdea)
@@ -272,15 +299,17 @@ function App() {
   }
 
   const go = (next: Page) => {
+    const path = `${basePath}${pagePaths[next]}`
+    if (window.location.pathname !== path) window.history.pushState(null, '', path)
     setPage(next)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return <main className="site-shell">
     <SiteHeader
-      active={page === 'projects' ? (projectTab === 'ideas' ? 'projects' : 'lab') : page === 'newsletter' ? 'newsletter' : page === 'about' ? 'about' : 'home'}
+      active={page === 'projects' || page === 'lab' ? (projectTab === 'ideas' ? 'projects' : 'lab') : page === 'newsletter' ? 'newsletter' : page === 'about' ? 'about' : 'home'}
       onNavigate={section => {
-        if (section === 'lab') { setProjectTab('simulators'); go('projects') }
+        if (section === 'lab') { setProjectTab('simulators'); go('lab') }
         else if (section === 'projects') { setProjectTab('ideas'); go('projects') }
         else go(section)
       }}
@@ -298,7 +327,7 @@ function App() {
           <span className="portfolio-project-copy"><strong>01 / Bridge Project</strong><small>STRUCTURAL MECHANICS · CURRENT PROJECT</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
         </button>
-        <button className="portfolio-project portfolio-lab" onClick={() => {go('projects');setProjectTab('simulators')}}>
+        <button className="portfolio-project portfolio-lab" onClick={() => {setProjectTab('simulators');go('lab')}}>
           {homepageImage("bridge_blueprint_64.png") ? <img src={homepageImage("bridge_blueprint_64.png")} alt="Technical line drawing showing truss bridge elevations and details" /> : <span className="portfolio-missing-image">Bridge blueprint not found</span>}
           <span className="portfolio-project-copy"><strong>02 / Engineering Lab</strong><small>SIMULATIONS · EXPERIMENTS · DESIGN TOOLS</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
@@ -312,10 +341,11 @@ function App() {
     </section>}
 
     {page === 'newsletter' && <Newsletter />}
+    {page === 'admin' && <NewsletterStudio onPublished={() => go('newsletter')} />}
 
-    {page === 'projects' && <section className="projects-page">
+    {(page === 'projects' || page === 'lab') && <section className="projects-page">
       <div className="projects-heading projects-toolbar">
-        <EngineeringTabs active={projectTab} onChange={setProjectTab} />
+        <EngineeringTabs active={projectTab} onChange={tab => { setProjectTab(tab); go(tab === 'ideas' ? 'projects' : 'lab') }} />
       </div>
       <EngineeringSectionIntro tab={projectTab} actions={projectTab === 'ideas' ? (
 <div className="ideas-toolbar"><div className="project-pagination" aria-label="Project pages">
@@ -411,7 +441,7 @@ function App() {
 
     {page === 'about' && <AboutPage onJoin={joinClub} />}
 
-    {page !== 'home' && page !== 'newsletter' && page !== 'projects' && page !== 'about' && <section className="coming-page">
+    {page !== 'home' && page !== 'newsletter' && page !== 'projects' && page !== 'lab' && page !== 'admin' && page !== 'about' && <section className="coming-page">
       <p className="eyebrow">{labels[page]}</p>
       <h1>Coming soon.</h1>
       <p>We’re preparing this part of Build a Better Bedford.</p>
