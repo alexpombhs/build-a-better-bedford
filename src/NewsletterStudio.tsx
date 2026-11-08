@@ -8,7 +8,7 @@ import type { NewsletterEditorHandle } from './components/NewsletterRichEditor'
 import { UiDialog, UiDialogTitle, UiDialogContent, UiDialogActions, UiSelect, UiTextField } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
-import { emptyIssue, IssueView, embeddedVideoUrl, newsletterSectionStyle, newsletterSectionPlacement, newsletterColorTheme } from './Newsletter'
+import { emptyIssue, IssueView, embeddedVideoUrl, externalGoogleMapsVideoUrl, newsletterSectionStyle, newsletterSectionPlacement, newsletterColorTheme } from './Newsletter'
 import type { NewsletterIssue, NewsletterSection, NewsletterMedia } from './Newsletter'
 
 type Template = 'club' | 'project' | 'announcement'
@@ -116,7 +116,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [uploading, setUploading] = useState(false)
   const editorRefs = useRef<Record<number,NewsletterEditorHandle|null>>({})
   const [mediaTarget, setMediaTarget] = useState<{ field: 'sections' | 'details'; sectionIndex: number; mediaIndex?: number } | null>(null)
-  const [mediaMode, setMediaMode] = useState<'upload' | 'embed'>('upload')
+  const [mediaMode, setMediaMode] = useState<'upload' | 'embed' | 'google-maps'>('upload')
   const [mediaFile, setMediaFile] = useState<File | null>(null)
   const [mediaUrl, setMediaUrl] = useState('')
   const [mediaAlt, setMediaAlt] = useState('')
@@ -347,7 +347,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const openMediaDialog = (field: 'sections' | 'details', sectionIndex: number, mediaIndex?: number) => {
     const existing = mediaIndex == null ? undefined : draft[field][sectionIndex]?.media?.[mediaIndex]
     setMediaTarget({ field, sectionIndex, mediaIndex })
-    setMediaMode(existing?.url ? 'embed' : 'upload')
+    setMediaMode(existing?.url ? (externalGoogleMapsVideoUrl(existing.url) ? 'google-maps' : 'embed') : 'upload')
     setMediaFile(null)
     setMediaUrl(existing?.url ?? '')
     setMediaAlt(existing?.alt ?? '')
@@ -369,10 +369,14 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       closeMediaDialog()
       return
     }
-    if (mediaMode === 'embed') {
+    if (mediaMode === 'embed' || mediaMode === 'google-maps') {
       const url = mediaUrl.trim()
-      if (!embeddedVideoUrl(url)) {
+      if (mediaMode === 'embed' && !embeddedVideoUrl(url)) {
         setMediaError('Enter a valid HTTPS YouTube or Vimeo video URL.')
+        return
+      }
+      if (mediaMode === 'google-maps' && !externalGoogleMapsVideoUrl(url)) {
+        setMediaError('Paste the Google Search video link that includes the selected Maps clip (#lpg=... ,ik:...).')
         return
       }
       const mediaId=crypto.randomUUID()
@@ -381,7 +385,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         alt: mediaAlt.trim() || 'Newsletter video', caption: mediaCaption.trim(),
       })
       if(field==='details')editorRefs.current[sectionIndex]?.insertMedia(mediaId)
-      setMessage('Video added to the draft. Save the newsletter to keep it.')
+      setMessage(mediaMode === 'google-maps' ? 'Google Maps clip added as a link preview. Playback opens on Google Maps.' : 'Video added to the draft. Save the newsletter to keep it.')
       closeMediaDialog()
       return
     }
@@ -680,8 +684,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
               {mediaTarget?.mediaIndex == null && <UiSelect
                 label="Media source"
                 value={mediaMode}
-                onValueChange={value => {setMediaMode(value as 'upload' | 'embed');setMediaError('')}}
-                options={[{value:'upload',label:'Upload photo or video'},{value:'embed',label:'Embed YouTube or Vimeo video'}]}
+                onValueChange={value => {setMediaMode(value as 'upload' | 'embed' | 'google-maps');setMediaError('')}}
+                options={[{value:'upload',label:'Upload photo or video'},{value:'embed',label:'Embed YouTube or Vimeo video'},{value:'google-maps',label:'Link to Google Maps contributor video'}]}
               />}
               {mediaTarget?.mediaIndex == null && (mediaMode === 'upload'
                 ? <div className="studio-dialog-file">
@@ -689,8 +693,9 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                     <small>Images: JPG, PNG, WebP, GIF up to 8 MB. Videos: MP4, WebM up to 30 MB.</small>
                   </div>
                 : <UiTextField fullWidth label="Video URL" type="url" size="small" value={mediaUrl}
-                    onChange={event => setMediaUrl(event.target.value)} placeholder="https://www.youtube.com/watch?v=…" />)}
-              <UiTextField fullWidth size="small" label={mediaMode === 'embed' || mediaFile?.type.startsWith('video/') ? 'Video title' : 'Image description (alt text)'}
+                    onChange={event => setMediaUrl(event.target.value)} placeholder={mediaMode === 'google-maps' ? 'https://www.google.com/search?q=...#lpg=...' : 'https://www.youtube.com/watch?v=…'} />)}
+              {mediaMode === 'google-maps' && mediaTarget?.mediaIndex == null && <p className="studio-template-help">Google Maps does not provide an embeddable player for these clips. This adds a labeled video card linked to the original, not an uploaded copy.</p>}
+              <UiTextField fullWidth size="small" label={mediaMode === 'embed' || mediaMode === 'google-maps' || mediaFile?.type.startsWith('video/') ? 'Video title' : 'Image description (alt text)'}
                 helperText="Describe the media for accessibility." value={mediaAlt} onChange={event => setMediaAlt(event.target.value)} inputProps={{maxLength:220}} />
               <UiTextField fullWidth size="small" label="Caption or credit (optional)" value={mediaCaption}
                 onChange={event => setMediaCaption(event.target.value)} inputProps={{maxLength:500}} multiline minRows={2} />
