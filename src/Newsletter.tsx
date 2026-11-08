@@ -1,4 +1,4 @@
-import { UiActionButton, UiText } from './components/atoms/MuiPrimitives'
+import { UiText } from './components/atoms/MuiPrimitives'
 import { useEffect, useState } from 'react'
 import PageHeading from './components/PageHeading'
 import HalloweenTruss from './components/HalloweenTruss'
@@ -271,16 +271,16 @@ export default function Newsletter() {
       <aside className="newsletter-archive" aria-label="Newsletter issue library">
         <div className="archive-head">
           <div><span className="archive-kicker">BUILD A BETTER BEDFORD</span><h2>Newsletter archive</h2></div>
-          <UiActionButton className="archive-mobile-toggle" type="button" aria-expanded={mobileIssuesOpen} aria-controls="newsletter-issue-list" onClick={() => setMobileIssuesOpen(open => !open)}>
+          <button className="archive-mobile-toggle" type="button" aria-expanded={mobileIssuesOpen} aria-controls="newsletter-issue-list" onClick={() => setMobileIssuesOpen(open => !open)}>
             {mobileIssuesOpen ? 'Hide issues −' : 'Browse issues +'}
-          </UiActionButton>
+          </button>
         </div>
         <nav id="newsletter-issue-list" className={mobileIssuesOpen ? 'archive-list is-open' : 'archive-list'} aria-label="Browse newsletter issues">
           {issues.map(issue =>
-            <UiActionButton key={issue.id} type="button" className={issue.id === selected ? 'archive-item selected' : 'archive-item'} aria-current={issue.id === selected ? 'page' : undefined} onClick={() => { setSelected(issue.id); setMobileIssuesOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+            <button key={issue.id} type="button" className={issue.id === selected ? 'archive-item selected' : 'archive-item'} aria-current={issue.id === selected ? 'page' : undefined} onClick={() => { setSelected(issue.id); setMobileIssuesOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
               <span className="archive-month">{issue.month} <small>NO. {issue.number}</small></span>
               <strong>{issue.title}</strong>
-            </UiActionButton>)}
+            </button>)}
         </nav>
         <p className="archive-coming">Explore the latest published issues of Build a Better Bedford.</p>
       </aside>
