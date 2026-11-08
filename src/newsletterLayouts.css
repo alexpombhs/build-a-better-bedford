@@ -185,3 +185,80 @@
   .newsletter-page.newsletter-layout-article .newsletter-note{padding:14px 0}
   .newsletter-page.newsletter-layout-article .bbb-page-heading-title{font-size:1.75rem!important}
 }
+
+/* Optional side stories: the reading column always remains the priority. */
+.newsletter-page.newsletter-layout-article .newsletter-clean,
+.newsletter-page.newsletter-layout-feature .newsletter-clean { container-type:inline-size; }
+.newsletter-page .newsletter-editorial-grid { min-width:0; }
+.newsletter-page .newsletter-editorial-grid.has-sidebar {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(185px,210px);
+  gap:clamp(20px,2.5vw,34px);
+  align-items:start;
+}
+.newsletter-page .newsletter-editorial-main { min-width:0; }
+.newsletter-page .newsletter-editorial-aside {
+  min-width:0;
+  padding:0 0 0 20px;
+  border-left:1px solid #dce7df;
+}
+.newsletter-page .newsletter-side-heading {
+  padding:11px 0 14px;
+  color:#728578;
+  font-size:.6875rem;
+  font-weight:750;
+  line-height:1.4;
+  letter-spacing:.07em;
+}
+.newsletter-page .newsletter-side-story {
+  padding:12px 0 16px;
+  border-top:1px solid #e1e9e3;
+}
+.newsletter-page .newsletter-side-story h2 {
+  margin:0 0 8px;
+  color:#244631;
+  font-size:.9375rem;
+  font-weight:650;
+  line-height:1.4;
+}
+.newsletter-page .newsletter-side-story p {
+  margin:0;
+  color:#4e6757;
+  font-size:.875rem;
+  line-height:1.55;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.newsletter-page .newsletter-side-story .newsletter-media { margin:12px 0 0; }
+.newsletter-page.newsletter-layout-feature .newsletter-editorial-aside {
+  padding-left:18px;
+}
+.studio-form select {
+  font:inherit;
+  font-weight:400;
+  font-size:14px;
+  width:100%;
+  border:1px solid #cbd9ce;
+  border-radius:8px;
+  background:#fff;
+  padding:12px;
+  color:#183d2b;
+}
+.studio-form select:focus-visible { outline:2px solid #7aa78b; outline-offset:1px; }
+/* On narrow article widths—including the admin preview—side stories stack after
+   the main article. The left issue archive remains completely independent. */
+@container (max-width:760px) {
+  .newsletter-page .newsletter-editorial-grid.has-sidebar {
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+  }
+  .newsletter-page .newsletter-editorial-main,
+  .newsletter-page .newsletter-editorial-aside { width:100%; }
+  .newsletter-page .newsletter-editorial-aside {
+    border-left:0;
+    border-top:1px solid #dce7df;
+    padding:4px 0 0;
+  }
+  .newsletter-page .newsletter-side-story { max-width:65ch; }
+}
