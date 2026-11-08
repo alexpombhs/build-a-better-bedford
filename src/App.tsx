@@ -6,7 +6,7 @@ import AboutPage from './AboutPage'
 import SiteHeader from './components/SiteHeader'
 import PageHeading from './components/PageHeading'
 import ProjectCard from './components/ProjectCard'
-import { UiActionButton, UiIconButton } from './components/atoms/MuiPrimitives'
+import { UiIconButton } from './components/atoms/MuiPrimitives'
 import './components/IdeaFlip.css'
 import { EngineeringTabs, EngineeringWorkspace, EngineeringSectionIntro } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
@@ -322,16 +322,16 @@ function App() {
         {homepageImage("bridge_sketch_64.png") ? <img className="portfolio-hero-sketch" src={homepageImage("bridge_sketch_64.png")} alt="Conceptual pen sketch of a truss bridge" /> : <div className="portfolio-missing-sketch" role="status">Bridge sketch unavailable</div>}
       </div>
       <div className="portfolio-projects">
-        <UiActionButton className="portfolio-project portfolio-bridge" onClick={() => {go('projects');setProjectTab('hands-on')}}>
+        <button className="portfolio-project portfolio-bridge" onClick={() => {go('projects');setProjectTab('hands-on')}}>
           {homepageImage("bridge_photo_64.png") ? <img src={homepageImage("bridge_photo_64.png")} alt="Steel truss bridge photographed from below" /> : <span className="portfolio-missing-image">Bridge photo not found</span>}
           <span className="portfolio-project-copy"><strong>01 / Bridge Project</strong><small>STRUCTURAL MECHANICS · CURRENT PROJECT</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
-        </UiActionButton>
-        <UiActionButton className="portfolio-project portfolio-lab" onClick={() => {setProjectTab('simulators');go('lab')}}>
+        </button>
+        <button className="portfolio-project portfolio-lab" onClick={() => {setProjectTab('simulators');go('lab')}}>
           {homepageImage("bridge_blueprint_64.png") ? <img src={homepageImage("bridge_blueprint_64.png")} alt="Technical line drawing showing truss bridge elevations and details" /> : <span className="portfolio-missing-image">Bridge blueprint not found</span>}
           <span className="portfolio-project-copy"><strong>02 / Engineering Lab</strong><small>SIMULATIONS · EXPERIMENTS · DESIGN TOOLS</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
-        </UiActionButton>
+        </button>
       </div>
       <div className="portfolio-details">
         <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true">▣</span><div><small>NEXT MEETING</small><strong>Monday, November 2</strong><p>2:30–3:30 PM · Guidance Office</p></div></div>
@@ -376,7 +376,7 @@ function App() {
                   <h2>{problem.title}</h2>
                   <p className="problem-fact">{problem.fact}</p>
                   {problem.submitterName && <p className="idea-byline">Idea by {problem.submitterName}</p>}
-                  <UiActionButton type="button" className="bbb-flip-action" onClick={() => toggleIdea(key)} aria-label={`Read more about ${problem.title}`}>Read more <span aria-hidden="true">→</span></UiActionButton>
+                  <button type="button" className="bbb-flip-action" onClick={() => toggleIdea(key)} aria-label={`Read more about ${problem.title}`}>Read more <span aria-hidden="true">→</span></button>
                 </div>
               </div>
               <div className="bbb-flip-back" aria-hidden={!flipped}>
@@ -384,14 +384,14 @@ function App() {
                   <span className="bbb-flip-kicker">THE IDEA</span>
                   <h2>{problem.title}</h2>
                   <p className="problem-question">{problem.question}</p>
-                  <UiActionButton type="button" className="bbb-flip-action" onClick={() => toggleIdea(key)} tabIndex={flipped ? 0 : -1} aria-label={`Return to summary of ${problem.title}`}>← Back</UiActionButton>
+                  <button type="button" className="bbb-flip-action" onClick={() => toggleIdea(key)} tabIndex={flipped ? 0 : -1} aria-label={`Return to summary of ${problem.title}`}>← Back</button>
                 </div>
               </div>
             </div>
-            {problem.isSubmitted && problem.id != null && <UiActionButton className="idea-edit bbb-flip-edit" onClick={() => {
+            {problem.isSubmitted && problem.id != null && <button className="idea-edit bbb-flip-edit" onClick={() => {
               const idea = submittedIdeas.find(item => item.id === problem.id)
               if (idea) openEditIdea(idea)
-            }} aria-label={`Edit ${problem.title}`} title="Edit idea">✎</UiActionButton>}
+            }} aria-label={`Edit ${problem.title}`} title="Edit idea">✎</button>}
           </ProjectCard>
         })}
       </div>
@@ -403,7 +403,7 @@ function App() {
 
       {ideaOpen && <div className="idea-modal-backdrop" onMouseDown={closeIdeaModal}>
         <div className="idea-modal" role="dialog" aria-modal="true" aria-labelledby="idea-form-title" onMouseDown={e => e.stopPropagation()}>
-          <div className="idea-modal-head"><div><p className="eyebrow">{editingIdeaId ? 'EDIT PROBLEM LAB IDEA' : 'ADD TO THE PROBLEM LAB'}</p><h2 id="idea-form-title">{editingIdeaId ? 'Edit your idea.' : 'Bring your idea.'}</h2></div><UiActionButton className="idea-close" onClick={closeIdeaModal} aria-label="Close">×</UiActionButton></div>
+          <div className="idea-modal-head"><div><p className="eyebrow">{editingIdeaId ? 'EDIT PROBLEM LAB IDEA' : 'ADD TO THE PROBLEM LAB'}</p><h2 id="idea-form-title">{editingIdeaId ? 'Edit your idea.' : 'Bring your idea.'}</h2></div><button className="idea-close" onClick={closeIdeaModal} aria-label="Close">×</button></div>
           <div className="idea-builder">
             <form className="idea-form" onSubmit={submitIdea}>
               <label>Title<input required maxLength={120} value={ideaForm.title} onChange={e => updateIdea('title', e.target.value)} placeholder="Why does this keep happening?" /></label>
@@ -416,9 +416,9 @@ function App() {
                   <span className="upload-icon" aria-hidden="true">↑</span>
                   <span className="upload-copy"><strong>{ideaPhoto ? 'Change photo' : 'Upload a photo'}</strong><small>{ideaPhoto ? ideaPhoto.name : 'Click to browse from your device'}</small></span>
                 </label>
-                {ideaPhoto && <UiActionButton type="button" className="remove-photo" onClick={() => chooseIdeaPhoto(null)}>Remove photo</UiActionButton>}
+                {ideaPhoto && <button type="button" className="remove-photo" onClick={() => chooseIdeaPhoto(null)}>Remove photo</button>}
               </div>
-              <UiActionButton type="submit" className="idea-submit" disabled={submittingIdea}>{submittingIdea ? (editingIdeaId ? 'Saving changes…' : 'Adding idea…') : (editingIdeaId ? 'Save changes →' : 'Add idea to the board →')}</UiActionButton>
+              <button type="submit" className="idea-submit" disabled={submittingIdea}>{submittingIdea ? (editingIdeaId ? 'Saving changes…' : 'Adding idea…') : (editingIdeaId ? 'Save changes →' : 'Add idea to the board →')}</button>
               {ideaMessage && <p className="idea-message" role="status">{ideaMessage}</p>}
             </form>
             <div className="idea-preview-wrap">
@@ -445,7 +445,7 @@ function App() {
       <p className="eyebrow">{labels[page]}</p>
       <h1>Coming soon.</h1>
       <p>We’re preparing this part of Build a Better Bedford.</p>
-      <UiActionButton className="quiet-link" onClick={() => go('home')}>← Back home</UiActionButton>
+      <button className="quiet-link" onClick={() => go('home')}>← Back home</button>
     </section>}
 
     <footer>Unique visitors: {visitStats.total} visitors total / {visitStats.today} visitors today</footer>
