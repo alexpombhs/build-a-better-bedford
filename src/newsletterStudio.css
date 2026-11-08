@@ -260,3 +260,11 @@
     padding:16px 0 0;
   }
 }
+
+/* Location, style, and color are independent controls. */
+.studio-section-options {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+@media(max-width:850px) {
+  .studio-section-options {grid-template-columns:minmax(0,1fr);}
+}
