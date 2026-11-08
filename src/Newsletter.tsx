@@ -19,7 +19,24 @@ export type NewsletterMedia = {
   alt?: string
   caption?: string
 }
-export type NewsletterSection = { heading: string; body: string; media?: NewsletterMedia[]; placement?: 'main' | 'sidebar' }
+export type NewsletterSectionStyle = 'default' | 'halloween'
+export type NewsletterSection = {
+  heading: string
+  body: string
+  media?: NewsletterMedia[]
+  placement?: 'main' | 'sidebar'
+  style?: NewsletterSectionStyle
+}
+
+// Legacy October content was displayed with a seasonal look before styles
+// were editable. Preserve that rendering until an editor explicitly chooses
+// a location or style. New content uses the saved settings only.
+const isLegacyHalloween = (section: NewsletterSection) =>
+  section.style == null && /halloween/i.test(section.heading) && /joke|skeleton|haunted|ghost/i.test(section.body)
+export const newsletterSectionStyle = (section: NewsletterSection): NewsletterSectionStyle =>
+  section.style ?? (isLegacyHalloween(section) ? 'halloween' : 'default')
+export const newsletterSectionPlacement = (section: NewsletterSection): 'main' | 'sidebar' =>
+  section.placement ?? (isLegacyHalloween(section) ? 'sidebar' : 'main')
 export type NewsletterIssue = {
   id: string
   month: string
@@ -150,12 +167,8 @@ function NewsletterArticleBody({ body }: { body: string }) {
 }
 
 export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssue; layout?: NewsletterLayout }) {
-  // Older newsletters stored the Halloween feature as a main-article section.
-  // Present it in the secondary rail without rewriting or deleting saved content.
-  const isHalloweenFeature = (section: NewsletterSection) =>
-    /halloween/i.test(section.heading) && /joke|skeleton|haunted|ghost/i.test(section.body)
-  const mainDetails = issue.details.filter(section => section.placement !== 'sidebar' && !isHalloweenFeature(section))
-  const sideDetails = issue.details.filter(section => section.placement === 'sidebar' || isHalloweenFeature(section))
+  const mainDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'main')
+  const sideDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'sidebar')
   const articleSections = mainDetails.length > 0 ? mainDetails : issue.sections
   const contents = issue.sections.length > 0 ? issue.sections : mainDetails
   const isOctober2026 = issue.id.startsWith('2026-10') || /october\s+2026/i.test(issue.month)
@@ -170,10 +183,14 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
             <PageHeading eyebrow={`${issue.month.toUpperCase()} · ISSUE ${issue.number}`} title={issue.title || 'Untitled issue'} description={issue.description} />
           </header>
           <div className="newsletter-expand-panel">
-            {articleSections.map((section, index) => <section className="design-problem" key={index} id={sectionId(index)}>
-              <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography><NewsletterArticleBody body={section.body} /></div></div>
-              {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
-            </section>)}
+            {articleSections.map((section, index) => {
+              const halloween = newsletterSectionStyle(section) === 'halloween'
+              return <section className={halloween ? 'design-problem newsletter-main-halloween-feature' : 'design-problem'} key={index} id={sectionId(index)}>
+                {halloween && <div className="newsletter-main-seasonal"><span className="newsletter-halloween-eyebrow">🎃 SEASONAL FEATURE</span><HalloweenTruss /></div>}
+                <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography><NewsletterArticleBody body={section.body} /></div></div>
+                {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
+              </section>
+            })}
           </div>
         </div>
         {hasSideRail && <aside className="newsletter-editorial-aside" aria-label="Issue contents and related stories">
@@ -204,7 +221,7 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
           </nav>}
           {sideDetails.length > 0 && <div className="newsletter-side-stories">
             {sideDetails.map((section, index) => {
-              const halloween = isHalloweenFeature(section)
+              const halloween = newsletterSectionStyle(section) === 'halloween'
               return <section className={halloween ? 'newsletter-side-story newsletter-halloween-feature' : 'newsletter-side-story'} key={index}>
                 {halloween && <span className="newsletter-halloween-eyebrow" aria-hidden="true">🎃 CLUB CORNER</span>}
                 {halloween && <HalloweenTruss />}
