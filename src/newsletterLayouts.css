@@ -549,3 +549,42 @@
   font-variant-numeric:tabular-nums;
   letter-spacing:.05em;
 }
+
+/* Secondary information should read quieter than the article.
+   Use regular/medium/semibold weights, reserving strong display type for the main story. */
+.newsletter-page .newsletter-editorial-aside .newsletter-side-heading,
+.newsletter-page .newsletter-nerd-facts > .newsletter-side-heading {
+  font-weight:600;
+  color:#718475;
+}
+.newsletter-page .newsletter-nerd-fact h3 {
+  font-weight:550;
+  color:#395746;
+  font-size:.8125rem;
+  line-height:1.45;
+}
+.newsletter-page .newsletter-nerd-fact p,
+.newsletter-page .newsletter-nerd-fact p strong {
+  font-weight:400;
+}
+.newsletter-page .newsletter-nerd-fact p {
+  color:#607266;
+}
+.newsletter-page .newsletter-nerd-fact a {
+  font-weight:500;
+  color:#466f57;
+}
+.newsletter-page .newsletter-nerd-fact-list > .newsletter-nerd-fact::before {
+  font-weight:500;
+  color:#83978a;
+}
+.newsletter-page .newsletter-toc-title {
+  font-weight:550;
+}
+.newsletter-page .newsletter-side-story h2,
+.newsletter-page .newsletter-halloween-feature h2 {
+  font-weight:600;
+}
+.newsletter-page .newsletter-halloween-eyebrow {
+  font-weight:600;
+}
