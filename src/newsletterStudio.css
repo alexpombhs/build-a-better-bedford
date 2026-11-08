@@ -207,26 +207,56 @@
   .studio-section-options {grid-template-columns:minmax(0,1fr);}
 }
 
-/* Article preview is a reading canvas, not the issue-management workspace.
-   Hide the issue picker and give the article + right rail the entire width. */
-.studio-layout.studio-layout-preview {
-  display:block;
-}
-.studio-layout-preview > .studio-main {
+/* Keep the issue browser fixed in the studio while previewing the article.
+   The article uses its normal published two-column structure inside the editor. */
+.studio-preview-area,
+.studio-preview,
+.studio-preview .newsletter-page,
+.studio-preview .newsletter-clean,
+.studio-preview .newsletter-editorial-grid {
   width:100%;
   min-width:0;
 }
-.studio-layout-preview .studio-preview-area,
-.studio-layout-preview .studio-preview {
-  width:100%;
-  min-width:0;
+.studio-preview {
+  padding:clamp(16px,2vw,24px);
 }
-.studio-layout-preview .studio-preview .newsletter-editorial-grid.has-sidebar {
-  grid-template-columns:minmax(0,1fr) minmax(200px,250px);
+.studio-preview .newsletter-page .newsletter-editorial-grid.has-sidebar {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(185px,210px);
   gap:clamp(20px,2.5vw,34px);
+  align-items:start;
 }
-@media(max-width:820px) {
-  .studio-layout-preview .studio-preview .newsletter-editorial-grid.has-sidebar {
-    grid-template-columns:minmax(0,1fr) minmax(175px,210px);
+.studio-preview .newsletter-page .newsletter-editorial-aside {
+  min-width:0;
+  width:auto;
+  border-top:0;
+  border-left:1px solid #dce7df;
+  padding:0 0 0 20px;
+}
+/* The public archive supplies these title rules, so apply them to the
+   standalone editor preview too without adding the archive itself. */
+.studio-preview .newsletter-page .newsletter-intro h1 {
+  font-family:inherit!important;
+  font-size:clamp(36px,4vw,56px)!important;
+  font-weight:750!important;
+  line-height:1.12!important;
+  letter-spacing:-.035em!important;
+}
+@media(max-width:1000px) {
+  .studio-preview .newsletter-page .newsletter-editorial-grid.has-sidebar {
+    grid-template-columns:minmax(0,1fr) minmax(165px,195px);
+    gap:18px;
+  }
+}
+@media(max-width:850px) {
+  .studio-preview .newsletter-page .newsletter-editorial-grid.has-sidebar {
+    display:flex;
+    flex-direction:column;
+  }
+  .studio-preview .newsletter-page .newsletter-editorial-aside {
+    width:100%;
+    border-left:0;
+    border-top:1px solid #dce7df;
+    padding:16px 0 0;
   }
 }
