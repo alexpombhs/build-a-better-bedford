@@ -171,25 +171,19 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
               </section>
             })}
           </div>}
-          {isOctober2026 && <section className="newsletter-nerd-facts" aria-label="Bedford dog park facts and sources">
-            <div className="newsletter-side-heading">FOR THE CURIOUS</div>
+          {isOctober2026 && <section className="newsletter-nerd-facts" aria-label="Did you know? Bedford dog facts">
+            <div className="newsletter-side-heading">DID YOU KNOW?</div>
             <div className="newsletter-nerd-fact">
-              <span className="newsletter-nerd-fact-kicker">DID YOU KNOW? · 01</span>
-              <h3>Nearly 20 registered dogs for every 100 households</h3>
-              <p>Bedford had <strong>1,162 registered dogs</strong> and approximately <strong>6,000 households</strong> in August 2026.</p>
-              <p className="newsletter-nerd-equation">1,162 ÷ 6,000 × 100 ≈ 19.4</p>
-              <p className="newsletter-nerd-footnote">That’s about one registered dog per five households—not a measured percentage of dog-owning households, since some families have multiple dogs.</p>
-              <a href="https://thebedfordcitizen.org/2026/08/bedford-home-to-many-four-legged-friends/" target="_blank" rel="noopener noreferrer">Read the dog registration report <span aria-hidden="true">↗</span></a>
+              <h3>About one registered dog for every five Bedford households</h3>
+              <p>Bedford had 1,162 registered dogs in August 2026—roughly 20 dogs for every 100 households.</p>
+              <a href="https://thebedfordcitizen.org/2026/08/bedford-home-to-many-four-legged-friends/" target="_blank" rel="noopener noreferrer">Read more <span aria-hidden="true">↗</span></a>
             </div>
             <div className="newsletter-nerd-fact">
-              <span className="newsletter-nerd-fact-kicker">DID YOU KNOW? · 02</span>
               <h3>Bedford once planned a dog park</h3>
-              <p>The town formed a Dog Park Task Force in 2017, and Town Meeting approved <strong>$25,000</strong> toward a proposed park. Locations were studied, but the proposal also drew concerns about neighboring homes, environmental effects, and safety.</p>
-              <p className="newsletter-nerd-footnote">The records establish serious public interest and planning—not that a dog park was the town’s most-requested addition or that a final cancellation vote occurred.</p>
+              <p>The town formed a Dog Park Task Force and approved preliminary funding, but the proposal faced concerns about location and community impacts.</p>
               <div className="newsletter-nerd-links">
-                <a href="https://www.bedfordma.gov/ArchiveCenter/ViewFile/Item/215" target="_blank" rel="noopener noreferrer">2018 town report <span aria-hidden="true">↗</span></a>
-                <a href="https://cdn.thebedfordcitizen.org/wp-content/uploads/2018/05/ad-hoc-Dog-Park-Task-Force-Recommendations-to-the-Selectmen-05292018.pdf" target="_blank" rel="noopener noreferrer">Proposed sites <span aria-hidden="true">↗</span></a>
-                <a href="https://thebedfordcitizen.org/2017/12/residents-voice-concerns-possible-dog-park-bedford/" target="_blank" rel="noopener noreferrer">Community debate <span aria-hidden="true">↗</span></a>
+                <a href="https://www.bedfordma.gov/ArchiveCenter/ViewFile/Item/215" target="_blank" rel="noopener noreferrer">Read more <span aria-hidden="true">↗</span></a>
+                <a href="https://cdn.thebedfordcitizen.org/wp-content/uploads/2018/05/ad-hoc-Dog-Park-Task-Force-Recommendations-to-the-Selectmen-05292018.pdf" target="_blank" rel="noopener noreferrer">Proposed locations <span aria-hidden="true">↗</span></a>
               </div>
             </div>
           </section>}
