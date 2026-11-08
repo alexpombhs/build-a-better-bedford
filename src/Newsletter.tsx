@@ -28,6 +28,7 @@ export type NewsletterSection = {
   placement?: 'main' | 'sidebar'
   style?: NewsletterSectionStyle
   colorTheme?: NewsletterColorTheme
+  summary?: string
 }
 
 // Legacy October content was displayed with a seasonal look before styles
@@ -62,8 +63,8 @@ export const emptyIssue = (): NewsletterIssue => ({
   number: '03',
   title: '',
   description: '',
-  sections: [{ heading: '', body: '', media: [] }],
-  details: [],
+  sections: [],
+  details: [{ heading: '', body: '', media: [], placement: 'main', style: 'default', colorTheme: 'default' }],
   footer: '',
   status: 'draft',
   published_at: null,
@@ -176,7 +177,7 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
   const mainDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'main')
   const sideDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'sidebar')
   const articleSections = mainDetails.length > 0 ? mainDetails : issue.sections
-  const contents = articleSections.map(section => ({...section, body: issue.sections.find(entry => entry.heading.trim().toLowerCase() === section.heading.trim().toLowerCase())?.body ?? ''}))
+  const contents = articleSections.filter(section => section.heading.trim()).map(section => ({...section, body: section.summary ?? issue.sections.find(entry => entry.heading.trim().toLowerCase() === section.heading.trim().toLowerCase())?.body ?? ''}))
   const isOctober2026 = issue.id.startsWith('2026-10') || /october\s+2026/i.test(issue.month)
   const hasSideRail = contents.length > 0 || sideDetails.length > 0 || isOctober2026
   const sectionId = (index: number) => `bbb-issue-${issue.id}-section-${index + 1}`
