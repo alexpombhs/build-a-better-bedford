@@ -311,6 +311,3 @@
 .newsletter-page .newsletter-side-stories {
   margin-top:12px;
 }
-@media (prefers-reduced-motion:no-preference) {
-  .newsletter-page .newsletter-note[id] { scroll-behavior:smooth; }
-}
