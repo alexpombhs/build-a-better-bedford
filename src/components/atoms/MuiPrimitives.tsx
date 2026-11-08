@@ -1,6 +1,6 @@
 import { useId } from 'react'
 import type { ComponentProps } from 'react'
-import { Box, ButtonBase, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Slider, Stack, Tab, Tabs, TextField, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Slider, Stack, Tab, Tabs, TextField, Typography } from '@mui/material'
 
 /** Atomic MUI boundary. Screens and organisms must import wrappers, never MUI directly. */
 const classes = {
@@ -57,3 +57,8 @@ export function UiDialogContent(props: ComponentProps<typeof DialogContent>){ret
 export function UiDialogActions(props: ComponentProps<typeof DialogActions>){return <DialogActions {...props} />}
 
 export function UiTextField(props: ComponentProps<typeof TextField>){return <TextField {...props} />}
+
+/** Configurable MUI button atom; variants remain available to molecules. */
+export function UiButton({className,...props}:ComponentProps<typeof Button>){
+  return <Button {...props} className={cx('bbb-ui-button',className)} />
+}
