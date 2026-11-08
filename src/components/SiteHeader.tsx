@@ -1,3 +1,4 @@
+import { UiActionButton } from './atoms/MuiPrimitives'
 import { useState } from 'react'
 import './SiteHeader.css'
 
@@ -33,7 +34,7 @@ export default function SiteHeader({ active, onNavigate, onJoin }: Props) {
         <strong>BBB</strong>
         <span>STUDENT-LED<br />CIVIL ENGINEERING CLUB</span>
       </a>
-      <button
+      <UiActionButton
         type="button"
         className="bbb-site-menu-toggle"
         aria-label={open ? 'Close navigation' : 'Open navigation'}
@@ -42,7 +43,7 @@ export default function SiteHeader({ active, onNavigate, onJoin }: Props) {
         onClick={() => setOpen(value => !value)}
       >
         <span /><span /><span />
-      </button>
+      </UiActionButton>
       <nav id="bbb-primary-navigation" className={open ? 'bbb-site-nav is-open' : 'bbb-site-nav'} aria-label="Main navigation">
         {items.map(({ section, label }) => (
           <a key={section} href={hrefFor(section)}
@@ -52,7 +53,7 @@ export default function SiteHeader({ active, onNavigate, onJoin }: Props) {
             {label}
           </a>
         ))}
-        <button type="button" className="bbb-site-join" onClick={() => {setOpen(false);onJoin()}}>Join the Club</button>
+        <UiActionButton type="button" className="bbb-site-join" onClick={() => {setOpen(false);onJoin()}}>Join the Club</UiActionButton>
       </nav>
     </header>
   )
