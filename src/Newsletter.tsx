@@ -130,7 +130,21 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
                 const exactIndex = articleSections.findIndex(article => article.heading.trim().toLowerCase() === section.heading.trim().toLowerCase())
                 const linkedIndex = exactIndex >= 0 ? exactIndex : (index < articleSections.length ? index : -1)
                 return <li key={index}>
-                {linkedIndex >= 0 ? <a href={`#${sectionId(linkedIndex)}`}><span className="newsletter-toc-number">{String(index + 1).padStart(2, '0')}</span><span>{section.heading || `Section ${index + 1}`}</span></a> : <span className="newsletter-toc-unlinked"><span className="newsletter-toc-number">{String(index + 1).padStart(2, '0')}</span><span>{section.heading}</span></span>}
+                {linkedIndex >= 0
+                  ? <a href={`#${sectionId(linkedIndex)}`}>
+                      <span className="newsletter-toc-number">{String(index + 1).padStart(2, '0')}</span>
+                      <span className="newsletter-toc-content">
+                        <span className="newsletter-toc-title">{section.heading || `Section ${index + 1}`}</span>
+                        {section.body && <span className="newsletter-toc-description">{section.body}</span>}
+                      </span>
+                    </a>
+                  : <span className="newsletter-toc-unlinked">
+                      <span className="newsletter-toc-number">{String(index + 1).padStart(2, '0')}</span>
+                      <span className="newsletter-toc-content">
+                        <span className="newsletter-toc-title">{section.heading || `Section ${index + 1}`}</span>
+                        {section.body && <span className="newsletter-toc-description">{section.body}</span>}
+                      </span>
+                    </span>}
               </li>})}
             </ol>
           </nav>}
