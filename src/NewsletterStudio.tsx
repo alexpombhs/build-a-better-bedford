@@ -261,6 +261,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setDraft(current => ({ ...current, [field]: current[field].map((section, i) => i === index ? { ...section, [property]: value } : section) }))
   const addSection = (field: 'sections' | 'details') =>
     setDraft(current => ({ ...current, [field]: [...current[field], { heading: '', body: '', media: [] }] }))
+  const addSidebarStory = () =>
+    setDraft(current => ({ ...current, details: [...current.details, { heading: '', body: '', media: [], placement: 'sidebar' }] }))
   const removeSection = (field: 'sections' | 'details', index: number) =>
     setDraft(current => ({ ...current, [field]: current[field].filter((_, i) => i !== index) }))
   const changeMedia = (field: 'sections' | 'details', sectionIndex: number, mediaIndex: number, patch: Partial<NewsletterMedia>) =>
@@ -457,7 +459,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <label>Introduction<textarea rows={3} maxLength={800} value={draft.description} onChange={e => updateField('description', e.target.value)} placeholder="A short overview of the issue…" /></label>
           <div className="studio-template"><h2>Start from a template</h2><div className="studio-template-options">{(Object.keys(presets) as Template[]).map(type => <button key={type} type="button" onClick={() => chooseTemplate(type)}>{presets[type].name}</button>)}</div></div>
           {(['sections', 'details'] as const).map(field => <div key={field} className="studio-section-group">
-            <div className="studio-group-head"><div><h2>{field === 'sections' ? 'The story' : 'Additional sections'}</h2><p>{field === 'sections' ? 'The main article sections, displayed below the headline.' : 'Optional additional stories. Choose Main article or Side column for each one.'}</p></div><button type="button" className="studio-secondary" onClick={() => addSection(field)}>+ Add</button></div>
+            <div className="studio-group-head"><div><h2>{field === 'sections' ? 'The story' : 'Additional sections'}</h2><p>{field === 'sections' ? 'The main article sections, displayed below the headline.' : 'Optional additional stories. Choose Main article or Side column for each one.'}</p></div><div className="studio-group-buttons"><button type="button" className="studio-secondary" onClick={() => addSection(field)}>+ Add {field === 'sections' ? 'section' : 'article detail'}</button>{field === 'details' && <button type="button" className="studio-secondary" onClick={addSidebarStory}>+ Add side story</button>}</div></div>
             {draft[field].map((section, index) => <div className="studio-section" key={index}>
               <div className="studio-section-top"><strong>SECTION {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection(field, index)}>Remove</button></div>
               <label>Section title<input value={section.heading} maxLength={160} onChange={e => updateSection(field, index, 'heading', e.target.value)} /></label>
