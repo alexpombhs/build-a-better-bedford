@@ -1,5 +1,4 @@
-/* Restrained kinetic structural study: the model uses real 3D coordinates
-   projected on canvas, rather than a flat SVG rotated in CSS. */
+/* Three.js sculptural study. Real light and floor shadows are rendered in WebGL. */
 .halloween-truss {
   width:100%;
   min-width:0;
@@ -9,11 +8,11 @@
   position:relative;
   display:block;
   width:100%;
-  height:184px;
+  height:206px;
   overflow:hidden;
   border:1px solid #e1e6e2;
   border-radius:10px;
-  background:linear-gradient(145deg,#fbfcfb,#edf1ee);
+  background:linear-gradient(155deg,#fbfcfb,#edf1ee);
 }
 .halloween-truss-canvas {
   position:absolute;
@@ -21,18 +20,17 @@
   display:block;
   width:100%;
   height:100%;
-  z-index:1;
 }
-.halloween-truss-shadow {
-  position:absolute;
-  left:50%;
-  bottom:13px;
-  width:78px;
-  height:12px;
-  transform:translateX(-50%);
-  border-radius:50%;
-  background:rgba(41,55,47,.15);
-  filter:blur(8px);
+.halloween-truss-fallback { display:none; }
+.halloween-truss-stage[data-webgl-unavailable="true"] .halloween-truss-fallback {
+  display:grid;
+  place-items:center;
+  width:100%;
+  height:100%;
+  padding:20px;
+  color:#617769;
+  font-size:13px;
+  text-align:center;
 }
 .halloween-truss figcaption {
   margin:7px 2px 0;
