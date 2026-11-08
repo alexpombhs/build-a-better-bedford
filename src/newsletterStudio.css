@@ -452,3 +452,59 @@
   color:#5e7266;
   font-size:13px;
 }
+
+/* Issue browser: headline first, publication metadata quiet and compact. */
+.studio-sidebar .studio-issue {
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:7px;
+  padding:13px 14px;
+  min-width:0;
+}
+.studio-sidebar .studio-issue .studio-issue-title {
+  display:block;
+  color:#1f3d2d;
+  font-size:14px;
+  line-height:1.4;
+  font-weight:600;
+  overflow-wrap:anywhere;
+}
+.studio-sidebar .studio-issue .studio-issue-meta {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  column-gap:10px;
+  row-gap:5px;
+  color:#718477;
+  font-size:11px;
+  line-height:1.4;
+  font-weight:400;
+}
+.studio-sidebar .studio-issue .studio-issue-month {
+  color:#687b6d;
+  font-size:11px;
+  font-weight:400;
+}
+.studio-sidebar .studio-issue .studio-issue-state {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  color:#718477;
+  font-size:10px;
+  line-height:1.4;
+  font-weight:500;
+  white-space:nowrap;
+}
+.studio-sidebar .studio-issue .studio-issue-state svg {
+  width:12px;
+  height:12px;
+  flex:none;
+}
+.studio-sidebar .studio-issue .studio-issue-state-published {
+  color:#4c8664;
+}
+.studio-sidebar .studio-issue.selected .studio-issue-title {
+  color:#183f2c;
+}
