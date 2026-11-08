@@ -528,3 +528,24 @@
 .newsletter-page .newsletter-nerd-fact p {
   margin-bottom:7px;
 }
+
+/* A single numbered fact list; adding a <li> automatically numbers it. */
+.newsletter-page .newsletter-nerd-fact-list {
+  list-style:none;
+  counter-reset:bedford-fact;
+  padding:0;
+  margin:0;
+}
+.newsletter-page .newsletter-nerd-fact-list > .newsletter-nerd-fact {
+  counter-increment:bedford-fact;
+}
+.newsletter-page .newsletter-nerd-fact-list > .newsletter-nerd-fact::before {
+  content:counter(bedford-fact, decimal-leading-zero);
+  display:block;
+  margin-bottom:5px;
+  color:#628270;
+  font-size:.6875rem;
+  font-weight:750;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.05em;
+}
