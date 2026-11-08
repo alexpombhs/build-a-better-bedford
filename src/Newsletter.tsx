@@ -166,16 +166,16 @@ function NewsletterArticleBody({ body }: { body: string }) {
   </div>
 }
 
-export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssue; layout?: NewsletterLayout }) {
+export function IssueView({ issue, layout = 'article', editorPreview = false }: { issue: NewsletterIssue; layout?: NewsletterLayout; editorPreview?: boolean }) {
   const mainDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'main')
   const sideDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'sidebar')
   const articleSections = mainDetails.length > 0 ? mainDetails : issue.sections
   const contents = issue.sections.length > 0 ? issue.sections : mainDetails
   const isOctober2026 = issue.id.startsWith('2026-10') || /october\s+2026/i.test(issue.month)
-  const hasSideRail = contents.length > 0 || sideDetails.length > 0 || isOctober2026
+  const hasSideRail = (!editorPreview && contents.length > 0) || sideDetails.length > 0 || isOctober2026
   const sectionId = (index: number) => `bbb-issue-${issue.id}-section-${index + 1}`
   return <section className={`newsletter-page newsletter-layout-${layout}`}>
-    {issue.status !== 'published' && <p className="newsletter-private-banner">PRIVATE PREVIEW · {issue.status === 'draft' ? 'DRAFT' : 'IN REVIEW'} · NOT VISIBLE TO VISITORS</p>}
+    {!editorPreview && issue.status !== 'published' && <p className="newsletter-private-banner">PRIVATE PREVIEW · {issue.status === 'draft' ? 'DRAFT' : 'IN REVIEW'} · NOT VISIBLE TO VISITORS</p>}
     <div className="newsletter-clean">
       <div className={hasSideRail ? 'newsletter-editorial-grid has-sidebar' : 'newsletter-editorial-grid'}>
         <div className="newsletter-editorial-main">
@@ -194,7 +194,7 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
           </div>
         </div>
         {hasSideRail && <aside className="newsletter-editorial-aside" aria-label="Issue contents and related stories">
-          {contents.length > 0 && <nav className="newsletter-issue-contents" aria-label="In this issue">
+          {!editorPreview && contents.length > 0 && <nav className="newsletter-issue-contents" aria-label="In this issue">
             <div className="newsletter-side-heading">IN THIS ISSUE</div>
             <ol className="newsletter-toc-list">
               {contents.map((section, index) => {
