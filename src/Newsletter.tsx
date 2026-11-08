@@ -160,7 +160,7 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
                 {halloween && <span className="newsletter-halloween-eyebrow" aria-hidden="true">🎃 CLUB CORNER</span>}
                 <Typography component="h2" variant="subtitle1">{section.heading}</Typography>
                 {halloween
-                  ? <div className="newsletter-halloween-copy">{section.body.split(/\\n\\s*\\n/).filter(Boolean).map((paragraph, paragraphIndex) =>
+                  ? <div className="newsletter-halloween-copy">{section.body.split(/\n\s*\n/).filter(Boolean).map((paragraph, paragraphIndex) =>
                       <p className={/^(Why |Because )/i.test(paragraph.trim()) ? 'newsletter-halloween-joke' : undefined} key={paragraphIndex}>{paragraph}</p>
                     )}</div>
                   : <Typography component="p" variant="body2">{section.body}</Typography>}
