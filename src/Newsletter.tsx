@@ -203,7 +203,6 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
             </ol>
           </nav>}
           {sideDetails.length > 0 && <div className="newsletter-side-stories">
-            <div className="newsletter-side-heading">ON THE SIDE</div>
             {sideDetails.map((section, index) => {
               const halloween = isHalloweenFeature(section)
               return <section className={halloween ? 'newsletter-side-story newsletter-halloween-feature' : 'newsletter-side-story'} key={index}>
