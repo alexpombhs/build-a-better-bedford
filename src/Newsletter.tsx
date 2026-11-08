@@ -3,6 +3,7 @@ import PageHeading from './components/PageHeading'
 import { supabase } from './supabase'
 import roadSolution from './assets/road_solution.png'
 import './newsletterStudio.css'
+import './newsletterLayouts.css'
 
 export type NewsletterMedia = {
   id: string
