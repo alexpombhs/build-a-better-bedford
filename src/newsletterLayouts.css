@@ -265,3 +265,52 @@
 
 .studio-group-buttons{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 @media(max-width:600px){.studio-group-buttons{justify-content:flex-start}}
+
+/* The right-hand editorial rail doubles as an in-issue table of contents. */
+.newsletter-page .newsletter-note[id] {
+  scroll-margin-top:calc(var(--bbb-header-height,76px) + 20px);
+}
+.newsletter-page .newsletter-issue-contents {
+  margin:0 0 22px;
+}
+.newsletter-page .newsletter-toc-list {
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+.newsletter-page .newsletter-toc-list li {
+  border-top:1px solid #e1e9e3;
+}
+.newsletter-page .newsletter-toc-list a {
+  display:grid;
+  grid-template-columns:24px minmax(0,1fr);
+  gap:8px;
+  padding:10px 2px;
+  color:#244631;
+  text-decoration:none;
+  font-size:.8125rem;
+  font-weight:550;
+  line-height:1.45;
+  overflow-wrap:anywhere;
+}
+.newsletter-page .newsletter-toc-number {
+  color:#75897b;
+  font-size:.75rem;
+  font-variant-numeric:tabular-nums;
+}
+.newsletter-page .newsletter-toc-list a:hover {
+  color:#1b6841;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.newsletter-page .newsletter-toc-list a:focus-visible {
+  outline:2px solid #427952;
+  outline-offset:2px;
+  border-radius:4px;
+}
+.newsletter-page .newsletter-side-stories {
+  margin-top:12px;
+}
+@media (prefers-reduced-motion:no-preference) {
+  .newsletter-page .newsletter-note[id] { scroll-behavior:smooth; }
+}
