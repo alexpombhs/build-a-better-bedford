@@ -588,3 +588,52 @@
 .newsletter-page .newsletter-halloween-eyebrow {
   font-weight:600;
 }
+
+/* Editorial rhythm: paragraph breaks are spacing, not preserved blank lines. */
+.newsletter-page.newsletter-layout-article .newsletter-article-copy,
+.newsletter-page.newsletter-layout-feature .newsletter-article-copy {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  max-width:70ch;
+}
+.newsletter-page.newsletter-layout-article .newsletter-article-copy > p,
+.newsletter-page.newsletter-layout-feature .newsletter-article-copy > p {
+  margin:0;
+  white-space:pre-line;
+  font-weight:400;
+  line-height:1.55;
+}
+/* Names form one compact, scannable team group rather than three paragraphs. */
+.newsletter-page .newsletter-leadership-team {
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  margin:3px 0;
+  padding:10px 13px;
+  border-left:2px solid #c5d8c9;
+  background:#f8faf8;
+}
+.newsletter-page .newsletter-leadership-person {
+  display:grid;
+  grid-template-columns:minmax(85px,115px) minmax(0,1fr);
+  column-gap:10px;
+  align-items:baseline;
+  font-size:.9375rem;
+  line-height:1.5;
+}
+.newsletter-page .newsletter-leadership-person dt {
+  color:#58705d;
+  font-weight:500;
+}
+.newsletter-page .newsletter-leadership-person dd {
+  margin:0;
+  color:#304a38;
+  font-weight:400;
+}
+@media(max-width:420px) {
+  .newsletter-page .newsletter-leadership-person {
+    grid-template-columns:1fr;
+    gap:1px;
+  }
+}
