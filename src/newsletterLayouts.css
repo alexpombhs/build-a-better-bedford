@@ -732,3 +732,74 @@
     padding:16px 14px;
   }
 }
+
+/* Reusable presentation styles and independent, editor-selectable palettes.
+   Existing Default and legacy Halloween appearances remain unchanged. */
+.newsletter-page .newsletter-color-sage {
+  --newsletter-feature-bg:#f1f7f0;
+  --newsletter-feature-line:#d4e6d5;
+  --newsletter-feature-ink:#2f6245;
+  --newsletter-feature-muted:#4c755b;
+}
+.newsletter-page .newsletter-color-blue {
+  --newsletter-feature-bg:#eff6fa;
+  --newsletter-feature-line:#d1e3ee;
+  --newsletter-feature-ink:#2a5a78;
+  --newsletter-feature-muted:#55768c;
+}
+.newsletter-page .newsletter-color-amber {
+  --newsletter-feature-bg:#fff6e9;
+  --newsletter-feature-line:#efdcbc;
+  --newsletter-feature-ink:#845b2a;
+  --newsletter-feature-muted:#946f43;
+}
+.newsletter-page .newsletter-color-lavender {
+  --newsletter-feature-bg:#f6f2fc;
+  --newsletter-feature-line:#e2d8f0;
+  --newsletter-feature-ink:#655083;
+  --newsletter-feature-muted:#79688f;
+}
+.newsletter-page .newsletter-section-style-club-corner,
+.newsletter-page .newsletter-section-style-did-you-know {
+  background:var(--newsletter-feature-bg,#f4f7f3);
+  border:1px solid var(--newsletter-feature-line,#dfe8e0);
+  border-radius:12px;
+}
+.newsletter-page .newsletter-side-story.newsletter-section-style-club-corner,
+.newsletter-page .newsletter-side-story.newsletter-section-style-did-you-know {
+  margin:10px 0 18px;
+  padding:16px;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-section-style-club-corner,
+.newsletter-page .newsletter-expand-panel .newsletter-section-style-did-you-know {
+  padding:18px 20px;
+  margin:12px 0;
+}
+.newsletter-page .newsletter-feature-kicker {
+  display:block;
+  margin:0 0 10px;
+  color:var(--newsletter-feature-ink,#4d8064);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.06em;
+  line-height:1.4;
+}
+.newsletter-page .newsletter-section-style-club-corner h2,
+.newsletter-page .newsletter-section-style-did-you-know h2 {
+  color:var(--newsletter-feature-ink,#2a5438);
+  font-weight:600;
+}
+/* Palette changes are opt-in and do not modify existing issue styles. */
+.newsletter-page .newsletter-side-story[class*="newsletter-color-"]:not(.newsletter-color-default),
+.newsletter-page .newsletter-expand-panel .newsletter-main-halloween-feature[class*="newsletter-color-"]:not(.newsletter-color-default) {
+  background:var(--newsletter-feature-bg);
+  border:1px solid var(--newsletter-feature-line);
+  border-radius:12px;
+}
+.newsletter-page [class*="newsletter-color-"]:not(.newsletter-color-default) .newsletter-halloween-eyebrow,
+.newsletter-page [class*="newsletter-color-"]:not(.newsletter-color-default) h2 {
+  color:var(--newsletter-feature-ink);
+}
+.newsletter-page [class*="newsletter-color-"]:not(.newsletter-color-default) .newsletter-halloween-copy p {
+  color:var(--newsletter-feature-muted);
+}
