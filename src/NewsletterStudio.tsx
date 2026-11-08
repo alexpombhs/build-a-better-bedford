@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UiSelect } from './components/atoms/MuiPrimitives'
+import { UiDialog, UiDialogTitle, UiDialogContent, UiDialogActions, UiSelect, UiTextField } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { emptyIssue, IssueView, NewsletterMediaView, embeddedVideoUrl, newsletterSectionStyle, newsletterSectionPlacement, newsletterColorTheme } from './Newsletter'
@@ -68,7 +68,13 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [preview, setPreview] = useState(false)
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [videoInputs, setVideoInputs] = useState<Record<string, string>>({})
+  const [mediaTarget, setMediaTarget] = useState<{ field: 'sections' | 'details'; sectionIndex: number; mediaIndex?: number } | null>(null)
+  const [mediaMode, setMediaMode] = useState<'upload' | 'embed'>('upload')
+  const [mediaFile, setMediaFile] = useState<File | null>(null)
+  const [mediaUrl, setMediaUrl] = useState('')
+  const [mediaAlt, setMediaAlt] = useState('')
+  const [mediaCaption, setMediaCaption] = useState('')
+  const [mediaError, setMediaError] = useState('')
   const [newIssue, setNewIssue] = useState(true)
 
   useEffect(() => {
@@ -307,41 +313,80 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         ...section, media: (section.media ?? []).filter((_, i) => i !== mediaIndex),
       })),
     }))
-  const uploadMedia = async (field: 'sections' | 'details', sectionIndex: number, file: File) => {
-    if (!validIssueId(draft.id)) { setMessage('Enter a valid issue ID (YYYY-MM) before uploading.'); return }
+  const openMediaDialog = (field: 'sections' | 'details', sectionIndex: number, mediaIndex?: number) => {
+    const existing = mediaIndex == null ? undefined : draft[field][sectionIndex]?.media?.[mediaIndex]
+    setMediaTarget({ field, sectionIndex, mediaIndex })
+    setMediaMode(existing?.url ? 'embed' : 'upload')
+    setMediaFile(null)
+    setMediaUrl(existing?.url ?? '')
+    setMediaAlt(existing?.alt ?? '')
+    setMediaCaption(existing?.caption ?? '')
+    setMediaError('')
+  }
+  const closeMediaDialog = () => {
+    if (uploading) return
+    setMediaTarget(null)
+    setMediaFile(null)
+    setMediaError('')
+  }
+  const saveMediaDialog = async () => {
+    if (!mediaTarget || uploading) return
+    const { field, sectionIndex, mediaIndex } = mediaTarget
+    const existing = mediaIndex == null ? undefined : draft[field][sectionIndex]?.media?.[mediaIndex]
+    if (existing) {
+      changeMedia(field, sectionIndex, mediaIndex!, { alt: mediaAlt.trim(), caption: mediaCaption.trim() })
+      closeMediaDialog()
+      return
+    }
+    if (mediaMode === 'embed') {
+      const url = mediaUrl.trim()
+      if (!embeddedVideoUrl(url)) {
+        setMediaError('Enter a valid HTTPS YouTube or Vimeo video URL.')
+        return
+      }
+      addMedia(field, sectionIndex, {
+        id: crypto.randomUUID(), type: 'video', url,
+        alt: mediaAlt.trim() || 'Newsletter video', caption: mediaCaption.trim(),
+      })
+      setMessage('Video added to the draft. Save the newsletter to keep it.')
+      closeMediaDialog()
+      return
+    }
+    const file = mediaFile
+    if (!file) { setMediaError('Choose an image or video file.'); return }
+    if (!validIssueId(draft.id)) { setMediaError('Enter a valid issue ID (YYYY-MM) before uploading.'); return }
     const type = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : null
     const accepted = ['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm']
-    if (!type || !accepted.includes(file.type)) { setMessage('Use JPG, PNG, WebP, GIF, MP4 or WebM files.'); return }
+    if (!type || !accepted.includes(file.type)) {
+      setMediaError('Use a JPG, PNG, WebP, GIF, MP4, or WebM file.')
+      return
+    }
     if (file.size > (type === 'image' ? 8 : 30) * 1024 * 1024) {
-      setMessage(type === 'image' ? 'Images must be 8 MB or smaller.' : 'Videos must be 30 MB or smaller. For longer videos, paste a YouTube or Vimeo URL.')
+      setMediaError(type === 'image' ? 'Images must be 8 MB or smaller.' : 'Videos must be 30 MB or smaller.')
       return
     }
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-100) || 'upload'
     const storagePath = `${draft.id}/${crypto.randomUUID()}-${safeName}`
-    setUploading(true); setMessage('')
+    setUploading(true)
+    setMediaError('')
     try {
-      const { error } = await supabase.storage.from('newsletter-media')
-        .upload(storagePath, file, { contentType: file.type, upsert: false })
-      if (error) { setMessage(`Upload failed: ${error.message}`); return }
+      const { error } = await supabase.storage.from('newsletter-media').upload(storagePath, file, {
+        contentType: file.type, upsert: false,
+      })
+      if (error) { setMediaError(`Upload failed: ${error.message}`); return }
       addMedia(field, sectionIndex, {
         id: crypto.randomUUID(), type, storagePath,
-        alt: type === 'image' ? file.name.replace(/\.[^.]+$/, '') : 'Newsletter video',
-        caption: '',
+        alt: mediaAlt.trim() || (type === 'image' ? file.name.replace(/\.[^.]+$/, '') : 'Newsletter video'),
+        caption: mediaCaption.trim(),
       })
-      setMessage('Media uploaded. Save the newsletter draft to keep the attachment.')
+      setMediaTarget(null)
+      setMediaFile(null)
+      setMessage('Media uploaded and added to the draft. Save the newsletter to keep it.')
     } catch {
-      setMessage('Upload failed. Please try again.')
+      setMediaError('Upload failed. Please try again.')
     } finally {
       setUploading(false)
     }
-  }
-  const addVideoLink = (field: 'sections' | 'details', sectionIndex: number) => {
-    const key = `${field}-${sectionIndex}`
-    const url = videoInputs[key]?.trim() ?? ''
-    if (!embeddedVideoUrl(url)) { setMessage('Use a valid HTTPS YouTube or Vimeo video link.'); return }
-    addMedia(field, sectionIndex, { id: crypto.randomUUID(), type: 'video', url, alt: 'Newsletter video', caption: '' })
-    setVideoInputs(current => ({ ...current, [key]: '' }))
-    setMessage('Video added. Save the newsletter to keep it.')
   }
   const addArticleSection = () =>
     setDraft(current => ({
@@ -554,34 +599,17 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                 />
               </div>}
               <label>{field === 'sections' ? 'Short summary (saved, not currently displayed)' : 'Article text'}<textarea rows={field === 'sections' ? 2 : 6} value={section.body} maxLength={8000} onChange={e => updateSection(field, index, 'body', e.target.value)} /></label>
-              <div className="studio-media-editor">
-                <div className="studio-media-heading"><strong>PHOTOS & VIDEOS</strong><span>Attach media to this section</span></div>
-                {(section.media ?? []).map((item, mediaIndex) =>
-                  <div className="studio-media-item" key={item.id}>
-                    <div className="studio-media-item-preview"><NewsletterMediaView media={item} /></div>
-                    <div className="studio-media-item-controls">
-                      <label>{item.type === 'image' ? 'Image description (alt text)' : 'Video title'}<input maxLength={220} value={item.alt ?? ''} onChange={e => changeMedia(field,index,mediaIndex,{alt:e.target.value})} /></label>
-                      <label>Caption<input maxLength={500} value={item.caption ?? ''} onChange={e => changeMedia(field,index,mediaIndex,{caption:e.target.value})} placeholder="Optional caption or credit" /></label>
-                      <button type="button" className="studio-media-remove" onClick={() => removeMedia(field,index,mediaIndex)}>Remove from newsletter</button>
-                    </div>
-                  </div>
-                )}
-                <div className="studio-media-add">
-                  <label className="studio-file-upload">{uploading ? 'Uploading…' : '+ Upload photo or video'}
-                    <input type="file" disabled={uploading} accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" onChange={event => {
-                      const file = event.target.files?.[0]
-                      if (file) void uploadMedia(field, index, file)
-                      event.target.value = ''
-                    }} />
-                  </label>
-                  <small>JPG, PNG, WebP or GIF up to 8 MB · MP4 or WebM up to 30 MB</small>
-                </div>
-                <div className="studio-media-link">
-                  <label>Or embed a YouTube / Vimeo video
-                    <input type="url" placeholder="https://www.youtube.com/watch?v=…" value={videoInputs[`${field}-${index}`] ?? ''} onChange={e => setVideoInputs(current => ({ ...current, [`${field}-${index}`]: e.target.value }))} />
-                  </label>
-                  <button type="button" className="studio-secondary" onClick={() => addVideoLink(field,index)}>Add video</button>
-                </div>
+              <div className="studio-inline-media">
+                <button type="button" className="studio-add-media-button" onClick={() => openMediaDialog(field,index)}>
+                  <span aria-hidden="true">＋</span> Add photo or video
+                </button>
+                {(section.media ?? []).length > 0 && <div className="studio-attachment-list" aria-label="Attached media">
+                  {(section.media ?? []).map((item, mediaIndex) => <div className="studio-attachment" key={item.id}>
+                    <span className="studio-attachment-name">{item.type === 'image' ? 'Photo' : 'Video'}{item.caption ? ` · ${item.caption}` : item.alt ? ` · ${item.alt}` : ''}</span>
+                    <button type="button" className="studio-attachment-action" onClick={() => openMediaDialog(field,index,mediaIndex)}>Edit</button>
+                    <button type="button" className="studio-attachment-action studio-attachment-remove" onClick={() => removeMedia(field,index,mediaIndex)}>Remove</button>
+                  </div>)}
+                </div>}
               </div>
             </div>)}
           </div>)}
@@ -592,6 +620,39 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <button type="button" className="studio-secondary" disabled={busy || uploading} onClick={() => void save('in_review')}>Send for review</button>
           <button type="button" className="studio-primary" disabled={busy || uploading} onClick={() => void save('published')}>{busy ? 'Saving…' : 'Publish issue'}</button>
         </div>
+        <UiDialog open={mediaTarget !== null} onClose={closeMediaDialog} fullWidth maxWidth="sm" aria-labelledby="studio-media-dialog-title">
+          <UiDialogTitle id="studio-media-dialog-title">{mediaTarget?.mediaIndex == null ? 'Add photo or video' : 'Edit media details'}</UiDialogTitle>
+          <UiDialogContent dividers>
+            <div className="studio-media-dialog-fields">
+              {mediaTarget?.mediaIndex == null && <UiSelect
+                label="Media source"
+                value={mediaMode}
+                onValueChange={value => {setMediaMode(value as 'upload' | 'embed');setMediaError('')}}
+                options={[{value:'upload',label:'Upload photo or video'},{value:'embed',label:'Embed YouTube or Vimeo video'}]}
+              />}
+              {mediaTarget?.mediaIndex == null && (mediaMode === 'upload'
+                ? <div className="studio-dialog-file">
+                    <label htmlFor="studio-media-file">Choose a file</label>
+                    <input id="studio-media-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
+                      onChange={event => {setMediaFile(event.target.files?.[0] ?? null);setMediaError('')}} />
+                    <small>Images: JPG, PNG, WebP, GIF up to 8 MB. Videos: MP4, WebM up to 30 MB.</small>
+                  </div>
+                : <UiTextField fullWidth label="Video URL" type="url" size="small" value={mediaUrl}
+                    onChange={event => setMediaUrl(event.target.value)} placeholder="https://www.youtube.com/watch?v=…" />)}
+              <UiTextField fullWidth size="small" label={mediaMode === 'embed' || mediaFile?.type.startsWith('video/') ? 'Video title' : 'Image description (alt text)'}
+                helperText="Describe the media for accessibility." value={mediaAlt} onChange={event => setMediaAlt(event.target.value)} inputProps={{maxLength:220}} />
+              <UiTextField fullWidth size="small" label="Caption or credit (optional)" value={mediaCaption}
+                onChange={event => setMediaCaption(event.target.value)} inputProps={{maxLength:500}} multiline minRows={2} />
+              {mediaError && <p className="studio-media-dialog-error" role="alert">{mediaError}</p>}
+            </div>
+          </UiDialogContent>
+          <UiDialogActions>
+            <button type="button" className="studio-secondary" disabled={uploading} onClick={closeMediaDialog}>Cancel</button>
+            <button type="button" className="studio-primary" disabled={uploading} onClick={() => void saveMediaDialog()}>
+              {uploading ? 'Uploading…' : mediaTarget?.mediaIndex == null ? 'Add to section' : 'Save details'}
+            </button>
+          </UiDialogActions>
+        </UiDialog>
         {message && <p className="studio-message" role="status">{message}</p>}
       </div>
     </div>
