@@ -97,30 +97,40 @@ export function NewsletterMediaView({ media }: { media: NewsletterMedia }) {
 }
 
 export function IssueView({ issue }: { issue: NewsletterIssue }) {
+  // Issue sections are the table of contents when full article details are present.
+  // Otherwise use sections as the article itself so older issues remain readable.
+  const articleSections = issue.details.length > 0 ? issue.details : issue.sections
+  const contents = issue.sections.length > 0 ? issue.sections : issue.details
   return <section className="newsletter-page">
     {issue.status !== 'published' && <p className="newsletter-private-banner">PRIVATE PREVIEW · {issue.status === 'draft' ? 'DRAFT' : 'IN REVIEW'} · NOT VISIBLE TO VISITORS</p>}
     <div className="newsletter-clean">
       <div className="newsletter-intro">
         <PageHeading eyebrow={`${issue.month.toUpperCase()} · ISSUE ${issue.number}`} title={issue.title || 'Untitled issue'} description={issue.description} />
       </div>
-      <div className="newsletter-notes">
-        <div className="newsletter-notes-head"><span>THE STORY</span><span>BUILD A BETTER BEDFORD</span></div>
-        {issue.sections.map((section, index) => <article className="newsletter-note" key={index}>
-          <span>{String(index + 1).padStart(2, '0')}</span>
-          <div><h2>{section.heading}</h2><p>{section.body}</p>
-            {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
-          </div>
-        </article>)}
-        {issue.footer && <div className="newsletter-disclaimer"><p>{issue.footer}</p></div>}
-      </div>
+      {contents.length > 0 && <aside className="newsletter-notes" aria-label="In this issue">
+        <div className="newsletter-notes-head"><span>IN THIS ISSUE</span></div>
+        <nav aria-label="Article sections">
+          {contents.map((section, index) => {
+            const target = articleSections.findIndex(article => article.heading.trim().toLowerCase() === section.heading.trim().toLowerCase())
+            const linkedIndex = target >= 0 ? target : (index < articleSections.length ? index : -1)
+            return <div className="newsletter-note" key={index}>
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              {linkedIndex >= 0
+                ? <a href={`#newsletter-section-${linkedIndex + 1}`}>{section.heading}</a>
+                : <span className="newsletter-toc-label">{section.heading}</span>}
+            </div>
+          })}
+        </nav>
+      </aside>}
     </div>
-    {issue.details.length > 0 && <div className="newsletter-expand-panel">
-      {issue.details.map((section, index) => <section className="design-problem" key={index}>
-        <p className="expand-kicker">{String(index + 1).padStart(2, '0')} · {section.heading.toUpperCase()}</p>
-        <div className="expand-grid"><div><h2>{section.heading}</h2><p>{section.body}</p></div></div>
+    <div className="newsletter-expand-panel">
+      {articleSections.map((section, index) => <section className="design-problem" id={`newsletter-section-${index + 1}`} key={index}>
+        <h2>{section.heading}</h2>
+        <p className="newsletter-article-body">{section.body}</p>
         {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
       </section>)}
-    </div>}
+      {issue.footer && <div className="newsletter-disclaimer"><p>{issue.footer}</p></div>}
+    </div>
   </section>
 }
 
