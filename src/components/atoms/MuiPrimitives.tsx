@@ -1,9 +1,9 @@
 import type { ComponentProps } from 'react'
-import { Box, Card, CardContent, IconButton, Paper, Slider, Stack, Tab, Tabs, Typography } from '@mui/material'
+import { Box, ButtonBase, Card, CardContent, IconButton, Paper, Slider, Stack, Tab, Tabs, Typography } from '@mui/material'
 
 /** Atomic MUI boundary. Screens and organisms must import wrappers, never MUI directly. */
 const classes = {
-  box:'bbb-ui-box', surface:'bbb-ui-surface', card:'bbb-ui-card',
+  box:'bbb-ui-box', action:'bbb-ui-action', surface:'bbb-ui-surface', card:'bbb-ui-card',
   cardContent:'bbb-ui-card-content', iconButton:'bbb-ui-icon-button', stack:'bbb-ui-stack', text:'bbb-ui-text',
   slider:'bbb-ui-slider', tab:'bbb-ui-tab', tabs:'bbb-ui-tabs',
 }
@@ -19,3 +19,9 @@ export function UiTab({className,...props}:ComponentProps<typeof Tab>){return <T
 export function UiTabs({className,...props}:ComponentProps<typeof Tabs>){return <Tabs {...props} className={cx(classes.tabs,className)} />}
 
 export function UiIconButton({className,...props}:ComponentProps<typeof IconButton>){return <IconButton {...props} className={cx(classes.iconButton,className)} />}
+
+/** Accessible button atom. ButtonBase preserves native button semantics while
+ * leaving presentation to the existing BBB class names and theme. */
+export function UiActionButton({className,type='button',...props}:ComponentProps<typeof ButtonBase>){
+  return <ButtonBase {...props} component="button" type={type} className={cx(classes.action,className)} />
+}
