@@ -257,7 +257,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
 
   const updateField = <K extends keyof NewsletterIssue>(field: K, value: NewsletterIssue[K]) =>
     setDraft(current => ({ ...current, [field]: value }))
-  const updateSection = (field: 'sections' | 'details', index: number, property: keyof NewsletterSection, value: string) =>
+  const updateSection = (field: 'sections' | 'details', index: number, property: 'heading' | 'body' | 'placement', value: string) =>
     setDraft(current => ({ ...current, [field]: current[field].map((section, i) => i === index ? { ...section, [property]: value } : section) }))
   const addSection = (field: 'sections' | 'details') =>
     setDraft(current => ({ ...current, [field]: [...current[field], { heading: '', body: '', media: [] }] }))
@@ -457,10 +457,16 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <label>Introduction<textarea rows={3} maxLength={800} value={draft.description} onChange={e => updateField('description', e.target.value)} placeholder="A short overview of the issue…" /></label>
           <div className="studio-template"><h2>Start from a template</h2><div className="studio-template-options">{(Object.keys(presets) as Template[]).map(type => <button key={type} type="button" onClick={() => chooseTemplate(type)}>{presets[type].name}</button>)}</div></div>
           {(['sections', 'details'] as const).map(field => <div key={field} className="studio-section-group">
-            <div className="studio-group-head"><div><h2>{field === 'sections' ? 'The story' : 'Additional sections'}</h2><p>{field === 'sections' ? 'The main article sections, displayed below the headline.' : 'Longer details shown below the introduction.'}</p></div><button type="button" className="studio-secondary" onClick={() => addSection(field)}>+ Add</button></div>
+            <div className="studio-group-head"><div><h2>{field === 'sections' ? 'The story' : 'Additional sections'}</h2><p>{field === 'sections' ? 'The main article sections, displayed below the headline.' : 'Optional additional stories. Choose Main article or Side column for each one.'}</p></div><button type="button" className="studio-secondary" onClick={() => addSection(field)}>+ Add</button></div>
             {draft[field].map((section, index) => <div className="studio-section" key={index}>
               <div className="studio-section-top"><strong>SECTION {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection(field, index)}>Remove</button></div>
               <label>Section title<input value={section.heading} maxLength={160} onChange={e => updateSection(field, index, 'heading', e.target.value)} /></label>
+              {field === 'details' && <label>Display location
+                <select value={section.placement === 'sidebar' ? 'sidebar' : 'main'} onChange={e => updateSection(field, index, 'placement', e.target.value)}>
+                  <option value="main">Main article — full width story</option>
+                  <option value="sidebar">Side column — joke, fun fact, or community update</option>
+                </select>
+              </label>}
               <label>Content<textarea rows={5} value={section.body} maxLength={8000} onChange={e => updateSection(field, index, 'body', e.target.value)} /></label>
               <div className="studio-media-editor">
                 <div className="studio-media-heading"><strong>PHOTOS & VIDEOS</strong><span>Attach media to this section</span></div>
