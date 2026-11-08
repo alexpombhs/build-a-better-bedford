@@ -377,3 +377,6 @@
   white-space:pre-wrap;
   overflow-wrap:anywhere;
 }
+
+/* Keep section summaries in newsletter data without displaying them in the compact TOC. */
+.newsletter-page .newsletter-toc-description { display:none; }
