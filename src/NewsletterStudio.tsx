@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { UiDialog, UiDialogTitle, UiDialogContent, UiDialogActions, UiSelect, UiTextField } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
-import { emptyIssue, IssueView, NewsletterMediaView, embeddedVideoUrl, newsletterSectionStyle, newsletterSectionPlacement, newsletterColorTheme } from './Newsletter'
+import { emptyIssue, IssueView, embeddedVideoUrl, newsletterSectionStyle, newsletterSectionPlacement, newsletterColorTheme } from './Newsletter'
 import type { NewsletterIssue, NewsletterSection, NewsletterMedia } from './Newsletter'
 
 type Template = 'club' | 'project' | 'announcement'
