@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import PageHeading from './components/PageHeading'
+import Typography from '@mui/material/Typography'
 import { supabase } from './supabase'
 import roadSolution from './assets/road_solution.png'
 import './newsletterStudio.css'
@@ -111,15 +112,15 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
         {issue.sections.map((section, index) => <article className="newsletter-note" key={index}>
           <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
           <div className="newsletter-section-content">
-            <h2>{section.heading}</h2>
-            <p>{section.body}</p>
+            <Typography component="h2" variant="h6">{section.heading}</Typography>
+            <Typography component="p" variant="body1">{section.body}</Typography>
             {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
           </div>
         </article>)}
       </div>
       {issue.details.length > 0 && <div className="newsletter-expand-panel">
         {issue.details.map((section, index) => <section className="design-problem" key={index}>
-          <div className="expand-grid"><div><h2>{section.heading}</h2><p>{section.body}</p></div></div>
+          <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography><Typography component="p" variant="body1">{section.body}</Typography></div></div>
           {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
         </section>)}
       </div>}
