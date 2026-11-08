@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { UiSelect } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { emptyIssue, IssueView, NewsletterMediaView, embeddedVideoUrl } from './Newsletter'
@@ -513,12 +514,16 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
             {draft[field].map((section, index) => <div className="studio-section" key={index}>
               <div className="studio-section-top"><strong>{field === 'sections' ? 'INDEX ITEM' : section.placement === 'sidebar' ? 'SIDEBAR FEATURE' : 'ARTICLE SECTION'} {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection(field, index)}>Remove</button></div>
               <label>{field === 'sections' ? 'Index title' : 'Section heading'}<input value={section.heading} maxLength={160} onChange={e => updateSection(field, index, 'heading', e.target.value)} /></label>
-              {field === 'details' && <label>Display location
-                <select value={section.placement === 'sidebar' ? 'sidebar' : 'main'} onChange={e => updateSection(field, index, 'placement', e.target.value)}>
-                  <option value="main">Main article — full width story</option>
-                  <option value="sidebar">Side column — joke, fun fact, or community update</option>
-                </select>
-              </label>}
+              {field === 'details' && <UiSelect
+                className="studio-placement-select"
+                label="Display location"
+                value={section.placement === 'sidebar' ? 'sidebar' : 'main'}
+                onValueChange={value => updateSection(field, index, 'placement', value)}
+                options={[
+                  { value: 'main', label: 'Main article — full width story' },
+                  { value: 'sidebar', label: 'Side column — joke, fun fact, or community update' },
+                ]}
+              />}
               <label>{field === 'sections' ? 'Short summary (saved, not currently displayed)' : 'Article text'}<textarea rows={field === 'sections' ? 2 : 6} value={section.body} maxLength={8000} onChange={e => updateSection(field, index, 'body', e.target.value)} /></label>
               <div className="studio-media-editor">
                 <div className="studio-media-heading"><strong>PHOTOS & VIDEOS</strong><span>Attach media to this section</span></div>
