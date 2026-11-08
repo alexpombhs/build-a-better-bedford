@@ -1,4 +1,3 @@
-import { UiActionButton } from './components/atoms/MuiPrimitives'
 import { UiBox, UiText } from './components/atoms/MuiPrimitives'
 import './about.css'
 import PageHeading from './components/PageHeading'
@@ -46,7 +45,7 @@ export default function AboutPage({onJoin}:{onJoin:()=>void}) {
     </UiBox>
     <UiBox className="bbb-about-cta">
       <UiText variant="body1">Want to join?</UiText>
-      <UiActionButton className="bbb-about-join" onClick={onJoin}>Join the club <span aria-hidden="true">→</span></UiActionButton>
+      <button className="bbb-about-join" onClick={onJoin}>Join the club <span aria-hidden="true">→</span></button>
     </UiBox>
     <UiText variant="body2" className="bbb-about-disclaimer">
       This is a student-run webpage/account that is not managed or endorsed by the Bedford Public Schools.
