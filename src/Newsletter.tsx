@@ -40,24 +40,6 @@ export const emptyIssue = (): NewsletterIssue => ({
   published_at: null,
 })
 
-const initialOctober: NewsletterIssue = {
-  id: '2026-10', month: 'October 2026', number: '02',
-  title: "We're official. Bridges are first.",
-  description: 'Build a Better Bedford is now meeting regularly. We introduced it at the activity fair, held our first meeting, and voted on our first project. Bridges won.',
-  sections: [
-    { heading: 'Club update', body: 'BBB has started meeting regularly. Meetings are on Mondays, and our first topic is bridges.' },
-    { heading: 'Activity fair', body: 'We had a table at the activity fair and talked with students about the projects we want to try this year.' },
-    { heading: 'First meeting', body: "Members voted for bridges and agreed on a Monday meeting schedule. We'll compare bridge types before building and testing models." },
-  ],
-  details: [
-    { heading: "We're official", body: "Build a Better Bedford has started its first project. We'll learn engineering through case studies, models, measurements, and local infrastructure questions." },
-    { heading: 'At the activity fair', body: 'We introduced BBB and invited students to join.' },
-    { heading: 'First up: bridges', body: "We'll explore structural mechanics, build bridge models, and compare their load capacity." },
-  ],
-  footer: 'Club leadership: Alex Pominova · Farah Semy · Julia Richards',
-  status: 'published', published_at: null,
-}
-
 function embeddedVideoUrl(value: string): string | null {
   try {
     const url = new URL(value)
@@ -143,30 +125,23 @@ export function IssueView({ issue }: { issue: NewsletterIssue }) {
 }
 
 export default function Newsletter() {
-  const [issues, setIssues] = useState<NewsletterIssue[]>([initialOctober])
-  const [selected, setSelected] = useState(initialOctober.id)
+  const [issues, setIssues] = useState<NewsletterIssue[]>([])
+  const [selected, setSelected] = useState('')
   const [mobileIssuesOpen, setMobileIssuesOpen] = useState(false)
-  const [editorAuthenticated, setEditorAuthenticated] = useState(false)
   const [error, setError] = useState('')
   const refresh = async () => {
-    const { data: userData } = await supabase.auth.getUser()
-    const email = userData.user?.email?.toLowerCase()
-    let isEditor = false
-    if (email) {
-      const { data: staff } = await supabase.from('newsletter_staff').select('email,must_change_password').eq('email', email).maybeSingle()
-      isEditor = Boolean(staff && !staff.must_change_password)
-    }
-    setEditorAuthenticated(isEditor)
-    let query = supabase.from('newsletters')
+    // The public route always fetches published issues, regardless of login state.
+    // Editing and hidden content belong exclusively to /admin.
+    const query = supabase.from('newsletters')
       .select('id,month,number,title,description,sections,details,footer,status,published_at')
-    if (!isEditor) query = query.eq('status', 'published')
+      .eq('status', 'published')
     const { data, error: loadError } = await query.order('id', { ascending: false })
     if (loadError) {
       setError('Newsletters could not be refreshed. Please try again.')
       return
     }
     setError('')
-    const visible = (data ?? []) as NewsletterIssue[]
+    const visible = ((data ?? []) as NewsletterIssue[]).filter(issue => issue.status === 'published')
     setIssues(visible)
     setSelected(previous => visible.some(issue => issue.id === previous) ? previous : (visible[0]?.id ?? ''))
   }
@@ -186,10 +161,9 @@ export default function Newsletter() {
             <button key={issue.id} type="button" className={issue.id === selected ? 'archive-item selected' : 'archive-item'} aria-current={issue.id === selected ? 'page' : undefined} onClick={() => { setSelected(issue.id); setMobileIssuesOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
               <span className="archive-month">{issue.month} <small>NO. {issue.number}</small></span>
               <strong>{issue.title}</strong>
-              {issue.status !== 'published' && <small className="archive-private-label">HIDDEN · {issue.status.replace('_', ' ')}</small>}
             </button>)}
         </nav>
-        <p className="archive-coming">{editorAuthenticated ? 'Drafts and in-review issues are visible only to approved editors.' : 'Explore the latest issues of Build a Better Bedford.'}</p>
+        <p className="archive-coming">Explore the latest published issues of Build a Better Bedford.</p>
       </aside>
       <div className="newsletter-reading-area">
         {error && <p role="status" className="newsletter-load-message">{error}</p>}
