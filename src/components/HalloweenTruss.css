@@ -1,62 +1,43 @@
-/* Decorative model inspired by engineering wireframe sculptures; no WebGL. */
+/* Restrained kinetic structural study: the model uses real 3D coordinates
+   projected on canvas, rather than a flat SVG rotated in CSS. */
 .halloween-truss {
-  margin:8px 0 16px;
   width:100%;
   min-width:0;
+  margin:6px 0 16px;
 }
 .halloween-truss-stage {
   position:relative;
-  height:174px;
-  display:grid;
-  place-items:center;
-  perspective:680px;
+  display:block;
+  width:100%;
+  height:184px;
   overflow:hidden;
-  border:1px solid rgba(174,122,57,.16);
-  border-radius:12px;
-  background:radial-gradient(ellipse at 48% 40%, #fffdfa 0%,#f7f0e4 60%,#eadfcc 100%);
+  border:1px solid #e1e6e2;
+  border-radius:10px;
+  background:linear-gradient(145deg,#fbfcfb,#edf1ee);
 }
-.halloween-truss-model {
-  position:relative;
+.halloween-truss-canvas {
+  position:absolute;
+  inset:0;
+  display:block;
+  width:100%;
+  height:100%;
   z-index:1;
-  width:min(96%,220px);
-  max-height:172px;
-  overflow:visible;
-  transform-style:preserve-3d;
-  transform-origin:50% 52%;
-  animation:halloween-truss-spin 10s ease-in-out infinite;
-  filter:drop-shadow(0 3px 2px rgba(82,56,30,.12));
 }
 .halloween-truss-shadow {
   position:absolute;
-  width:100px;
-  height:16px;
-  bottom:14px;
   left:50%;
+  bottom:13px;
+  width:78px;
+  height:12px;
   transform:translateX(-50%);
   border-radius:50%;
-  background:rgba(74,66,58,.22);
+  background:rgba(41,55,47,.15);
   filter:blur(8px);
-  animation:halloween-shadow-breathe 10s ease-in-out infinite;
 }
 .halloween-truss figcaption {
-  margin:8px 3px 0;
-  color:#876b4e;
-  font-size:.6875rem;
-  letter-spacing:.02em;
-  line-height:1.4;
+  margin:7px 2px 0;
   text-align:center;
-}
-@keyframes halloween-truss-spin {
-  0%,100% {transform:translateY(2px) rotateY(-25deg) rotateZ(-6deg);}
-  25% {transform:translateY(-4px) rotateY(35deg) rotateZ(2deg);}
-  50% {transform:translateY(0) rotateY(170deg) rotateZ(5deg);}
-  75% {transform:translateY(-4px) rotateY(320deg) rotateZ(-3deg);}
-}
-@keyframes halloween-shadow-breathe {
-  0%,100% {transform:translateX(-50%) scale(.9);opacity:.7;}
-  50% {transform:translateX(-50%) scale(1.2);opacity:.4;}
-}
-@media (prefers-reduced-motion:reduce) {
-  .halloween-truss-model,.halloween-truss-shadow {animation:none;}
-  .halloween-truss-model {transform:none;}
+  color:#748278;
+  font-size:.6875rem;
+  line-height:1.4;
 }
