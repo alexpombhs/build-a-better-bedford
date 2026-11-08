@@ -1,7 +1,7 @@
+import { UiActionButton, UiText } from './components/atoms/MuiPrimitives'
 import { useEffect, useState } from 'react'
 import PageHeading from './components/PageHeading'
 import HalloweenTruss from './components/HalloweenTruss'
-import Typography from '@mui/material/Typography'
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined'
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined'
@@ -145,7 +145,7 @@ function NewsletterArticleBody({ body }: { body: string }) {
               <span className="newsletter-leadership-name">{person}</span>
             </div>)}
         </div>
-      : <Typography component="p" variant="body1" key={index}>{block.text}</Typography>)}
+      : <UiText component="p" variant="body1" key={index}>{block.text}</UiText>)}
   </div>
 }
 
@@ -171,7 +171,7 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
           </header>
           <div className="newsletter-expand-panel">
             {articleSections.map((section, index) => <section className="design-problem" key={index} id={sectionId(index)}>
-              <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography><NewsletterArticleBody body={section.body} /></div></div>
+              <div className="expand-grid"><div><UiText component="h2" variant="h6">{section.heading}</UiText><NewsletterArticleBody body={section.body} /></div></div>
               {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
             </section>)}
           </div>
@@ -209,12 +209,12 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
               return <section className={halloween ? 'newsletter-side-story newsletter-halloween-feature' : 'newsletter-side-story'} key={index}>
                 {halloween && <span className="newsletter-halloween-eyebrow" aria-hidden="true">🎃 CLUB CORNER</span>}
                 {halloween && <HalloweenTruss />}
-                <Typography component="h2" variant="subtitle1">{section.heading}</Typography>
+                <UiText component="h2" variant="subtitle1">{section.heading}</UiText>
                 {halloween
                   ? <div className="newsletter-halloween-copy">{section.body.split(/\n\s*\n/).filter(Boolean).map((paragraph, paragraphIndex) =>
                       <p className={/^(Why |Because )/i.test(paragraph.trim()) ? 'newsletter-halloween-joke' : undefined} key={paragraphIndex}>{paragraph}</p>
                     )}</div>
-                  : <Typography component="p" variant="body2">{section.body}</Typography>}
+                  : <UiText component="p" variant="body2">{section.body}</UiText>}
                 {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
               </section>
             })}
@@ -272,16 +272,16 @@ export default function Newsletter() {
       <aside className="newsletter-archive" aria-label="Newsletter issue library">
         <div className="archive-head">
           <div><span className="archive-kicker">BUILD A BETTER BEDFORD</span><h2>Newsletter archive</h2></div>
-          <button className="archive-mobile-toggle" type="button" aria-expanded={mobileIssuesOpen} aria-controls="newsletter-issue-list" onClick={() => setMobileIssuesOpen(open => !open)}>
+          <UiActionButton className="archive-mobile-toggle" type="button" aria-expanded={mobileIssuesOpen} aria-controls="newsletter-issue-list" onClick={() => setMobileIssuesOpen(open => !open)}>
             {mobileIssuesOpen ? 'Hide issues −' : 'Browse issues +'}
-          </button>
+          </UiActionButton>
         </div>
         <nav id="newsletter-issue-list" className={mobileIssuesOpen ? 'archive-list is-open' : 'archive-list'} aria-label="Browse newsletter issues">
           {issues.map(issue =>
-            <button key={issue.id} type="button" className={issue.id === selected ? 'archive-item selected' : 'archive-item'} aria-current={issue.id === selected ? 'page' : undefined} onClick={() => { setSelected(issue.id); setMobileIssuesOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+            <UiActionButton key={issue.id} type="button" className={issue.id === selected ? 'archive-item selected' : 'archive-item'} aria-current={issue.id === selected ? 'page' : undefined} onClick={() => { setSelected(issue.id); setMobileIssuesOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
               <span className="archive-month">{issue.month} <small>NO. {issue.number}</small></span>
               <strong>{issue.title}</strong>
-            </button>)}
+            </UiActionButton>)}
         </nav>
         <p className="archive-coming">Explore the latest published issues of Build a Better Bedford.</p>
       </aside>
