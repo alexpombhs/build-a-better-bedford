@@ -2,24 +2,32 @@ import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { emptyIssue, IssueView, NewsletterMediaView, embeddedVideoUrl } from './Newsletter'
-import type { NewsletterIssue, NewsletterSection, NewsletterMedia, NewsletterLayout } from './Newsletter'
+import type { NewsletterIssue, NewsletterSection, NewsletterMedia } from './Newsletter'
 
 type Template = 'club' | 'project' | 'announcement'
-const presets: Record<Template, { name: string; sections: NewsletterSection[]; details: NewsletterSection[] }> = {
-  club: { name: 'Club update', sections: [
-    { heading: 'This month', body: '' }, { heading: 'What we worked on', body: '' }, { heading: 'Coming up', body: '' },
-  ], details: [{ heading: 'Highlights and photos', body: '' }] },
-  project: { name: 'Project spotlight', sections: [
-    { heading: 'The challenge', body: '' }, { heading: 'Our approach', body: '' }, { heading: 'What we learned', body: '' },
-  ], details: [{ heading: 'Results and next steps', body: '' }] },
-  announcement: { name: 'Announcement', sections: [
-    { heading: 'The news', body: '' }, { heading: 'Important details', body: '' }, { heading: 'What to do next', body: '' },
-  ], details: [] },
+type Preset = { name: string; description: string; headings: string[] }
+const presets: Record<Template, Preset> = {
+  club: {
+    name: 'Club update',
+    description: 'Meetings, milestones, and what comes next',
+    headings: ['This month', 'What we worked on', 'Coming up'],
+  },
+  project: {
+    name: 'Project spotlight',
+    description: 'A challenge, the engineering process, and results',
+    headings: ['The challenge', 'Our approach', 'What we learned'],
+  },
+  announcement: {
+    name: 'Announcement',
+    description: 'A focused update with key details and next steps',
+    headings: ['The news', 'Important details', 'What to do next'],
+  },
 }
 const cleanSections = (sections: NewsletterSection[]) =>
   sections.map(section => ({
     heading: section.heading.trim(),
     body: section.body.trim(),
+    placement: section.placement,
     media: (section.media ?? []).map(item => ({
       ...item, alt: item.alt?.trim() ?? '', caption: item.caption?.trim() ?? '',
     })),
@@ -55,7 +63,6 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [list, setList] = useState<NewsletterIssue[]>([])
   const [draft, setDraft] = useState<NewsletterIssue>(emptyIssue)
   const [preview, setPreview] = useState(false)
-  const [previewLayout, setPreviewLayout] = useState<NewsletterLayout>('article')
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [videoInputs, setVideoInputs] = useState<Record<string, string>>({})
@@ -319,18 +326,36 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setVideoInputs(current => ({ ...current, [key]: '' }))
     setMessage('Video added. Save the newsletter to keep it.')
   }
+  const addArticleSection = () =>
+    setDraft(current => ({
+      ...current,
+      sections: [...current.sections, { heading: '', body: '', media: [] }],
+      details: [...current.details, { heading: '', body: '', media: [], placement: 'main' }],
+    }))
   const chooseTemplate = (type: Template) => {
     const preset = presets[type]
-    if ((draft.sections.some(section => section.heading || section.body) || draft.details.some(section => section.heading || section.body)) &&
-        !window.confirm('Replace the current sections with this template?')) return
-    setDraft(current => ({ ...current, sections: preset.sections.map(section => ({ ...section })), details: preset.details.map(section => ({ ...section })) }))
+    if ((draft.sections.some(section => section.heading || section.body || section.media?.length) ||
+         draft.details.some(section => section.heading || section.body || section.media?.length)) &&
+        !window.confirm('Replace the current article and contents with this template? Any unsaved section text and attachments in the editor will be lost.')) return
+    setDraft(current => ({
+      ...current,
+      sections: preset.headings.map(heading => ({ heading, body: '', media: [] })),
+      details: preset.headings.map(heading => ({ heading, body: '', media: [], placement: 'main' })),
+    }))
+    setMessage('Template applied to this draft. Add the article text before publishing.')
   }
   const save = async (status: NewsletterIssue['status']) => {
     const next = normalize({ ...draft, status, published_at: status === 'published' ? draft.published_at || new Date().toISOString() : null })
     if (!validIssueId(next.id)) { setMessage('Use a valid issue month in YYYY-MM format.'); return }
     if (!next.title || !next.month || !next.number) { setMessage('Issue month, number, and title are required.'); return }
-    if (status === 'published' && (!next.description || !next.sections.length || next.sections.some(section => !section.heading || !section.body))) {
-      setMessage('Complete the description and all story sections before publishing.'); return
+    const article = next.details.filter(section => section.placement !== 'sidebar')
+    if (status === 'published' && (!next.description || !next.sections.length || next.sections.some(section => !section.heading))) {
+      setMessage('Complete the introduction and all table-of-contents titles before publishing.'); return
+    }
+    if (status === 'published' && (article.length
+      ? article.some(section => !section.heading || !section.body)
+      : next.sections.some(section => !section.body))) {
+      setMessage('Complete each main article heading and its content before publishing.'); return
     }
     if (uploading) { setMessage('Finish uploading attachments before saving.'); return }
     if (status === 'published' && !window.confirm('Publish this issue to the public newsletter page?')) return
@@ -441,13 +466,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <span className="studio-status">{draft.status.replace('_', ' ')}</span>
         </div>
         {preview ? <div className="studio-preview-area">
-          <div className="studio-layout-picker" role="group" aria-label="Preview layout">
-            <span>COMPARE LAYOUTS</span>
-            <button type="button" aria-pressed={previewLayout === 'article'} className={previewLayout === 'article' ? 'active' : ''} onClick={() => setPreviewLayout('article')}>Article</button>
-            <button type="button" aria-pressed={previewLayout === 'feature'} className={previewLayout === 'feature' ? 'active' : ''} onClick={() => setPreviewLayout('feature')}>Feature</button>
-          </div>
-          <p className="studio-layout-description">These are preview experiments only. The public newsletter uses Article until a layout is approved.</p>
-          <div className="studio-preview"><IssueView issue={draft} layout={previewLayout} /></div>
+          <p className="studio-layout-description">Preview of the published article layout. Nothing is published until you choose “Publish issue.”</p>
+          <div className="studio-preview"><IssueView issue={draft} layout="article" /></div>
         </div> : <div className="studio-panel studio-form">
           <h2>Issue details</h2>
           <div className="studio-fields-two">
@@ -457,19 +477,35 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <label>Issue month<input value={draft.month} maxLength={40} onChange={e => updateField('month', e.target.value)} /></label>
           <label>Headline<input value={draft.title} maxLength={160} onChange={e => updateField('title', e.target.value)} placeholder="What happened this month?" /></label>
           <label>Introduction<textarea rows={3} maxLength={800} value={draft.description} onChange={e => updateField('description', e.target.value)} placeholder="A short overview of the issue…" /></label>
-          <div className="studio-template"><h2>Start from a template</h2><div className="studio-template-options">{(Object.keys(presets) as Template[]).map(type => <button key={type} type="button" onClick={() => chooseTemplate(type)}>{presets[type].name}</button>)}</div></div>
-          {(['sections', 'details'] as const).map(field => <div key={field} className="studio-section-group">
-            <div className="studio-group-head"><div><h2>{field === 'sections' ? 'The story' : 'Additional sections'}</h2><p>{field === 'sections' ? 'The main article sections, displayed below the headline.' : 'Optional additional stories. Choose Main article or Side column for each one.'}</p></div><div className="studio-group-buttons"><button type="button" className="studio-secondary" onClick={() => addSection(field)}>+ Add {field === 'sections' ? 'section' : 'article detail'}</button>{field === 'details' && <button type="button" className="studio-secondary" onClick={addSidebarStory}>+ Add side story</button>}</div></div>
+          <div className="studio-template">
+            <h2>Start with an outline <span className="studio-optional">(optional)</span></h2>
+            <p className="studio-template-help">Choose a starting outline for your article and its matching contents index. Choosing another outline replaces the sections currently in this draft.</p>
+            <div className="studio-template-options">{(Object.keys(presets) as Template[]).map(type =>
+              <button key={type} type="button" onClick={() => chooseTemplate(type)} aria-label={`Use ${presets[type].name} outline`}>
+                <strong>{presets[type].name}</strong><span>{presets[type].description}</span>
+              </button>)}</div>
+          </div>
+          {(['details', 'sections'] as const).map(field => <div key={field} className="studio-section-group">
+            <div className="studio-group-head"><div>
+              <h2>{field === 'details' ? 'Main article & sidebar stories' : 'In this issue · navigation index'}</h2>
+              <p>{field === 'details'
+                ? 'Write the complete article here. Choose Main article for full stories or Side column for smaller features.'
+                : 'These titles appear as numbered links in the right column. The brief descriptions are saved but currently hidden on the public page.'}</p>
+            </div><div className="studio-group-buttons">
+              {field === 'details'
+                ? <><button type="button" className="studio-secondary" onClick={addArticleSection}>+ Add article section</button><button type="button" className="studio-secondary" onClick={addSidebarStory}>+ Add sidebar feature</button></>
+                : <button type="button" className="studio-secondary" onClick={() => addSection('sections')}>+ Add index entry</button>}
+            </div></div>
             {draft[field].map((section, index) => <div className="studio-section" key={index}>
-              <div className="studio-section-top"><strong>SECTION {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection(field, index)}>Remove</button></div>
-              <label>Section title<input value={section.heading} maxLength={160} onChange={e => updateSection(field, index, 'heading', e.target.value)} /></label>
+              <div className="studio-section-top"><strong>{field === 'sections' ? 'INDEX ITEM' : section.placement === 'sidebar' ? 'SIDEBAR FEATURE' : 'ARTICLE SECTION'} {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection(field, index)}>Remove</button></div>
+              <label>{field === 'sections' ? 'Index title' : 'Section heading'}<input value={section.heading} maxLength={160} onChange={e => updateSection(field, index, 'heading', e.target.value)} /></label>
               {field === 'details' && <label>Display location
                 <select value={section.placement === 'sidebar' ? 'sidebar' : 'main'} onChange={e => updateSection(field, index, 'placement', e.target.value)}>
                   <option value="main">Main article — full width story</option>
                   <option value="sidebar">Side column — joke, fun fact, or community update</option>
                 </select>
               </label>}
-              <label>Content<textarea rows={5} value={section.body} maxLength={8000} onChange={e => updateSection(field, index, 'body', e.target.value)} /></label>
+              <label>{field === 'sections' ? 'Short summary (saved, not currently displayed)' : 'Article text'}<textarea rows={field === 'sections' ? 2 : 6} value={section.body} maxLength={8000} onChange={e => updateSection(field, index, 'body', e.target.value)} /></label>
               <div className="studio-media-editor">
                 <div className="studio-media-heading"><strong>PHOTOS & VIDEOS</strong><span>Attach media to this section</span></div>
                 {(section.media ?? []).map((item, mediaIndex) =>
