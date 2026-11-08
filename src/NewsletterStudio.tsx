@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { emptyIssue, IssueView, NewsletterMediaView, embeddedVideoUrl } from './Newsletter'
-import type { NewsletterIssue, NewsletterSection, NewsletterMedia } from './Newsletter'
+import type { NewsletterIssue, NewsletterSection, NewsletterMedia, NewsletterLayout } from './Newsletter'
 
 type Template = 'club' | 'project' | 'announcement'
 const presets: Record<Template, { name: string; sections: NewsletterSection[]; details: NewsletterSection[] }> = {
@@ -55,6 +55,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [list, setList] = useState<NewsletterIssue[]>([])
   const [draft, setDraft] = useState<NewsletterIssue>(emptyIssue)
   const [preview, setPreview] = useState(false)
+  const [previewLayout, setPreviewLayout] = useState<NewsletterLayout>('article')
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [videoInputs, setVideoInputs] = useState<Record<string, string>>({})
@@ -437,7 +438,15 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <div className="studio-tabs"><button type="button" className={!preview ? 'active' : ''} onClick={() => setPreview(false)}>Edit</button><button type="button" className={preview ? 'active' : ''} onClick={() => setPreview(true)}>Preview</button></div>
           <span className="studio-status">{draft.status.replace('_', ' ')}</span>
         </div>
-        {preview ? <div className="studio-preview"><IssueView issue={draft} /></div> : <div className="studio-panel studio-form">
+        {preview ? <div className="studio-preview-area">
+          <div className="studio-layout-picker" role="group" aria-label="Preview layout">
+            <span>COMPARE LAYOUTS</span>
+            <button type="button" aria-pressed={previewLayout === 'article'} className={previewLayout === 'article' ? 'active' : ''} onClick={() => setPreviewLayout('article')}>Article</button>
+            <button type="button" aria-pressed={previewLayout === 'feature'} className={previewLayout === 'feature' ? 'active' : ''} onClick={() => setPreviewLayout('feature')}>Feature</button>
+          </div>
+          <p className="studio-layout-description">These are preview experiments only. The public newsletter uses Article until a layout is approved.</p>
+          <div className="studio-preview"><IssueView issue={draft} layout={previewLayout} /></div>
+        </div> : <div className="studio-panel studio-form">
           <h2>Issue details</h2>
           <div className="studio-fields-two">
             <label>Issue ID (YYYY-MM)<input value={draft.id} disabled={!newIssue} onChange={e => { const id = e.target.value; setDraft(current => ({ ...current, id, month: defaultMonth(id) || current.month })) }} /></label>
@@ -448,7 +457,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <label>Introduction<textarea rows={3} maxLength={800} value={draft.description} onChange={e => updateField('description', e.target.value)} placeholder="A short overview of the issue…" /></label>
           <div className="studio-template"><h2>Start from a template</h2><div className="studio-template-options">{(Object.keys(presets) as Template[]).map(type => <button key={type} type="button" onClick={() => chooseTemplate(type)}>{presets[type].name}</button>)}</div></div>
           {(['sections', 'details'] as const).map(field => <div key={field} className="studio-section-group">
-            <div className="studio-group-head"><div><h2>{field === 'sections' ? 'The story' : 'Additional sections'}</h2><p>{field === 'sections' ? 'The main summary sections shown beside the headline.' : 'Longer details shown below the introduction.'}</p></div><button type="button" className="studio-secondary" onClick={() => addSection(field)}>+ Add</button></div>
+            <div className="studio-group-head"><div><h2>{field === 'sections' ? 'The story' : 'Additional sections'}</h2><p>{field === 'sections' ? 'The main article sections, displayed below the headline.' : 'Longer details shown below the introduction.'}</p></div><button type="button" className="studio-secondary" onClick={() => addSection(field)}>+ Add</button></div>
             {draft[field].map((section, index) => <div className="studio-section" key={index}>
               <div className="studio-section-top"><strong>SECTION {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection(field, index)}>Remove</button></div>
               <label>Section title<input value={section.heading} maxLength={160} onChange={e => updateSection(field, index, 'heading', e.target.value)} /></label>
