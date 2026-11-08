@@ -498,3 +498,33 @@
   flex-direction:column;
   gap:7px;
 }
+
+/* One unified "Did you know?" sidebar section, with simple fact dividers. */
+.newsletter-page .newsletter-nerd-facts {
+  margin-top:28px;
+  padding:16px 15px 4px;
+  border:1px solid #e1e9e2;
+  border-radius:10px;
+  background:#f4f7f3;
+}
+.newsletter-page .newsletter-nerd-facts > .newsletter-side-heading {
+  padding:0 0 8px;
+  font-weight:750;
+  color:#397357;
+}
+.newsletter-page .newsletter-nerd-fact {
+  padding:12px 0 14px;
+  margin:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+.newsletter-page .newsletter-nerd-fact + .newsletter-nerd-fact {
+  border-top:1px solid #dce6dd;
+}
+.newsletter-page .newsletter-nerd-fact h3 {
+  margin-bottom:7px;
+}
+.newsletter-page .newsletter-nerd-fact p {
+  margin-bottom:7px;
+}
