@@ -1,9 +1,10 @@
+import { useId } from 'react'
 import type { ComponentProps } from 'react'
-import { Box, ButtonBase, Card, CardContent, IconButton, Paper, Slider, Stack, Tab, Tabs, Typography } from '@mui/material'
+import { Box, ButtonBase, Card, CardContent, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Slider, Stack, Tab, Tabs, Typography } from '@mui/material'
 
 /** Atomic MUI boundary. Screens and organisms must import wrappers, never MUI directly. */
 const classes = {
-  box:'bbb-ui-box', action:'bbb-ui-action', surface:'bbb-ui-surface', card:'bbb-ui-card',
+  box:'bbb-ui-box', action:'bbb-ui-action', select:'bbb-ui-select', surface:'bbb-ui-surface', card:'bbb-ui-card',
   cardContent:'bbb-ui-card-content', iconButton:'bbb-ui-icon-button', stack:'bbb-ui-stack', text:'bbb-ui-text',
   slider:'bbb-ui-slider', tab:'bbb-ui-tab', tabs:'bbb-ui-tabs',
 }
@@ -24,4 +25,27 @@ export function UiIconButton({className,...props}:ComponentProps<typeof IconButt
  * leaving presentation to the existing BBB class names and theme. */
 export function UiActionButton({className,type='button',...props}:ComponentProps<typeof ButtonBase>){
   return <ButtonBase {...props} component="button" type={type} className={cx(classes.action,className)} />
+}
+
+/** A labeled, controlled MUI Select atom, with consistent value-only events.
+ * Use this instead of a native <select> in editor molecules. */
+export type UiSelectOption = { value: string; label: string; disabled?: boolean }
+export type UiSelectProps = {
+  label: string
+  value: string
+  options: readonly UiSelectOption[]
+  onValueChange: (value: string) => void
+  className?: string
+  disabled?: boolean
+  fullWidth?: boolean
+  size?: 'small' | 'medium'
+}
+export function UiSelect({ label, value, options, onValueChange, className, disabled, fullWidth = true, size = 'small' }: UiSelectProps) {
+  const labelId = useId()
+  return <FormControl className={cx(classes.select, className)} fullWidth={fullWidth} size={size} variant="outlined" disabled={disabled}>
+    <InputLabel id={labelId}>{label}</InputLabel>
+    <Select labelId={labelId} label={label} value={value} onChange={event => onValueChange(event.target.value)}>
+      {options.map(option => <MenuItem key={option.value} value={option.value} disabled={option.disabled}>{option.label}</MenuItem>)}
+    </Select>
+  </FormControl>
 }
