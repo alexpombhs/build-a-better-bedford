@@ -803,3 +803,16 @@
 .newsletter-page [class*="newsletter-color-"]:not(.newsletter-color-default) .newsletter-halloween-copy p {
   color:var(--newsletter-feature-muted);
 }
+
+/* An explicitly chosen palette also works with an otherwise Default main
+   article style, without changing any legacy/default article sections. */
+.newsletter-page .newsletter-expand-panel .design-problem.newsletter-section-style-default:not(.newsletter-color-default) {
+  padding:18px 20px;
+  margin:12px 0;
+  background:var(--newsletter-feature-bg);
+  border:1px solid var(--newsletter-feature-line);
+  border-radius:12px;
+}
+.newsletter-page .newsletter-expand-panel .design-problem.newsletter-section-style-default:not(.newsletter-color-default) h2 {
+  color:var(--newsletter-feature-ink);
+}
