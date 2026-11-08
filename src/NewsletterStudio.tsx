@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { NewsletterRichEditor } from './components/NewsletterRichEditor'
+import { MediaFilePicker } from './components/MediaFilePicker'
 import type { NewsletterEditorHandle } from './components/NewsletterRichEditor'
 import { UiDialog, UiDialogTitle, UiDialogContent, UiDialogActions, UiSelect, UiTextField } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
@@ -641,9 +642,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
               />}
               {mediaTarget?.mediaIndex == null && (mediaMode === 'upload'
                 ? <div className="studio-dialog-file">
-                    <label htmlFor="studio-media-file">Choose a file</label>
-                    <input id="studio-media-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
-                      onChange={event => {setMediaFile(event.target.files?.[0] ?? null);setMediaError('')}} />
+                    <MediaFilePicker file={mediaFile} disabled={uploading} onFileChange={file => {setMediaFile(file);setMediaError('')}} />
                     <small>Images: JPG, PNG, WebP, GIF up to 8 MB. Videos: MP4, WebM up to 30 MB.</small>
                   </div>
                 : <UiTextField fullWidth label="Video URL" type="url" size="small" value={mediaUrl}
