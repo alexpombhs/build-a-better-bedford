@@ -311,3 +311,40 @@
 .newsletter-page .newsletter-side-stories {
   margin-top:12px;
 }
+
+/* The content grid starts at the top of the issue, so the TOC aligns with the
+   issue heading rather than beginning beneath the introduction. */
+.newsletter-page.newsletter-layout-article .newsletter-editorial-main > .newsletter-intro,
+.newsletter-page.newsletter-layout-feature .newsletter-editorial-main > .newsletter-intro {
+  padding-top:0;
+  margin-top:0;
+  width:100%;
+}
+.newsletter-page .newsletter-editorial-main .bbb-page-heading {
+  align-items:flex-start;
+  justify-content:flex-start;
+}
+.newsletter-page .newsletter-editorial-main .bbb-page-heading-copy {
+  max-width:100%;
+  width:100%;
+}
+.newsletter-page .newsletter-editorial-main .bbb-page-heading-description {
+  max-width:68ch;
+  margin-top:8px!important;
+  font-size:1rem!important;
+  line-height:1.5!important;
+  color:#516859!important;
+}
+/* Section numbers exist only in the right-side table of contents. */
+.newsletter-page.newsletter-layout-article .newsletter-note,
+.newsletter-page.newsletter-layout-feature .newsletter-note {
+  display:block;
+}
+.newsletter-page .newsletter-editorial-aside .newsletter-side-heading:first-child {
+  padding-top:0;
+}
+/* Keep the heading and main story aligned with the same reading column. */
+.newsletter-page.newsletter-layout-article .newsletter-intro,
+.newsletter-page.newsletter-layout-feature .newsletter-intro {
+  max-width:100%;
+}
