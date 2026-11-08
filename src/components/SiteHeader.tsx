@@ -15,6 +15,12 @@ export default function SiteHeader({ active, onNavigate, onJoin }: Props) {
     setOpen(false)
     onNavigate(section)
   }
+  const hrefFor = (section: Section) => `${import.meta.env.BASE_URL}${section === 'home' ? '' : section}`
+  const linkClick = (event: React.MouseEvent<HTMLAnchorElement>, section: Section) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    event.preventDefault()
+    navigate(section)
+  }
   const items: { section: Section; label: string }[] = [
     { section: 'projects', label: 'Projects' },
     { section: 'lab', label: 'Lab' },
@@ -23,10 +29,10 @@ export default function SiteHeader({ active, onNavigate, onJoin }: Props) {
   ]
   return (
     <header className="bbb-site-header">
-      <button className="bbb-site-brand" onClick={() => navigate('home')} aria-label="Build a Better Bedford home">
+      <a className="bbb-site-brand" href={hrefFor('home')} onClick={event => linkClick(event, 'home')} aria-label="Build a Better Bedford home">
         <strong>BBB</strong>
         <span>STUDENT-LED<br />CIVIL ENGINEERING CLUB</span>
-      </button>
+      </a>
       <button
         type="button"
         className="bbb-site-menu-toggle"
@@ -39,12 +45,12 @@ export default function SiteHeader({ active, onNavigate, onJoin }: Props) {
       </button>
       <nav id="bbb-primary-navigation" className={open ? 'bbb-site-nav is-open' : 'bbb-site-nav'} aria-label="Main navigation">
         {items.map(({ section, label }) => (
-          <button type="button" key={section}
+          <a key={section} href={hrefFor(section)}
             className={active === section ? 'bbb-site-nav-link is-active' : 'bbb-site-nav-link'}
             aria-current={active === section ? 'page' : undefined}
-            onClick={() => navigate(section)}>
+            onClick={event => linkClick(event, section)}>
             {label}
-          </button>
+          </a>
         ))}
         <button type="button" className="bbb-site-join" onClick={() => {setOpen(false);onJoin()}}>Join the Club</button>
       </nav>
