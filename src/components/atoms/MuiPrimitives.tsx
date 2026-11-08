@@ -13,7 +13,7 @@ export function UiSurface({className,...props}:ComponentProps<typeof Paper>){ret
 export function UiCard({className,...props}:ComponentProps<typeof Card>){return <Card {...props} className={cx(classes.card,className)} />}
 export function UiCardContent({className,...props}:ComponentProps<typeof CardContent>){return <CardContent {...props} className={cx(classes.cardContent,className)} />}
 export function UiStack({className,...props}:ComponentProps<typeof Stack>){return <Stack {...props} className={cx(classes.stack,className)} />}
-export function UiText({className,...props}:ComponentProps<typeof Typography>){return <Typography {...props} className={cx(classes.text,className)} />}
+export function UiText({className,...props}:ComponentProps<typeof Typography> & {component?: React.ElementType}){return <Typography {...props} className={cx(classes.text,className)} />}
 export function UiSlider({className,...props}:ComponentProps<typeof Slider>){return <Slider {...props} className={cx(classes.slider,className)} />}
 export function UiTab({className,...props}:ComponentProps<typeof Tab>){return <Tab {...props} className={cx(classes.tab,className)} />}
 export function UiTabs({className,...props}:ComponentProps<typeof Tabs>){return <Tabs {...props} className={cx(classes.tabs,className)} />}
