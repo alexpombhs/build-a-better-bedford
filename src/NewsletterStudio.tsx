@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { UiSelect } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
-import { emptyIssue, IssueView, NewsletterMediaView, embeddedVideoUrl, newsletterSectionStyle, newsletterSectionPlacement } from './Newsletter'
+import { emptyIssue, IssueView, NewsletterMediaView, embeddedVideoUrl, newsletterSectionStyle, newsletterSectionPlacement, newsletterColorTheme } from './Newsletter'
 import type { NewsletterIssue, NewsletterSection, NewsletterMedia } from './Newsletter'
 
 type Template = 'club' | 'project' | 'announcement'
@@ -30,6 +30,7 @@ const cleanSections = (sections: NewsletterSection[]) =>
     body: section.body.trim(),
     placement: section.placement,
     style: section.style,
+    colorTheme: section.colorTheme,
     media: (section.media ?? []).map(item => ({
       ...item, alt: item.alt?.trim() ?? '', caption: item.caption?.trim() ?? '',
     })),
@@ -266,7 +267,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
 
   const updateField = <K extends keyof NewsletterIssue>(field: K, value: NewsletterIssue[K]) =>
     setDraft(current => ({ ...current, [field]: value }))
-  const updateSection = (field: 'sections' | 'details', index: number, property: 'heading' | 'body' | 'placement' | 'style', value: string) =>
+  const updateSection = (field: 'sections' | 'details', index: number, property: 'heading' | 'body' | 'placement' | 'style' | 'colorTheme', value: string) =>
     setDraft(current => {
       const next = { ...current, [field]: current[field].map((section, i) => i === index ? { ...section, [property]: value } : section) }
       if (field !== 'details' || property !== 'heading' || current.details[index]?.placement === 'sidebar') return next
@@ -285,7 +286,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const addSection = (field: 'sections' | 'details') =>
     setDraft(current => ({ ...current, [field]: [...current[field], { heading: '', body: '', media: [] }] }))
   const addSidebarStory = () =>
-    setDraft(current => ({ ...current, details: [...current.details, { heading: '', body: '', media: [], placement: 'sidebar', style: 'default' }] }))
+    setDraft(current => ({ ...current, details: [...current.details, { heading: '', body: '', media: [], placement: 'sidebar', style: 'default', colorTheme: 'default' }] }))
   const removeSection = (field: 'sections' | 'details', index: number) =>
     setDraft(current => ({ ...current, [field]: current[field].filter((_, i) => i !== index) }))
   const changeMedia = (field: 'sections' | 'details', sectionIndex: number, mediaIndex: number, patch: Partial<NewsletterMedia>) =>
@@ -346,7 +347,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setDraft(current => ({
       ...current,
       sections: [...current.sections, { heading: '', body: '', media: [] }],
-      details: [...current.details, { heading: '', body: '', media: [], placement: 'main', style: 'default' }],
+      details: [...current.details, { heading: '', body: '', media: [], placement: 'main', style: 'default', colorTheme: 'default' }],
     }))
   const chooseTemplate = (type: Template) => {
     const preset = presets[type]
@@ -356,7 +357,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setDraft(current => ({
       ...current,
       sections: preset.headings.map(heading => ({ heading, body: '', media: [] })),
-      details: preset.headings.map(heading => ({ heading, body: '', media: [], placement: 'main', style: 'default' })),
+      details: preset.headings.map(heading => ({ heading, body: '', media: [], placement: 'main', style: 'default', colorTheme: 'default' })),
     }))
     setMessage('Template applied to this draft. Add the article text before publishing.')
   }
@@ -533,7 +534,22 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                   onValueChange={value => updateSection(field, index, 'style', value)}
                   options={[
                     { value: 'default', label: 'Default' },
-                    { value: 'halloween', label: 'Halloween' },
+                    { value: 'club-corner', label: 'Club Corner' },
+                    { value: 'did-you-know', label: 'Did You Know?' },
+                    { value: 'halloween', label: 'Halloween (animated)' },
+                  ]}
+                />
+                <UiSelect
+                  className="studio-color-theme-select"
+                  label="Color theme"
+                  value={newsletterColorTheme(section)}
+                  onValueChange={value => updateSection(field, index, 'colorTheme', value)}
+                  options={[
+                    { value: 'default', label: 'Default' },
+                    { value: 'sage', label: 'Sage green' },
+                    { value: 'blue', label: 'Soft blue' },
+                    { value: 'amber', label: 'Warm amber' },
+                    { value: 'lavender', label: 'Lavender' },
                   ]}
                 />
               </div>}
