@@ -262,3 +262,6 @@
   }
   .newsletter-page .newsletter-side-story { max-width:65ch; }
 }
+
+.studio-group-buttons{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+@media(max-width:600px){.studio-group-buttons{justify-content:flex-start}}
