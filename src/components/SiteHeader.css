@@ -23,3 +23,7 @@
 .bbb-site-nav-link.is-active::after{bottom:7px}
 .bbb-site-join{margin-top:8px}
 }
+
+/* Navigation items are links, supporting copy link and open-in-new-tab. */
+.bbb-site-brand,.bbb-site-nav-link{text-decoration:none}
+.bbb-site-header a:focus-visible{outline:2px solid #294b63;outline-offset:3px}
