@@ -176,9 +176,9 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
   const mainDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'main')
   const sideDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'sidebar')
   const articleSections = mainDetails.length > 0 ? mainDetails : issue.sections
-  const contents = issue.sections.length > 0 ? issue.sections : mainDetails
+  const contents = articleSections.map(section => ({...section, body: issue.sections.find(entry => entry.heading.trim().toLowerCase() === section.heading.trim().toLowerCase())?.body ?? ''}))
   const isOctober2026 = issue.id.startsWith('2026-10') || /october\s+2026/i.test(issue.month)
-  const hasSideRail = (!editorPreview && contents.length > 0) || sideDetails.length > 0 || isOctober2026
+  const hasSideRail = contents.length > 0 || sideDetails.length > 0 || isOctober2026
   const sectionId = (index: number) => `bbb-issue-${issue.id}-section-${index + 1}`
   return <section className={`newsletter-page newsletter-layout-${layout}`}>
     {!editorPreview && issue.status !== 'published' && <p className="newsletter-private-banner">PRIVATE PREVIEW · {issue.status === 'draft' ? 'DRAFT' : 'IN REVIEW'} · NOT VISIBLE TO VISITORS</p>}
@@ -202,7 +202,7 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
           </div>
         </div>
         {hasSideRail && <aside className="newsletter-editorial-aside" aria-label="Issue contents and related stories">
-          {!editorPreview && contents.length > 0 && <nav className="newsletter-issue-contents" aria-label="In this issue">
+          {contents.length > 0 && <nav className="newsletter-issue-contents" aria-label="In this issue">
             <div className="newsletter-side-heading">IN THIS ISSUE</div>
             <ol className="newsletter-toc-list">
               {contents.map((section, index) => {
