@@ -348,3 +348,32 @@
 .newsletter-page.newsletter-layout-feature .newsletter-intro {
   max-width:100%;
 }
+
+/* Show the existing short summaries beneath each numbered contents heading. */
+.newsletter-page .newsletter-toc-list .newsletter-toc-unlinked {
+  display:grid;
+  grid-template-columns:24px minmax(0,1fr);
+  gap:8px;
+  padding:10px 2px;
+  color:#244631;
+  font-size:.8125rem;
+  line-height:1.45;
+}
+.newsletter-page .newsletter-toc-content {
+  display:block;
+  min-width:0;
+}
+.newsletter-page .newsletter-toc-title {
+  display:block;
+  font-weight:600;
+}
+.newsletter-page .newsletter-toc-description {
+  display:block;
+  margin-top:5px;
+  color:#64786a;
+  font-size:.75rem;
+  font-weight:400;
+  line-height:1.5;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
