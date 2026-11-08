@@ -1,5 +1,7 @@
 import Typography from '@mui/material/Typography'
-import { useEffect, useState } from 'react'
+import { createElement, useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
+import { isNewsletterRichBody, newsletterBodyHtml, sanitizedNewsletterHtml } from './components/NewsletterRichEditor'
 import PageHeading from './components/PageHeading'
 import HalloweenTruss from './components/HalloweenTruss'
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined'
@@ -128,6 +130,30 @@ export function NewsletterMediaView({ media }: { media: NewsletterMedia }) {
 
 export type NewsletterLayout = 'article' | 'feature'
 
+// Rich content uses a small safe markup subset. Media tokens resolve to the
+// issue's own uploaded assets and can appear between paragraphs.
+function NewsletterRichBody({body,media=[]}:{body:string;media?:NewsletterMedia[]}){
+  const safe=sanitizedNewsletterHtml(newsletterBodyHtml(body))
+  const dom=new DOMParser().parseFromString(safe,'text/html')
+  let index=0
+  const convert=(node:Node):ReactNode=>{
+    if(node.nodeType===3)return node.textContent
+    if(node.nodeType!==1)return null
+    const element=node as Element
+    const mediaId=element.getAttribute('data-media-id')
+    if(mediaId){
+      const asset=media.find(item=>item.id===mediaId)
+      return asset ? <NewsletterMediaView key={index++} media={asset}/> : null
+    }
+    const tag=element.tagName.toLowerCase()
+    const tags=new Set(['p','div','h3','h4','strong','em','u','ul','ol','li','blockquote','br','a'])
+    if(!tags.has(tag))return null
+    const children=Array.from(element.childNodes).map(convert)
+    if(tag==='a')return createElement('a',{key:index++,href:element.getAttribute('href') ?? undefined,target:'_blank',rel:'noopener noreferrer'},...children)
+    return createElement(tag,{key:index++},...children)
+  }
+  return <div className="newsletter-article-copy newsletter-rich-copy">{Array.from(dom.body.childNodes).map(convert)}</div>
+}
 function NewsletterArticleBody({ body }: { body: string }) {
   // The editor contains meaningful line breaks, but not necessarily blank
   // lines. Render each text line as a real paragraph so CSS controls spacing.
@@ -196,8 +222,8 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
                 {newsletterSectionStyle(section) === 'club-corner' && <span className="newsletter-feature-kicker">CLUB CORNER</span>}
                 {newsletterSectionStyle(section) === 'did-you-know' && <span className="newsletter-feature-kicker">DID YOU KNOW?</span>}
                 {halloween && <div className="newsletter-main-seasonal"><span className="newsletter-halloween-eyebrow">🎃 SEASONAL FEATURE</span><HalloweenTruss /></div>}
-                <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography><NewsletterArticleBody body={section.body} /></div></div>
-                {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
+                <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography>{isNewsletterRichBody(section.body) ? <NewsletterRichBody body={section.body} media={section.media}/> : <NewsletterArticleBody body={section.body} />}</div></div>
+                {(section.media ?? []).filter(item => !isNewsletterRichBody(section.body) || !section.body.includes(`data-media-id="${item.id}"`)).map(item => <NewsletterMediaView key={item.id} media={item} />)}
               </section>
             })}
           </div>
@@ -237,8 +263,10 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
                 {newsletterSectionStyle(section) === 'did-you-know' && <span className="newsletter-feature-kicker">DID YOU KNOW?</span>}
                 {halloween && <HalloweenTruss />}
                 <Typography component="h2" variant="subtitle1">{section.heading}</Typography>
-                {halloween
-                  ? <div className="newsletter-halloween-copy">{section.body.split(/\n\s*\n/).filter(Boolean).map((paragraph, paragraphIndex) =>
+                {isNewsletterRichBody(section.body)
+                  ? <NewsletterRichBody body={section.body} media={section.media} />
+                  : halloween
+                    ? <div className="newsletter-halloween-copy">{section.body.split(/\n\s*\n/).filter(Boolean).map((paragraph, paragraphIndex) =>
                       <p className={/^(Why |Because )/i.test(paragraph.trim()) ? 'newsletter-halloween-joke' : undefined} key={paragraphIndex}>{paragraph}</p>
                     )}</div>
                   : <Typography component="p" variant="body2">{section.body}</Typography>}
