@@ -31,6 +31,7 @@ const cleanSections = (sections: NewsletterSection[]) =>
     placement: section.placement,
     style: section.style,
     colorTheme: section.colorTheme,
+    summary: section.summary?.trim() ?? '',
     media: (section.media ?? []).map(item => ({
       ...item, alt: item.alt?.trim() ?? '', caption: item.caption?.trim() ?? '',
     })),
@@ -39,7 +40,12 @@ const normalize = (issue: NewsletterIssue): NewsletterIssue => ({
   ...issue,
   title: issue.title.trim(), description: issue.description.trim(),
   footer: issue.footer.trim(),
-  sections: cleanSections(issue.sections), details: cleanSections(issue.details),
+  sections: cleanSections(issue.details.filter(section => newsletterSectionPlacement(section) === 'main').map(section => ({
+    heading: section.heading,
+    body: section.summary ?? issue.sections.find(item => item.heading.trim().toLowerCase() === section.heading.trim().toLowerCase())?.body ?? '',
+    media: [],
+  }))),
+  details: cleanSections(issue.details),
 })
 const validIssueId = (id: string) => /^\d{4}-(0[1-9]|1[0-2])$/.test(id)
 const defaultMonth = (id: string) => {
@@ -273,24 +279,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
 
   const updateField = <K extends keyof NewsletterIssue>(field: K, value: NewsletterIssue[K]) =>
     setDraft(current => ({ ...current, [field]: value }))
-  const updateSection = (field: 'sections' | 'details', index: number, property: 'heading' | 'body' | 'placement' | 'style' | 'colorTheme', value: string) =>
-    setDraft(current => {
-      const next = { ...current, [field]: current[field].map((section, i) => i === index ? { ...section, [property]: value } : section) }
-      if (field !== 'details' || property !== 'heading' || current.details[index]?.placement === 'sidebar') return next
-      const previousHeading = current.details[index].heading
-      // Only update the index when the matching title hasn't been customized.
-      // Compare by position for newly generated templates, then by exact heading
-      // for older issues that have a different sidebar/order.
-      const indexedPosition = current.sections[index]?.heading === previousHeading ? index
-        : current.sections.findIndex(section => section.heading === previousHeading)
-      if (indexedPosition < 0) return next
-      return {
-        ...next,
-        sections: current.sections.map((section, i) => i === indexedPosition ? { ...section, heading: value } : section),
-      }
-    })
-  const addSection = (field: 'sections' | 'details') =>
-    setDraft(current => ({ ...current, [field]: [...current[field], { heading: '', body: '', media: [] }] }))
+  const updateSection = (field: 'sections' | 'details', index: number, property: 'heading' | 'body' | 'placement' | 'style' | 'colorTheme' | 'summary', value: string) =>
+    setDraft(current => ({ ...current, [field]: current[field].map((section, i) => i === index ? { ...section, [property]: value } : section) }))
   const addSidebarStory = () =>
     setDraft(current => ({ ...current, details: [...current.details, { heading: '', body: '', media: [], placement: 'sidebar', style: 'default', colorTheme: 'default' }] }))
   const removeSection = (field: 'sections' | 'details', index: number) =>
@@ -391,7 +381,6 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const addArticleSection = () =>
     setDraft(current => ({
       ...current,
-      sections: [...current.sections, { heading: '', body: '', media: [] }],
       details: [...current.details, { heading: '', body: '', media: [], placement: 'main', style: 'default', colorTheme: 'default' }],
     }))
   const chooseTemplate = (type: Template) => {
@@ -401,7 +390,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         !window.confirm('Replace the current article and contents with this template? Any unsaved section text and attachments in the editor will be lost.')) return
     setDraft(current => ({
       ...current,
-      sections: preset.headings.map(heading => ({ heading, body: '', media: [] })),
+      sections: [],
       details: preset.headings.map(heading => ({ heading, body: '', media: [], placement: 'main', style: 'default', colorTheme: 'default' })),
     }))
     setMessage('Template applied to this draft. Add the article text before publishing.')
@@ -411,12 +400,10 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     if (!validIssueId(next.id)) { setMessage('Use a valid issue month in YYYY-MM format.'); return }
     if (!next.title || !next.month || !next.number) { setMessage('Issue month, number, and title are required.'); return }
     const article = next.details.filter(section => section.placement !== 'sidebar')
-    if (status === 'published' && (!next.description || !next.sections.length || next.sections.some(section => !section.heading))) {
-      setMessage('Complete the introduction and all table-of-contents titles before publishing.'); return
+    if (status === 'published' && (!next.description || !article.length || article.some(section => !section.heading))) {
+      setMessage('Complete the introduction and main article section headings before publishing.'); return
     }
-    if (status === 'published' && (article.length
-      ? article.some(section => !section.heading || !section.body)
-      : next.sections.some(section => !section.body))) {
+    if (status === 'published' && article.some(section => !section.heading || !section.body)) {
       setMessage('Complete each main article heading and its content before publishing.'); return
     }
     if (uploading) { setMessage('Finish uploading attachments before saving.'); return }
@@ -547,26 +534,24 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                 <strong>{presets[type].name}</strong><span>{presets[type].description}</span>
               </button>)}</div>
           </div>
-          {(['details', 'sections'] as const).map(field => <div key={field} className="studio-section-group">
+          <div className="studio-section-group">
             <div className="studio-group-head"><div>
-              <h2>{field === 'details' ? 'Newsletter content & side panel' : 'In this issue · navigation index'}</h2>
-              <p>{field === 'details'
-                ? 'Add sections, choose Main content or Side panel, and select a style independently for each section.'
-                : 'These titles appear as numbered links in the right column. Matching titles update as you edit the article. You can customize them here; brief descriptions are saved but hidden.'}</p>
+              <h2>Newsletter content & side panel</h2>
+              <p>Each main-content section is automatically linked under “In This Issue.” Write your content and choose its location and appearance here.</p>
             </div><div className="studio-group-buttons">
-              {field === 'details'
-                ? <><button type="button" className="studio-secondary" onClick={addArticleSection}>+ Add article section</button><button type="button" className="studio-secondary" onClick={addSidebarStory}>+ Add sidebar feature</button></>
-                : <button type="button" className="studio-secondary" onClick={() => addSection('sections')}>+ Add index entry</button>}
+              <button type="button" className="studio-secondary" onClick={addArticleSection}>+ Add article section</button>
+              <button type="button" className="studio-secondary" onClick={addSidebarStory}>+ Add side panel section</button>
             </div></div>
-            {draft[field].map((section, index) => <div className="studio-section" key={index}>
-              <div className="studio-section-top"><strong>{field === 'sections' ? 'INDEX ITEM' : newsletterSectionPlacement(section) === 'sidebar' ? 'SIDE PANEL SECTION' : 'CONTENT SECTION'} {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection(field, index)}>Remove</button></div>
-              <label>{field === 'sections' ? 'Index title' : 'Section heading'}<input value={section.heading} maxLength={160} onChange={e => updateSection(field, index, 'heading', e.target.value)} /></label>
-              {field === 'details' && <div className="studio-section-options">
+            {draft.details.map((section, index) => <div className="studio-section" key={index}>
+
+              <div className="studio-section-top"><strong>{newsletterSectionPlacement(section) === 'sidebar' ? 'SIDE PANEL SECTION' : 'CONTENT SECTION'} {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection('details', index)}>Remove</button></div>
+              <label>Section heading<input value={section.heading} maxLength={160} onChange={e => updateSection('details', index, 'heading', e.target.value)} /></label>
+              <div className="studio-section-options">
                 <UiSelect
                   className="studio-placement-select"
                   label="Location"
                   value={newsletterSectionPlacement(section)}
-                  onValueChange={value => updateSection(field, index, 'placement', value)}
+                  onValueChange={value => updateSection('details', index, 'placement', value)}
                   options={[
                     { value: 'main', label: 'Main content' },
                     { value: 'sidebar', label: 'Side panel' },
@@ -576,7 +561,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                   className="studio-section-style-select"
                   label="Section style"
                   value={newsletterSectionStyle(section)}
-                  onValueChange={value => updateSection(field, index, 'style', value)}
+                  onValueChange={value => updateSection('details', index, 'style', value)}
                   options={[
                     { value: 'default', label: 'Default' },
                     { value: 'club-corner', label: 'Club Corner' },
@@ -588,7 +573,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                   className="studio-color-theme-select"
                   label="Color theme"
                   value={newsletterColorTheme(section)}
-                  onValueChange={value => updateSection(field, index, 'colorTheme', value)}
+                  onValueChange={value => updateSection('details', index, 'colorTheme', value)}
                   options={[
                     { value: 'default', label: 'Default' },
                     { value: 'sage', label: 'Sage green' },
@@ -597,22 +582,23 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                     { value: 'lavender', label: 'Lavender' },
                   ]}
                 />
-              </div>}
-              <label>{field === 'sections' ? 'Short summary (saved, not currently displayed)' : 'Article text'}<textarea rows={field === 'sections' ? 2 : 6} value={section.body} maxLength={8000} onChange={e => updateSection(field, index, 'body', e.target.value)} /></label>
+              </div>
+              {newsletterSectionPlacement(section) === 'main' && <label>Optional index summary (saved, currently hidden)<textarea rows={2} maxLength={800} value={section.summary ?? draft.sections.find(item => item.heading === section.heading)?.body ?? ''} onChange={e => updateSection('details', index, 'summary', e.target.value)} /></label>}
+              <label>Article text<textarea rows={6} value={section.body} maxLength={8000} onChange={e => updateSection('details', index, 'body', e.target.value)} /></label>
               <div className="studio-inline-media">
-                <button type="button" className="studio-add-media-button" onClick={() => openMediaDialog(field,index)}>
+                <button type="button" className="studio-add-media-button" onClick={() => openMediaDialog('details',index)}>
                   <span aria-hidden="true">＋</span> Add photo or video
                 </button>
                 {(section.media ?? []).length > 0 && <div className="studio-attachment-list" aria-label="Attached media">
                   {(section.media ?? []).map((item, mediaIndex) => <div className="studio-attachment" key={item.id}>
                     <span className="studio-attachment-name">{item.type === 'image' ? 'Photo' : 'Video'}{item.caption ? ` · ${item.caption}` : item.alt ? ` · ${item.alt}` : ''}</span>
-                    <button type="button" className="studio-attachment-action" onClick={() => openMediaDialog(field,index,mediaIndex)}>Edit</button>
-                    <button type="button" className="studio-attachment-action studio-attachment-remove" onClick={() => removeMedia(field,index,mediaIndex)}>Remove</button>
+                    <button type="button" className="studio-attachment-action" onClick={() => openMediaDialog('details',index,mediaIndex)}>Edit</button>
+                    <button type="button" className="studio-attachment-action studio-attachment-remove" onClick={() => removeMedia('details',index,mediaIndex)}>Remove</button>
                   </div>)}
                 </div>}
               </div>
             </div>)}
-          </div>)}
+          </div>
           <label>Footer or credits<textarea rows={2} value={draft.footer} maxLength={800} onChange={e => updateField('footer', e.target.value)} /></label>
         </div>}
         <div className="studio-savebar">
