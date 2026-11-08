@@ -329,3 +329,86 @@
 .studio-dialog-file input {max-width:100%;font:inherit;font-size:13px}
 .studio-dialog-file small {font-size:11px;color:#637a69;line-height:1.5}
 .studio-media-dialog-error {color:#a13c32;font-size:13px;margin:0}
+
+/* Compact editorial toolbar, separate from theme/layout selectors. */
+.studio-rich-editor {
+  border:1px solid #cbd9ce;
+  border-radius:9px;
+  background:#fff;
+  overflow:hidden;
+}
+.studio-rich-toolbar {
+  display:flex;
+  gap:3px;
+  flex-wrap:wrap;
+  align-items:center;
+  padding:5px 7px;
+  border-bottom:1px solid #dee7df;
+  background:#f7faf7;
+}
+.studio-rich-toolbar .MuiIconButton-root {
+  border-radius:6px;
+  color:#40624d;
+}
+.studio-rich-toolbar .MuiIconButton-root:hover {background:#e5f0e7}
+.studio-toolbar-separator {
+  width:1px;
+  height:20px;
+  margin:0 4px;
+  background:#d6e3d9;
+}
+.studio-rich-surface {
+  min-height:180px;
+  max-height:560px;
+  overflow:auto;
+  padding:13px 15px;
+  outline:0;
+  color:#244433;
+  font-size:15px;
+  line-height:1.6;
+  white-space:normal;
+}
+.studio-rich-surface:focus-visible {box-shadow:inset 0 0 0 2px #7aa78b}
+.studio-rich-surface:empty:before {content:attr(data-placeholder);color:#87998b}
+.studio-rich-surface p {margin:0 0 12px}
+.studio-rich-surface h3,.studio-rich-surface h4 {font-size:18px;font-weight:600;margin:12px 0 6px}
+.studio-rich-surface blockquote {
+  padding:5px 12px;
+  margin:12px 0;
+  border-left:3px solid #9ab9a2;
+  color:#4d6755;
+}
+.studio-rich-surface ul,.studio-rich-surface ol {padding-left:25px}
+.studio-rich-surface [data-media-id] {
+  display:inline-block;
+  margin:4px;
+  padding:6px 12px;
+  border:1px dashed #9bbb9f;
+  border-radius:6px;
+  background:#eff7f0;
+  color:#416e50;
+  font-size:12px;
+  user-select:all;
+}
+.newsletter-page .newsletter-rich-copy h3,.newsletter-page .newsletter-rich-copy h4 {
+  font-size:1.08rem;
+  font-weight:600;
+  line-height:1.35;
+  margin:3px 0 0;
+}
+.newsletter-page .newsletter-rich-copy ul,.newsletter-page .newsletter-rich-copy ol {
+  padding-left:24px;
+  margin:2px 0;
+}
+.newsletter-page .newsletter-rich-copy blockquote {
+  border-left:3px solid #b4cbb9;
+  padding:6px 12px;
+  color:#587261;
+  margin:0;
+  font-style:italic;
+}
+.newsletter-page .newsletter-rich-copy a {
+  color:#266b48;
+  text-decoration:underline;
+}
+.newsletter-page .newsletter-rich-copy > div {line-height:1.6}
