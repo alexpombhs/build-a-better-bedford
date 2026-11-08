@@ -145,7 +145,7 @@ export function IssueView({ issue }: { issue: NewsletterIssue }) {
 export default function Newsletter() {
   const [issues, setIssues] = useState<NewsletterIssue[]>([initialOctober])
   const [selected, setSelected] = useState(initialOctober.id)
-  const [archiveOpen, setArchiveOpen] = useState(false)
+  const [mobileIssuesOpen, setMobileIssuesOpen] = useState(false)
   const [editorAuthenticated, setEditorAuthenticated] = useState(false)
   const [error, setError] = useState('')
   const refresh = async () => {
@@ -173,20 +173,28 @@ export default function Newsletter() {
   useEffect(() => { void refresh() }, [])
   const chosen = issues.find(issue => issue.id === selected)
   return <div>
-    <div className={archiveOpen ? 'newsletter-library archive-visible' : 'newsletter-library'}>
-      <button className="newsletter-issue-tab" type="button" aria-expanded={archiveOpen} onClick={() => setArchiveOpen(v => !v)}>▤ <span>Browse issues</span></button>
-      {archiveOpen && <div className="newsletter-archive-scrim" onClick={() => setArchiveOpen(false)} />}
-      <aside className={archiveOpen ? 'newsletter-archive open' : 'newsletter-archive'} aria-label="Newsletter issue library">
-        <div className="archive-head"><span>{editorAuthenticated ? 'ALL ISSUES · EDITOR VIEW' : 'PUBLISHED ISSUES'}</span><button className="archive-close" type="button" onClick={() => setArchiveOpen(false)} aria-label="Close issue list">×</button></div>
-        <nav className="archive-list" aria-label="Newsletter issues">{issues.map(issue =>
-          <button key={issue.id} type="button" className={issue.id === selected ? 'archive-item selected' : 'archive-item'} onClick={() => { setSelected(issue.id); setArchiveOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
-            <span>{issue.month} <small>ISSUE {issue.number}</small></span><strong>{issue.title}</strong>
-            {issue.status !== 'published' && <small className="archive-private-label">HIDDEN · {issue.status.replace('_',' ')}</small>}
-          </button>)}</nav>
-        <p className="archive-coming">{editorAuthenticated ? 'Only you can see drafts and issues in review. Visitors see published issues only.' : 'New issues appear here after they are published.'}</p>
+    <div className="newsletter-library">
+      <aside className="newsletter-archive" aria-label="Newsletter issue library">
+        <div className="archive-head">
+          <div><span className="archive-kicker">BUILD A BETTER BEDFORD</span><h2>Newsletter archive</h2></div>
+          <button className="archive-mobile-toggle" type="button" aria-expanded={mobileIssuesOpen} aria-controls="newsletter-issue-list" onClick={() => setMobileIssuesOpen(open => !open)}>
+            {mobileIssuesOpen ? 'Hide issues −' : 'Browse issues +'}
+          </button>
+        </div>
+        <nav id="newsletter-issue-list" className={mobileIssuesOpen ? 'archive-list is-open' : 'archive-list'} aria-label="Browse newsletter issues">
+          {issues.map(issue =>
+            <button key={issue.id} type="button" className={issue.id === selected ? 'archive-item selected' : 'archive-item'} aria-current={issue.id === selected ? 'page' : undefined} onClick={() => { setSelected(issue.id); setMobileIssuesOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+              <span className="archive-month">{issue.month} <small>NO. {issue.number}</small></span>
+              <strong>{issue.title}</strong>
+              {issue.status !== 'published' && <small className="archive-private-label">HIDDEN · {issue.status.replace('_', ' ')}</small>}
+            </button>)}
+        </nav>
+        <p className="archive-coming">{editorAuthenticated ? 'Drafts and in-review issues are visible only to approved editors.' : 'Explore the latest issues of Build a Better Bedford.'}</p>
       </aside>
-      {error && <p role="status" className="newsletter-load-message">{error}</p>}
-      {chosen ? <IssueView issue={chosen} /> : <div className="newsletter-empty"><PageHeading title="No published issues yet" description="Check back for updates from Build a Better Bedford." /></div>}
+      <div className="newsletter-reading-area">
+        {error && <p role="status" className="newsletter-load-message">{error}</p>}
+        {chosen ? <IssueView issue={chosen} /> : <div className="newsletter-empty"><PageHeading title="No published issues yet" description="Check back for updates from Build a Better Bedford." /></div>}
+      </div>
     </div>
   </div>
 }
