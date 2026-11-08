@@ -1,4 +1,3 @@
-import { UiActionButton } from './components/atoms/MuiPrimitives'
 import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
@@ -362,8 +361,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       <label>Confirm new password
         <input type="password" autoComplete="new-password" minLength={12} required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
       </label>
-      <UiActionButton className="studio-primary" type="submit" disabled={busy}>{busy ? 'Saving…' : 'Set password and sign in'}</UiActionButton>
-      <UiActionButton className="studio-secondary" type="button" disabled={busy} onClick={() => { setNeedsSetup(false); setPassword(''); setNewPassword(''); setConfirmPassword(''); setMessage('') }}>Back to sign in</UiActionButton>
+      <button className="studio-primary" type="submit" disabled={busy}>{busy ? 'Saving…' : 'Set password and sign in'}</button>
+      <button className="studio-secondary" type="button" disabled={busy} onClick={() => { setNeedsSetup(false); setPassword(''); setNewPassword(''); setConfirmPassword(''); setMessage('') }}>Back to sign in</button>
     </form>
     {message && <p role="status">{message}</p>}
   </section>
@@ -371,8 +370,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     <p className="studio-kicker">BBB EDITORIAL STUDIO</p><h1>Newsletter editor</h1>
     <p>Approved editors can sign in with a username and password or request an email link.</p>
     <div className="studio-login-options" role="group" aria-label="Sign-in method">
-      <UiActionButton type="button" className={loginMethod === 'password' ? 'active' : ''} onClick={() => { setLoginMethod('password'); setMessage('') }}>Username & password</UiActionButton>
-      <UiActionButton type="button" className={loginMethod === 'email' ? 'active' : ''} onClick={() => { setLoginMethod('email'); setMessage('') }}>Email link</UiActionButton>
+      <button type="button" className={loginMethod === 'password' ? 'active' : ''} onClick={() => { setLoginMethod('password'); setMessage('') }}>Username & password</button>
+      <button type="button" className={loginMethod === 'email' ? 'active' : ''} onClick={() => { setLoginMethod('email'); setMessage('') }}>Email link</button>
     </div>
     {loginMethod === 'password'
       ? <form onSubmit={signIn}>
@@ -382,20 +381,20 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <label>Password or one-time login code
             <input type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} />
           </label>
-          <UiActionButton type="submit" className="studio-primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in to newsletter editor'}</UiActionButton>
+          <button type="submit" className="studio-primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in to newsletter editor'}</button>
         </form>
       : <form onSubmit={sendEmailLink}>
           <label>Approved editor email
             <input type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
           </label>
-          <UiActionButton type="submit" className="studio-primary" disabled={busy}>{busy ? 'Sending…' : 'Send sign-in link'}</UiActionButton>
+          <button type="submit" className="studio-primary" disabled={busy}>{busy ? 'Sending…' : 'Send sign-in link'}</button>
           <p className="studio-login-hint">Email links are subject to Supabase email delivery limits and redirect settings.</p>
         </form>}
     {message && <p role="status" className="studio-message">{message}</p>}
   </section>
   if (!authorized) return <section className="studio-shell studio-login">
     <h1>Editor access required</h1><p>Your account is signed in, but it has not been approved for newsletter publishing. An administrator must add your email to the newsletter_staff table.</p>
-    <UiActionButton type="button" onClick={() => void supabase.auth.signOut()}>Sign out</UiActionButton>
+    <button type="button" onClick={() => void supabase.auth.signOut()}>Sign out</button>
   </section>
 
   if (needsPasswordChange) return <section className="studio-shell studio-login">
@@ -409,8 +408,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         <input type="password" autoComplete="new-password" required minLength={12} maxLength={128} value={confirmNewPassword} onChange={e => setConfirmNewPassword(e.target.value)} />
       </label>
       <p className="studio-login-hint">Use 12+ characters with uppercase and lowercase letters, a number and a symbol. Choose a password you don't use elsewhere.</p>
-      <UiActionButton type="submit" className="studio-primary" disabled={busy}>{busy ? 'Saving…' : 'Save password and open editor'}</UiActionButton>
-      <UiActionButton type="button" className="studio-secondary" disabled={busy} onClick={() => void supabase.auth.signOut()}>Sign out</UiActionButton>
+      <button type="submit" className="studio-primary" disabled={busy}>{busy ? 'Saving…' : 'Save password and open editor'}</button>
+      <button type="button" className="studio-secondary" disabled={busy} onClick={() => void supabase.auth.signOut()}>Sign out</button>
     </form>
     {message && <p role="status" className="studio-message">{message}</p>}
   </section>
@@ -422,30 +421,30 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <summary>Change editor password</summary>
           <form onSubmit={setEditorPassword}>
             <label>New password (12+ characters)<input type="password" autoComplete="new-password" minLength={12} required value={newPassword} onChange={e => setNewPassword(e.target.value)} /></label>
-            <UiActionButton type="submit" className="studio-secondary" disabled={settingPassword}>{settingPassword ? 'Saving…' : 'Save password to Supabase'}</UiActionButton>
+            <button type="submit" className="studio-secondary" disabled={settingPassword}>{settingPassword ? 'Saving…' : 'Save password to Supabase'}</button>
           </form>
         </details>
-        <UiActionButton type="button" className="studio-secondary" onClick={() => void supabase.auth.signOut()}>Sign out</UiActionButton>
+        <button type="button" className="studio-secondary" onClick={() => void supabase.auth.signOut()}>Sign out</button>
       </div>
     </div>
     <div className="studio-layout">
       <aside className="studio-panel studio-sidebar">
-        <UiActionButton className="studio-primary" type="button" onClick={() => { setDraft(emptyIssue()); setNewIssue(true); setPreview(false); setMessage('') }}>+ New issue</UiActionButton>
+        <button className="studio-primary" type="button" onClick={() => { setDraft(emptyIssue()); setNewIssue(true); setPreview(false); setMessage('') }}>+ New issue</button>
         <p className="studio-kicker">ALL ISSUES · INCLUDING HIDDEN</p>
-        {list.map(issue => <UiActionButton key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => { setDraft(issue); setNewIssue(false); setPreview(false); setMessage('') }}>
+        {list.map(issue => <button key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => { setDraft(issue); setNewIssue(false); setPreview(false); setMessage('') }}>
           <strong>{issue.month}</strong><span>{issue.title}</span><small>{issue.status.replace('_', ' ')}</small>
-        </UiActionButton>)}
+        </button>)}
       </aside>
       <div className="studio-main">
         <div className="studio-actions">
-          <div className="studio-tabs"><UiActionButton type="button" className={!preview ? 'active' : ''} onClick={() => setPreview(false)}>Edit</UiActionButton><UiActionButton type="button" className={preview ? 'active' : ''} onClick={() => setPreview(true)}>Preview</UiActionButton></div>
+          <div className="studio-tabs"><button type="button" className={!preview ? 'active' : ''} onClick={() => setPreview(false)}>Edit</button><button type="button" className={preview ? 'active' : ''} onClick={() => setPreview(true)}>Preview</button></div>
           <span className="studio-status">{draft.status.replace('_', ' ')}</span>
         </div>
         {preview ? <div className="studio-preview-area">
           <div className="studio-layout-picker" role="group" aria-label="Preview layout">
             <span>COMPARE LAYOUTS</span>
-            <UiActionButton type="button" aria-pressed={previewLayout === 'article'} className={previewLayout === 'article' ? 'active' : ''} onClick={() => setPreviewLayout('article')}>Article</UiActionButton>
-            <UiActionButton type="button" aria-pressed={previewLayout === 'feature'} className={previewLayout === 'feature' ? 'active' : ''} onClick={() => setPreviewLayout('feature')}>Feature</UiActionButton>
+            <button type="button" aria-pressed={previewLayout === 'article'} className={previewLayout === 'article' ? 'active' : ''} onClick={() => setPreviewLayout('article')}>Article</button>
+            <button type="button" aria-pressed={previewLayout === 'feature'} className={previewLayout === 'feature' ? 'active' : ''} onClick={() => setPreviewLayout('feature')}>Feature</button>
           </div>
           <p className="studio-layout-description">These are preview experiments only. The public newsletter uses Article until a layout is approved.</p>
           <div className="studio-preview"><IssueView issue={draft} layout={previewLayout} /></div>
@@ -458,11 +457,11 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <label>Issue month<input value={draft.month} maxLength={40} onChange={e => updateField('month', e.target.value)} /></label>
           <label>Headline<input value={draft.title} maxLength={160} onChange={e => updateField('title', e.target.value)} placeholder="What happened this month?" /></label>
           <label>Introduction<textarea rows={3} maxLength={800} value={draft.description} onChange={e => updateField('description', e.target.value)} placeholder="A short overview of the issue…" /></label>
-          <div className="studio-template"><h2>Start from a template</h2><div className="studio-template-options">{(Object.keys(presets) as Template[]).map(type => <UiActionButton key={type} type="button" onClick={() => chooseTemplate(type)}>{presets[type].name}</UiActionButton>)}</div></div>
+          <div className="studio-template"><h2>Start from a template</h2><div className="studio-template-options">{(Object.keys(presets) as Template[]).map(type => <button key={type} type="button" onClick={() => chooseTemplate(type)}>{presets[type].name}</button>)}</div></div>
           {(['sections', 'details'] as const).map(field => <div key={field} className="studio-section-group">
-            <div className="studio-group-head"><div><h2>{field === 'sections' ? 'The story' : 'Additional sections'}</h2><p>{field === 'sections' ? 'The main article sections, displayed below the headline.' : 'Optional additional stories. Choose Main article or Side column for each one.'}</p></div><div className="studio-group-buttons"><UiActionButton type="button" className="studio-secondary" onClick={() => addSection(field)}>+ Add {field === 'sections' ? 'section' : 'article detail'}</UiActionButton>{field === 'details' && <UiActionButton type="button" className="studio-secondary" onClick={addSidebarStory}>+ Add side story</UiActionButton>}</div></div>
+            <div className="studio-group-head"><div><h2>{field === 'sections' ? 'The story' : 'Additional sections'}</h2><p>{field === 'sections' ? 'The main article sections, displayed below the headline.' : 'Optional additional stories. Choose Main article or Side column for each one.'}</p></div><div className="studio-group-buttons"><button type="button" className="studio-secondary" onClick={() => addSection(field)}>+ Add {field === 'sections' ? 'section' : 'article detail'}</button>{field === 'details' && <button type="button" className="studio-secondary" onClick={addSidebarStory}>+ Add side story</button>}</div></div>
             {draft[field].map((section, index) => <div className="studio-section" key={index}>
-              <div className="studio-section-top"><strong>SECTION {String(index + 1).padStart(2, '0')}</strong><UiActionButton type="button" onClick={() => removeSection(field, index)}>Remove</UiActionButton></div>
+              <div className="studio-section-top"><strong>SECTION {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection(field, index)}>Remove</button></div>
               <label>Section title<input value={section.heading} maxLength={160} onChange={e => updateSection(field, index, 'heading', e.target.value)} /></label>
               {field === 'details' && <label>Display location
                 <select value={section.placement === 'sidebar' ? 'sidebar' : 'main'} onChange={e => updateSection(field, index, 'placement', e.target.value)}>
@@ -479,7 +478,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                     <div className="studio-media-item-controls">
                       <label>{item.type === 'image' ? 'Image description (alt text)' : 'Video title'}<input maxLength={220} value={item.alt ?? ''} onChange={e => changeMedia(field,index,mediaIndex,{alt:e.target.value})} /></label>
                       <label>Caption<input maxLength={500} value={item.caption ?? ''} onChange={e => changeMedia(field,index,mediaIndex,{caption:e.target.value})} placeholder="Optional caption or credit" /></label>
-                      <UiActionButton type="button" className="studio-media-remove" onClick={() => removeMedia(field,index,mediaIndex)}>Remove from newsletter</UiActionButton>
+                      <button type="button" className="studio-media-remove" onClick={() => removeMedia(field,index,mediaIndex)}>Remove from newsletter</button>
                     </div>
                   </div>
                 )}
@@ -497,7 +496,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                   <label>Or embed a YouTube / Vimeo video
                     <input type="url" placeholder="https://www.youtube.com/watch?v=…" value={videoInputs[`${field}-${index}`] ?? ''} onChange={e => setVideoInputs(current => ({ ...current, [`${field}-${index}`]: e.target.value }))} />
                   </label>
-                  <UiActionButton type="button" className="studio-secondary" onClick={() => addVideoLink(field,index)}>Add video</UiActionButton>
+                  <button type="button" className="studio-secondary" onClick={() => addVideoLink(field,index)}>Add video</button>
                 </div>
               </div>
             </div>)}
@@ -505,9 +504,9 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <label>Footer or credits<textarea rows={2} value={draft.footer} maxLength={800} onChange={e => updateField('footer', e.target.value)} /></label>
         </div>}
         <div className="studio-savebar">
-          <UiActionButton type="button" className="studio-secondary" disabled={busy || uploading} onClick={() => void save('draft')}>Save draft</UiActionButton>
-          <UiActionButton type="button" className="studio-secondary" disabled={busy || uploading} onClick={() => void save('in_review')}>Send for review</UiActionButton>
-          <UiActionButton type="button" className="studio-primary" disabled={busy || uploading} onClick={() => void save('published')}>{busy ? 'Saving…' : 'Publish issue'}</UiActionButton>
+          <button type="button" className="studio-secondary" disabled={busy || uploading} onClick={() => void save('draft')}>Save draft</button>
+          <button type="button" className="studio-secondary" disabled={busy || uploading} onClick={() => void save('in_review')}>Send for review</button>
+          <button type="button" className="studio-primary" disabled={busy || uploading} onClick={() => void save('published')}>{busy ? 'Saving…' : 'Publish issue'}</button>
         </div>
         {message && <p className="studio-message" role="status">{message}</p>}
       </div>
