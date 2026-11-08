@@ -265,7 +265,21 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const updateField = <K extends keyof NewsletterIssue>(field: K, value: NewsletterIssue[K]) =>
     setDraft(current => ({ ...current, [field]: value }))
   const updateSection = (field: 'sections' | 'details', index: number, property: 'heading' | 'body' | 'placement', value: string) =>
-    setDraft(current => ({ ...current, [field]: current[field].map((section, i) => i === index ? { ...section, [property]: value } : section) }))
+    setDraft(current => {
+      const next = { ...current, [field]: current[field].map((section, i) => i === index ? { ...section, [property]: value } : section) }
+      if (field !== 'details' || property !== 'heading' || current.details[index]?.placement === 'sidebar') return next
+      const previousHeading = current.details[index].heading
+      // Only update the index when the matching title hasn't been customized.
+      // Compare by position for newly generated templates, then by exact heading
+      // for older issues that have a different sidebar/order.
+      const indexedPosition = current.sections[index]?.heading === previousHeading ? index
+        : current.sections.findIndex(section => section.heading === previousHeading)
+      if (indexedPosition < 0) return next
+      return {
+        ...next,
+        sections: current.sections.map((section, i) => i === indexedPosition ? { ...section, heading: value } : section),
+      }
+    })
   const addSection = (field: 'sections' | 'details') =>
     setDraft(current => ({ ...current, [field]: [...current[field], { heading: '', body: '', media: [] }] }))
   const addSidebarStory = () =>
@@ -490,7 +504,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
               <h2>{field === 'details' ? 'Main article & sidebar stories' : 'In this issue · navigation index'}</h2>
               <p>{field === 'details'
                 ? 'Write the complete article here. Choose Main article for full stories or Side column for smaller features.'
-                : 'These titles appear as numbered links in the right column. The brief descriptions are saved but currently hidden on the public page.'}</p>
+                : 'These titles appear as numbered links in the right column. Matching titles update as you edit the article. You can customize them here; brief descriptions are saved but hidden.'}</p>
             </div><div className="studio-group-buttons">
               {field === 'details'
                 ? <><button type="button" className="studio-secondary" onClick={addArticleSection}>+ Add article section</button><button type="button" className="studio-secondary" onClick={addSidebarStory}>+ Add sidebar feature</button></>
