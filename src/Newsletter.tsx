@@ -101,6 +101,44 @@ export function NewsletterMediaView({ media }: { media: NewsletterMedia }) {
 
 export type NewsletterLayout = 'article' | 'feature'
 
+function NewsletterArticleBody({ body }: { body: string }) {
+  // The editor stores plain text with blank lines. Render genuine paragraphs
+  // rather than preserving empty lines as oversized vertical whitespace.
+  const chunks = body.replace(/\r\n?/g, '\n').trim().split(/\n\s*\n/).filter(Boolean)
+  const rolePattern = /^(Club Leader|Co-Leader|Club Advisor):\s*(.+)$/i
+  type Block = { type: 'paragraph'; text: string } | { type: 'team'; roles: { role: string; person: string }[] }
+  const blocks: Block[] = []
+
+  for (const chunk of chunks) {
+    const lines = chunk.split('\n').map(line => line.trim()).filter(Boolean)
+    const isRoleGroup = lines.length > 0 && lines.every(line => rolePattern.test(line))
+    if (isRoleGroup) {
+      let last = blocks[blocks.length - 1]
+      if (!last || last.type !== 'team') {
+        last = { type: 'team', roles: [] }
+        blocks.push(last)
+      }
+      for (const line of lines) {
+        const match = line.match(rolePattern)
+        if (match) last.roles.push({ role: match[1], person: match[2] })
+      }
+    } else {
+      blocks.push({ type: 'paragraph', text: chunk.trim() })
+    }
+  }
+
+  return <div className="newsletter-article-copy">
+    {blocks.map((block, index) => block.type === 'team'
+      ? <dl className="newsletter-leadership-team" aria-label="Club leadership team" key={index}>
+          {block.roles.map(({ role, person }, roleIndex) =>
+            <div className="newsletter-leadership-person" key={roleIndex}>
+              <dt>{role}</dt><dd>{person}</dd>
+            </div>)}
+        </dl>
+      : <Typography component="p" variant="body1" key={index}>{block.text}</Typography>)}
+  </div>
+}
+
 export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssue; layout?: NewsletterLayout }) {
   // Older newsletters stored the Halloween feature as a main-article section.
   // Present it in the secondary rail without rewriting or deleting saved content.
@@ -123,7 +161,7 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
           </header>
           <div className="newsletter-expand-panel">
             {articleSections.map((section, index) => <section className="design-problem" key={index} id={sectionId(index)}>
-              <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography><Typography component="p" variant="body1">{section.body}</Typography></div></div>
+              <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography><NewsletterArticleBody body={section.body} /></div></div>
               {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
             </section>)}
           </div>
