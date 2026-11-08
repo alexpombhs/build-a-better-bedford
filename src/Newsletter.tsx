@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import PageHeading from './components/PageHeading'
 import HalloweenTruss from './components/HalloweenTruss'
 import Typography from '@mui/material/Typography'
+import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined'
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
+import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined'
 import { supabase } from './supabase'
 import roadSolution from './assets/road_solution.png'
 import './newsletterStudio.css'
@@ -102,39 +105,46 @@ export function NewsletterMediaView({ media }: { media: NewsletterMedia }) {
 export type NewsletterLayout = 'article' | 'feature'
 
 function NewsletterArticleBody({ body }: { body: string }) {
-  // The editor stores plain text with blank lines. Render genuine paragraphs
-  // rather than preserving empty lines as oversized vertical whitespace.
-  const chunks = body.replace(/\r\n?/g, '\n').trim().split(/\n\s*\n/).filter(Boolean)
-  const rolePattern = /^(Club Leader|Co-Leader|Club Advisor):\s*(.+)$/i
-  type Block = { type: 'paragraph'; text: string } | { type: 'team'; roles: { role: string; person: string }[] }
+  // The editor contains meaningful line breaks, but not necessarily blank
+  // lines. Render each text line as a real paragraph so CSS controls spacing.
+  const lines = body.replace(/\r\n?/g, '\n').split('\n').map(line => line.trim()).filter(Boolean)
+  const rolePattern = /^(Club Leader|Co-Leader|Club Advisor)\s*:?\s*(.*)$/i
+  type TeamMember = { role: string; person: string }
+  type Block = { type: 'paragraph'; text: string } | { type: 'team'; members: TeamMember[] }
   const blocks: Block[] = []
 
-  for (const chunk of chunks) {
-    const lines = chunk.split('\n').map(line => line.trim()).filter(Boolean)
-    const isRoleGroup = lines.length > 0 && lines.every(line => rolePattern.test(line))
-    if (isRoleGroup) {
-      let last = blocks[blocks.length - 1]
-      if (!last || last.type !== 'team') {
-        last = { type: 'team', roles: [] }
-        blocks.push(last)
-      }
-      for (const line of lines) {
-        const match = line.match(rolePattern)
-        if (match) last.roles.push({ role: match[1], person: match[2] })
-      }
-    } else {
-      blocks.push({ type: 'paragraph', text: chunk.trim() })
+  for (let i = 0; i < lines.length; i++) {
+    const match = lines[i].match(rolePattern)
+    if (!match) {
+      blocks.push({ type: 'paragraph', text: lines[i] })
+      continue
     }
+
+    const role = match[1]
+    // Support "Club Leader: Name" and an editor's "Club Leader" + next line.
+    const person = match[2] || (i + 1 < lines.length && !rolePattern.test(lines[i + 1]) ? lines[++i] : '')
+    const last = blocks[blocks.length - 1]
+    if (last?.type === 'team') last.members.push({ role, person })
+    else blocks.push({ type: 'team', members: [{ role, person }] })
+  }
+
+  const roleIcon = (role: string) => {
+    const props = { fontSize: 'small' as const, 'aria-hidden': true as const }
+    if (/advisor/i.test(role)) return <SchoolOutlinedIcon {...props} />
+    if (/co-leader/i.test(role)) return <GroupsOutlinedIcon {...props} />
+    return <EmojiEventsOutlinedIcon {...props} />
   }
 
   return <div className="newsletter-article-copy">
     {blocks.map((block, index) => block.type === 'team'
-      ? <dl className="newsletter-leadership-team" aria-label="Club leadership team" key={index}>
-          {block.roles.map(({ role, person }, roleIndex) =>
-            <div className="newsletter-leadership-person" key={roleIndex}>
-              <dt>{role}</dt><dd>{person}</dd>
+      ? <div className="newsletter-leadership-team" role="group" aria-label="Club leadership team" key={index}>
+          {block.members.map(({ role, person }, memberIndex) =>
+            <div className="newsletter-leadership-person" key={memberIndex}>
+              <span className="newsletter-leadership-icon">{roleIcon(role)}</span>
+              <span className="newsletter-leadership-role">{role}</span>
+              <span className="newsletter-leadership-name">{person}</span>
             </div>)}
-        </dl>
+        </div>
       : <Typography component="p" variant="body1" key={index}>{block.text}</Typography>)}
   </div>
 }
