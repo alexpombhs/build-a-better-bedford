@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import PageHeading from './components/PageHeading'
+import HalloweenTruss from './components/HalloweenTruss'
 import Typography from '@mui/material/Typography'
 import { supabase } from './supabase'
 import roadSolution from './assets/road_solution.png'
@@ -158,6 +159,7 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
               const halloween = isHalloweenFeature(section)
               return <section className={halloween ? 'newsletter-side-story newsletter-halloween-feature' : 'newsletter-side-story'} key={index}>
                 {halloween && <span className="newsletter-halloween-eyebrow" aria-hidden="true">🎃 CLUB CORNER</span>}
+                {halloween && <HalloweenTruss />}
                 <Typography component="h2" variant="subtitle1">{section.heading}</Typography>
                 {halloween
                   ? <div className="newsletter-halloween-copy">{section.body.split(/\n\s*\n/).filter(Boolean).map((paragraph, paragraphIndex) =>
