@@ -412,3 +412,43 @@
   text-decoration:underline;
 }
 .newsletter-page .newsletter-rich-copy > div {line-height:1.6}
+
+/* Shared file picker molecule: keep native input functional but invisible.
+   MUI button and selected-file status provide all visible interaction. */
+.studio-media-file-picker {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.studio-media-file-picker .MuiButton-root {
+  text-transform:none;
+  font-size:13px;
+  font-weight:600;
+  border-radius:8px;
+  border-color:#b5cfbd;
+  color:#24583a;
+  padding:9px 15px;
+}
+.studio-media-file-picker .MuiButton-root:hover {
+  border-color:#648f72;
+  background:#f1f7f2;
+}
+.studio-visually-hidden-file {
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+.studio-media-file-name {
+  min-width:0;
+  overflow-wrap:anywhere;
+  color:#5e7266;
+  font-size:13px;
+}
