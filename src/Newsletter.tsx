@@ -1,4 +1,4 @@
-import { UiText } from './components/atoms/MuiPrimitives'
+import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 import PageHeading from './components/PageHeading'
 import HalloweenTruss from './components/HalloweenTruss'
@@ -145,7 +145,7 @@ function NewsletterArticleBody({ body }: { body: string }) {
               <span className="newsletter-leadership-name">{person}</span>
             </div>)}
         </div>
-      : <UiText component="p" variant="body1" key={index}>{block.text}</UiText>)}
+      : <Typography component="p" variant="body1" key={index}>{block.text}</Typography>)}
   </div>
 }
 
@@ -171,7 +171,7 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
           </header>
           <div className="newsletter-expand-panel">
             {articleSections.map((section, index) => <section className="design-problem" key={index} id={sectionId(index)}>
-              <div className="expand-grid"><div><UiText component="h2" variant="h6">{section.heading}</UiText><NewsletterArticleBody body={section.body} /></div></div>
+              <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography><NewsletterArticleBody body={section.body} /></div></div>
               {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
             </section>)}
           </div>
@@ -208,12 +208,12 @@ export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssu
               return <section className={halloween ? 'newsletter-side-story newsletter-halloween-feature' : 'newsletter-side-story'} key={index}>
                 {halloween && <span className="newsletter-halloween-eyebrow" aria-hidden="true">🎃 CLUB CORNER</span>}
                 {halloween && <HalloweenTruss />}
-                <UiText component="h2" variant="subtitle1">{section.heading}</UiText>
+                <Typography component="h2" variant="subtitle1">{section.heading}</Typography>
                 {halloween
                   ? <div className="newsletter-halloween-copy">{section.body.split(/\n\s*\n/).filter(Boolean).map((paragraph, paragraphIndex) =>
                       <p className={/^(Why |Because )/i.test(paragraph.trim()) ? 'newsletter-halloween-joke' : undefined} key={paragraphIndex}>{paragraph}</p>
                     )}</div>
-                  : <UiText component="p" variant="body2">{section.body}</UiText>}
+                  : <Typography component="p" variant="body2">{section.body}</Typography>}
                 {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
               </section>
             })}
