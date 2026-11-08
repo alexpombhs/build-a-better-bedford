@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { UiSelect } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
-import { emptyIssue, IssueView, NewsletterMediaView, embeddedVideoUrl } from './Newsletter'
+import { emptyIssue, IssueView, NewsletterMediaView, embeddedVideoUrl, newsletterSectionStyle, newsletterSectionPlacement } from './Newsletter'
 import type { NewsletterIssue, NewsletterSection, NewsletterMedia } from './Newsletter'
 
 type Template = 'club' | 'project' | 'announcement'
@@ -29,6 +29,7 @@ const cleanSections = (sections: NewsletterSection[]) =>
     heading: section.heading.trim(),
     body: section.body.trim(),
     placement: section.placement,
+    style: section.style,
     media: (section.media ?? []).map(item => ({
       ...item, alt: item.alt?.trim() ?? '', caption: item.caption?.trim() ?? '',
     })),
@@ -265,7 +266,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
 
   const updateField = <K extends keyof NewsletterIssue>(field: K, value: NewsletterIssue[K]) =>
     setDraft(current => ({ ...current, [field]: value }))
-  const updateSection = (field: 'sections' | 'details', index: number, property: 'heading' | 'body' | 'placement', value: string) =>
+  const updateSection = (field: 'sections' | 'details', index: number, property: 'heading' | 'body' | 'placement' | 'style', value: string) =>
     setDraft(current => {
       const next = { ...current, [field]: current[field].map((section, i) => i === index ? { ...section, [property]: value } : section) }
       if (field !== 'details' || property !== 'heading' || current.details[index]?.placement === 'sidebar') return next
@@ -284,7 +285,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const addSection = (field: 'sections' | 'details') =>
     setDraft(current => ({ ...current, [field]: [...current[field], { heading: '', body: '', media: [] }] }))
   const addSidebarStory = () =>
-    setDraft(current => ({ ...current, details: [...current.details, { heading: '', body: '', media: [], placement: 'sidebar' }] }))
+    setDraft(current => ({ ...current, details: [...current.details, { heading: '', body: '', media: [], placement: 'sidebar', style: 'default' }] }))
   const removeSection = (field: 'sections' | 'details', index: number) =>
     setDraft(current => ({ ...current, [field]: current[field].filter((_, i) => i !== index) }))
   const changeMedia = (field: 'sections' | 'details', sectionIndex: number, mediaIndex: number, patch: Partial<NewsletterMedia>) =>
@@ -345,7 +346,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setDraft(current => ({
       ...current,
       sections: [...current.sections, { heading: '', body: '', media: [] }],
-      details: [...current.details, { heading: '', body: '', media: [], placement: 'main' }],
+      details: [...current.details, { heading: '', body: '', media: [], placement: 'main', style: 'default' }],
     }))
   const chooseTemplate = (type: Template) => {
     const preset = presets[type]
@@ -355,7 +356,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setDraft(current => ({
       ...current,
       sections: preset.headings.map(heading => ({ heading, body: '', media: [] })),
-      details: preset.headings.map(heading => ({ heading, body: '', media: [], placement: 'main' })),
+      details: preset.headings.map(heading => ({ heading, body: '', media: [], placement: 'main', style: 'default' })),
     }))
     setMessage('Template applied to this draft. Add the article text before publishing.')
   }
@@ -502,9 +503,9 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           </div>
           {(['details', 'sections'] as const).map(field => <div key={field} className="studio-section-group">
             <div className="studio-group-head"><div>
-              <h2>{field === 'details' ? 'Main article & sidebar stories' : 'In this issue · navigation index'}</h2>
+              <h2>{field === 'details' ? 'Newsletter content & side panel' : 'In this issue · navigation index'}</h2>
               <p>{field === 'details'
-                ? 'Write the complete article here. Choose Main article for full stories or Side column for smaller features.'
+                ? 'Add sections, choose Main content or Side panel, and select a style independently for each section.'
                 : 'These titles appear as numbered links in the right column. Matching titles update as you edit the article. You can customize them here; brief descriptions are saved but hidden.'}</p>
             </div><div className="studio-group-buttons">
               {field === 'details'
@@ -512,18 +513,30 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                 : <button type="button" className="studio-secondary" onClick={() => addSection('sections')}>+ Add index entry</button>}
             </div></div>
             {draft[field].map((section, index) => <div className="studio-section" key={index}>
-              <div className="studio-section-top"><strong>{field === 'sections' ? 'INDEX ITEM' : section.placement === 'sidebar' ? 'SIDEBAR FEATURE' : 'ARTICLE SECTION'} {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection(field, index)}>Remove</button></div>
+              <div className="studio-section-top"><strong>{field === 'sections' ? 'INDEX ITEM' : newsletterSectionPlacement(section) === 'sidebar' ? 'SIDE PANEL SECTION' : 'CONTENT SECTION'} {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection(field, index)}>Remove</button></div>
               <label>{field === 'sections' ? 'Index title' : 'Section heading'}<input value={section.heading} maxLength={160} onChange={e => updateSection(field, index, 'heading', e.target.value)} /></label>
-              {field === 'details' && <UiSelect
-                className="studio-placement-select"
-                label="Display location"
-                value={section.placement === 'sidebar' ? 'sidebar' : 'main'}
-                onValueChange={value => updateSection(field, index, 'placement', value)}
-                options={[
-                  { value: 'main', label: 'Main article — full width story' },
-                  { value: 'sidebar', label: 'Side column — joke, fun fact, or community update' },
-                ]}
-              />}
+              {field === 'details' && <div className="studio-section-options">
+                <UiSelect
+                  className="studio-placement-select"
+                  label="Location"
+                  value={newsletterSectionPlacement(section)}
+                  onValueChange={value => updateSection(field, index, 'placement', value)}
+                  options={[
+                    { value: 'main', label: 'Main content' },
+                    { value: 'sidebar', label: 'Side panel' },
+                  ]}
+                />
+                <UiSelect
+                  className="studio-section-style-select"
+                  label="Section style"
+                  value={newsletterSectionStyle(section)}
+                  onValueChange={value => updateSection(field, index, 'style', value)}
+                  options={[
+                    { value: 'default', label: 'Default' },
+                    { value: 'halloween', label: 'Halloween' },
+                  ]}
+                />
+              </div>}
               <label>{field === 'sections' ? 'Short summary (saved, not currently displayed)' : 'Article text'}<textarea rows={field === 'sections' ? 2 : 6} value={section.body} maxLength={8000} onChange={e => updateSection(field, index, 'body', e.target.value)} /></label>
               <div className="studio-media-editor">
                 <div className="studio-media-heading"><strong>PHOTOS & VIDEOS</strong><span>Attach media to this section</span></div>
