@@ -15,7 +15,7 @@ export type NewsletterMedia = {
   alt?: string
   caption?: string
 }
-export type NewsletterSection = { heading: string; body: string; media?: NewsletterMedia[] }
+export type NewsletterSection = { heading: string; body: string; media?: NewsletterMedia[]; placement?: 'main' | 'sidebar' }
 export type NewsletterIssue = {
   id: string
   month: string
@@ -101,29 +101,43 @@ export function NewsletterMediaView({ media }: { media: NewsletterMedia }) {
 export type NewsletterLayout = 'article' | 'feature'
 
 export function IssueView({ issue, layout = 'article' }: { issue: NewsletterIssue; layout?: NewsletterLayout }) {
+  const mainDetails = issue.details.filter(section => section.placement !== 'sidebar')
+  const sideDetails = issue.details.filter(section => section.placement === 'sidebar')
   return <section className={`newsletter-page newsletter-layout-${layout}`}>
     {issue.status !== 'published' && <p className="newsletter-private-banner">PRIVATE PREVIEW · {issue.status === 'draft' ? 'DRAFT' : 'IN REVIEW'} · NOT VISIBLE TO VISITORS</p>}
     <div className="newsletter-clean">
       <header className="newsletter-intro">
         <PageHeading eyebrow={`${issue.month.toUpperCase()} · ISSUE ${issue.number}`} title={issue.title || 'Untitled issue'} description={issue.description} />
       </header>
-      <div className="newsletter-notes">
-        <div className="newsletter-notes-head"><span>IN THIS ISSUE</span><span>BUILD A BETTER BEDFORD</span></div>
-        {issue.sections.map((section, index) => <article className="newsletter-note" key={index}>
-          <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-          <div className="newsletter-section-content">
-            <Typography component="h2" variant="h6">{section.heading}</Typography>
-            <Typography component="p" variant="body1">{section.body}</Typography>
-            {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
+      <div className={sideDetails.length ? 'newsletter-editorial-grid has-sidebar' : 'newsletter-editorial-grid'}>
+        <div className="newsletter-editorial-main">
+          <div className="newsletter-notes">
+            <div className="newsletter-notes-head"><span>IN THIS ISSUE</span><span>BUILD A BETTER BEDFORD</span></div>
+            {issue.sections.map((section, index) => <article className="newsletter-note" key={index}>
+              <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+              <div className="newsletter-section-content">
+                <Typography component="h2" variant="h6">{section.heading}</Typography>
+                <Typography component="p" variant="body1">{section.body}</Typography>
+                {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
+              </div>
+            </article>)}
           </div>
-        </article>)}
+          {mainDetails.length > 0 && <div className="newsletter-expand-panel">
+            {mainDetails.map((section, index) => <section className="design-problem" key={index}>
+              <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography><Typography component="p" variant="body1">{section.body}</Typography></div></div>
+              {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
+            </section>)}
+          </div>}
+        </div>
+        {sideDetails.length > 0 && <aside className="newsletter-editorial-aside" aria-label="More from this issue">
+          <div className="newsletter-side-heading">ON THE SIDE</div>
+          {sideDetails.map((section, index) => <section className="newsletter-side-story" key={index}>
+            <Typography component="h2" variant="subtitle1">{section.heading}</Typography>
+            <Typography component="p" variant="body2">{section.body}</Typography>
+            {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
+          </section>)}
+        </aside>}
       </div>
-      {issue.details.length > 0 && <div className="newsletter-expand-panel">
-        {issue.details.map((section, index) => <section className="design-problem" key={index}>
-          <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography><Typography component="p" variant="body1">{section.body}</Typography></div></div>
-          {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
-        </section>)}
-      </div>}
       {issue.footer && <footer className="newsletter-disclaimer"><p>{issue.footer}</p></footer>}
     </div>
   </section>
