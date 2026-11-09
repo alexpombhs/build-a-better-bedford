@@ -1187,3 +1187,20 @@
   line-height:1.6;
   margin:0 0 15px;
 }
+
+/* When a media token shares a paragraph, the renderer uses a div to avoid
+   invalid <figure> inside <p>. Apply the exact paragraph typography to that
+   div; otherwise it inherits the browser's darker/larger generic div text. */
+.newsletter-page.newsletter-layout-article .expand-grid .newsletter-rich-media-paragraph,
+.newsletter-page.newsletter-layout-feature .expand-grid .newsletter-rich-media-paragraph,
+.newsletter-page.newsletter-layout-article .expand-grid .newsletter-story-block > div:not(.newsletter-rich-media-paragraph),
+.newsletter-page.newsletter-layout-feature .expand-grid .newsletter-story-block > div:not(.newsletter-rich-media-paragraph) {
+  color:#435a4a;
+  font-size:.9375rem;
+  font-weight:400;
+  font-family:inherit;
+  line-height:1.55;
+  letter-spacing:normal;
+  overflow-wrap:anywhere;
+  white-space:pre-wrap;
+}
