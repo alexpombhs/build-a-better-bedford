@@ -29,9 +29,9 @@ export default function NewsletterSidebarSection({
     <UiBox component="section"
       className={['newsletter-side-story', `newsletter-sidebar-variant-${variant}`, className].filter(Boolean).join(' ')}>
       {label && <NewsletterRailHeading>{label}</NewsletterRailHeading>}
+      {ornament}
       {showTitle && <UiText component={label ? 'h3' : 'h2'} variant="subtitle1"
         className="newsletter-sidebar-title">{title}</UiText>}
-      {ornament}
       {children}
     </UiBox>
   )
