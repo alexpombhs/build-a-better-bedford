@@ -1393,3 +1393,115 @@
   .studio-rich-surface .newsletter-photo-row{flex-direction:column}
   .studio-rich-surface .newsletter-photo-row .newsletter-media{width:100%!important;max-width:100%!important}
 }
+
+/* Stable, independent sizes: the authored percentage is the actual flex basis,
+   not just a suggested flex-grow weight. Both Editor and Reader use this rule. */
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-row .newsletter-media,
+.studio-rich-surface .newsletter-photo-row .newsletter-media {
+  width:var(--bbb-photo-width,42%)!important;
+  flex:0 1 var(--bbb-photo-width,42%)!important;
+  max-width:100%!important;
+  min-width:0;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-row,
+.studio-rich-surface .newsletter-photo-row { flex-wrap:nowrap; }
+/* An intentional crop workspace overlays the original photo without changing
+   its dimensions until the author explicitly applies the frame. */
+.newsletter-page .newsletter-crop-stage,
+.studio-rich-surface .newsletter-crop-stage {
+  position:absolute;
+  left:0;
+  top:0;
+  z-index:30;
+  width:100%;
+  background:#1e2b23;
+  border:2px solid #5b9170;
+  border-radius:7px;
+  overflow:visible;
+  box-shadow:0 9px 30px #152b1d55;
+  touch-action:none;
+  user-select:none;
+}
+.newsletter-page .newsletter-crop-stage .newsletter-crop-source,
+.studio-rich-surface .newsletter-crop-stage .newsletter-crop-source {
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:fill!important;
+  object-position:center!important;
+  transform:none!important;
+  border-radius:0;
+  pointer-events:none;
+}
+.newsletter-crop-shade {
+  position:absolute;
+  inset:0;
+  background:#07180c75;
+  pointer-events:none;
+}
+.newsletter-crop-selection {
+  position:absolute;
+  z-index:2;
+  box-sizing:border-box;
+  border:2px solid #fff;
+  outline:1px solid #1e5634;
+  box-shadow:0 0 0 1px #0007;
+  cursor:move;
+  touch-action:none;
+  user-select:none;
+  /* Undo the shade only within the selected frame by displaying the source
+     image on the selection using the same background coordinates. */
+}
+.newsletter-crop-selection:before {
+  content:"";
+  position:absolute;
+  inset:0;
+  border:1px solid #ffffffaa;
+  pointer-events:none;
+}
+.newsletter-crop-thirds {
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(to right,transparent 33%,#ffffff88 33.2%,transparent 33.4%,transparent 66%,#ffffff88 66.2%,transparent 66.4%),
+    linear-gradient(to bottom,transparent 33%,#ffffff88 33.2%,transparent 33.4%,transparent 66%,#ffffff88 66.2%,transparent 66.4%);
+}
+.newsletter-crop-stage .newsletter-crop-selection .newsletter-crop-corner {
+  position:absolute;
+  right:-8px;
+  bottom:-8px;
+  width:15px;
+  height:15px;
+  background:#fff;
+  border:2px solid #2c6a44;
+  z-index:5;
+  cursor:nwse-resize;
+  pointer-events:auto;
+  touch-action:none;
+}
+.newsletter-crop-stage .newsletter-crop-actions {
+  position:absolute;
+  z-index:10;
+  top:auto;
+  bottom:100%;
+  right:0;
+  padding:5px;
+  margin-bottom:5px;
+  display:flex;
+  gap:5px;
+  border-radius:6px;
+  background:#fbfdfb;
+  box-shadow:0 2px 7px #0002;
+}
+.newsletter-photo-frame.is-cropping { cursor:default; }
+@media(max-width:540px){
+  .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-row .newsletter-media,
+  .studio-rich-surface .newsletter-photo-row .newsletter-media {
+    width:100%!important;
+    flex:0 0 100%!important;
+  }
+}
