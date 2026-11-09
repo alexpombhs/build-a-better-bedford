@@ -1204,3 +1204,109 @@
   overflow-wrap:anywhere;
   white-space:pre-wrap;
 }
+
+/* Direct-manipulation photo editing: shared between Edit and Preview.
+   Control overlays are never shown on the public newsletter. */
+.newsletter-page .newsletter-photo-resize-controls,
+.newsletter-page .newsletter-photo-crop-controls,
+.newsletter-page .newsletter-photo-move {display:none!important}
+.newsletter-page .newsletter-media,
+.studio-rich-surface .newsletter-media {position:relative}
+.newsletter-page .newsletter-photo-grip,
+.studio-rich-surface .newsletter-photo-grip {
+  display:block;
+  position:absolute;
+  width:13px;
+  height:13px;
+  padding:0;
+  z-index:12;
+  border:2px solid #fff;
+  border-radius:3px;
+  background:#3c7956;
+  box-shadow:0 0 0 1px #3c7956;
+  cursor:nwse-resize;
+  touch-action:none;
+  opacity:0;
+  transition:opacity .12s ease;
+}
+.newsletter-photo-grip-se {right:-6px!important;bottom:-6px;top:auto!important}
+.newsletter-photo-grip-sw {left:-6px;bottom:-6px;right:auto!important;top:auto!important;cursor:nesw-resize!important}
+.newsletter-photo-selected .newsletter-photo-grip,
+.newsletter-media:hover .newsletter-photo-grip,
+.newsletter-photo-grip:focus-visible {opacity:1}
+.newsletter-photo-selected .newsletter-photo-frame {outline:1px solid #639676;outline-offset:2px}
+.newsletter-photo-frame {cursor:grab;touch-action:none;user-select:none}
+.newsletter-photo-moving .newsletter-photo-frame,.newsletter-photo-frame:active {cursor:grabbing}
+.newsletter-photo-frame img {pointer-events:none;user-select:none}
+.newsletter-photo-frame.is-cropping {cursor:move}
+.newsletter-photo-hint {
+  position:absolute;
+  bottom:100%;
+  left:0;
+  z-index:11;
+  margin-bottom:5px;
+  padding:5px 8px;
+  color:#274b35;
+  font-size:11px;
+  line-height:1.25;
+  background:#f8fbf8;
+  border:1px solid #b5d1bd;
+  border-radius:5px;
+  box-shadow:0 2px 7px #0001;
+  white-space:normal;
+  pointer-events:none;
+}
+.newsletter-crop-overlay {
+  pointer-events:none;
+  position:absolute;
+  inset:9%;
+  border:2px solid white;
+  outline:1px solid #315d42;
+  box-shadow:0 0 0 100vmax #0004;
+}
+.newsletter-crop-corner {
+  pointer-events:auto;
+  touch-action:none;
+  position:absolute;
+  width:16px;
+  height:16px;
+  right:-9px;
+  bottom:-9px;
+  border:2px solid white;
+  background:#3c7956;
+  cursor:nwse-resize;
+}
+.newsletter-crop-done {
+  position:absolute;
+  right:8px;
+  top:8px;
+  z-index:11;
+  padding:5px 8px;
+  border:1px solid #aac4b1;
+  border-radius:6px;
+  background:#fff;
+  color:#2f5940;
+  cursor:pointer;
+  font-size:12px;
+}
+/* The editing surface shows actual saved images instead of attachment chips. */
+.studio-rich-surface [data-media-id] {display:contents}
+.studio-rich-surface .newsletter-media {
+  float:left;
+  clear:none;
+  max-width:100%;
+  min-width:0;
+  margin:6px 18px 15px 0;
+}
+.studio-rich-surface .newsletter-media.newsletter-media-aligned-right {float:right;margin:6px 0 15px 18px}
+.studio-rich-surface .newsletter-media.newsletter-media-full-width {float:none;clear:both;margin:12px 0}
+.studio-rich-surface .newsletter-photo-frame {overflow:hidden;position:relative;border-radius:9px}
+.studio-rich-surface .newsletter-photo-frame img {width:100%;height:auto;display:block}
+.studio-rich-surface .newsletter-photo-frame[style*="aspect-ratio"] img {height:100%;object-fit:cover}
+.studio-rich-surface .newsletter-media figcaption {font-size:12px;color:#64786a}
+.studio-rich-surface p:has(.newsletter-media) {display:flow-root}
+.studio-rich-surface p:has(.newsletter-media) + p {clear:none}
+@media(max-width:540px){
+  .studio-rich-surface .newsletter-media {float:none!important;width:100%!important;max-width:100%;margin:12px 0!important}
+  .newsletter-photo-hint {display:none}
+}

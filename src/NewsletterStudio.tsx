@@ -397,27 +397,36 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       ...section,media:(section.media??[]).map(item=>item.id===id?{...item,...patch}:item),
     }))}))
   }
-  const movePreviewMedia = (sectionIndex:number,id:string,target:number,after:boolean) => {
+  const movePreviewMedia = (sectionIndex:number,id:string,x:number,y:number) => {
+    const under=document.elementFromPoint(x,y)
+    const block=under?.closest('[data-drop-index]')
+    if(!block)return
+    const target=Number(block.getAttribute('data-drop-index'))
+    if(!Number.isFinite(target))return
+    const rect=block.getBoundingClientRect()
+    const after=y>rect.top+rect.height/2
     setDraft(current=>({...current,details:current.details.map((section,i)=>{
       if(i!==sectionIndex)return section
       const dom=new DOMParser().parseFromString(newsletterBodyHtml(section.body),'text/html')
-      const tokens=Array.from(dom.body.querySelectorAll('[data-media-id]'))
-      const marker=tokens.find(node=>node.getAttribute('data-media-id')===id)
+      const original=Array.from(dom.body.childNodes)
+      const marker=Array.from(dom.body.querySelectorAll('[data-media-id]')).find(node=>node.getAttribute('data-media-id')===id)
       if(!marker)return section
-      // Insert at a block boundary. A photo moved next to another photo
-      // creates a side-by-side pair in preview and in the published article.
-      const topLevel=Array.from(dom.body.childNodes)
-      const destination=topLevel[target]
-      const container=marker.parentElement
-      if(container && container.childNodes.length===1 && ['P','DIV'].includes(container.tagName))container.remove()
+      const destination=original[target]
+      if(!destination || destination===marker || destination.contains(marker))return section
+      const parent=marker.parentElement
+      if(parent && (parent.tagName==='P'||parent.tagName==='DIV') && parent.childNodes.length===1)parent.remove()
       else marker.remove()
-      const wrapper=dom.createElement('div');wrapper.appendChild(marker)
-      if(destination?.parentNode===dom.body){
-        if(after)destination.nextSibling?dom.body.insertBefore(wrapper,destination.nextSibling):dom.body.appendChild(wrapper)
-        else dom.body.insertBefore(wrapper,destination)
+      const wrapper=dom.createElement('div')
+      wrapper.appendChild(marker)
+      if(destination.parentNode===dom.body){
+        if(after)destination.after(wrapper)
+        else destination.before(wrapper)
       }else dom.body.appendChild(wrapper)
       return {...section,body:'<!--bbb-rich-->'+sanitizedNewsletterHtml(dom.body.innerHTML)}
     })}))
+  }
+  const moveEditorMedia = (sectionIndex:number,id:string,x:number,y:number) => {
+    editorRefs.current[sectionIndex]?.moveMediaToPoint(id,x,y)
   }
   const resizePreviewMedia = (id: string, widthPercent: number) => {
     setDraft(current => ({ ...current, details: current.details.map(section => ({
@@ -696,7 +705,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           </div>
         </div>
         {preview ? <div className="studio-preview-area">
-          <p className="studio-layout-description">Article preview: use the − and + controls under a photo to resize it, or choose Full width. Your changes appear here immediately; save the draft to keep them. Nothing is published until you choose “Publish issue.”</p>
+          <p className="studio-layout-description">Drag a photo to move it, drag its corners to resize, or double-click to adjust the visible area. Edits appear immediately; save the draft to keep them. Nothing is published until you choose “Publish issue.”</p>
           <UiBox className="studio-preview"><IssueView issue={draft} layout="article" editorPreview onResizeMedia={resizePreviewMedia} onUpdateMedia={updatePreviewMedia} onMoveMedia={movePreviewMedia} /></UiBox>
         </div> : <div className="studio-panel studio-form">
           <h2>Issue details</h2>
@@ -773,6 +782,10 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                 ref={instance => {editorRefs.current[index]=instance}}
                 value={section.body}
                 onChange={value => updateSection('details',index,'body',value)}
+                media={section.media ?? []}
+                onResizeMedia={resizePreviewMedia}
+                onUpdateMedia={updatePreviewMedia}
+                onMoveMedia={(id,x,y)=>moveEditorMedia(index,id,x,y)}
                 onAddMedia={() => openMediaDialog('details',index)}
                 onEditMedia={id=>{
                   const mediaIndex=(section.media??[]).findIndex(item=>item.id===id)
