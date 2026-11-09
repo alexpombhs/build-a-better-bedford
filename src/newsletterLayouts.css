@@ -1036,6 +1036,28 @@
   }
 }
 
+/* Club Corner and Did You Know are variants of one sidebar organism.
+   The title hierarchy stays identical; palette tokens provide the theme. */
+.newsletter-page .newsletter-side-story .newsletter-sidebar-label {
+  margin:0 0 10px;
+  color:var(--newsletter-feature-ink,#244631);
+  font-size:.9375rem;
+  line-height:1.4;
+  letter-spacing:0;
+  font-weight:650;
+}
+.newsletter-page .newsletter-side-story .newsletter-sidebar-title {
+  margin:0 0 11px;
+  color:var(--newsletter-feature-ink,#244631);
+  font-size:1.0625rem;
+  line-height:1.4;
+  letter-spacing:-.012em;
+  font-weight:600;
+}
+.newsletter-page .newsletter-sidebar-variant-club-corner .thanksgiving-horn {
+  margin:2px 0 12px;
+}
+
 /* Thanksgiving deliberately reuses October's .newsletter-halloween-feature
    seasonal card, eyebrow and joke styling. Only adapt RichEditor paragraphs
    to the same compact joke cards; no separate Thanksgiving visual system. */
