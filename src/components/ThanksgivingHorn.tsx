@@ -61,6 +61,9 @@ export default function ThanksgivingHorn() {
       brace: new THREE.MeshStandardMaterial({ color: 0x69857a, metalness: 0.2, roughness: 0.5 }),
       load: new THREE.MeshStandardMaterial({ color: 0xb8683d, metalness: 0.16, roughness: 0.52 }),
       leaf: new THREE.MeshStandardMaterial({ color: 0x568064, metalness: 0.15, roughness: 0.5 }),
+      apple: new THREE.MeshStandardMaterial({ color: 0xb64f3e, metalness: 0.16, roughness: 0.51 }),
+      harvest: new THREE.MeshStandardMaterial({ color: 0xdbad51, metalness: 0.14, roughness: 0.52 }),
+      grape: new THREE.MeshStandardMaterial({ color: 0x7d659a, metalness: 0.18, roughness: 0.53 }),
     }
     const horn = new THREE.Group()
     scene.add(horn)
@@ -75,14 +78,15 @@ export default function ThanksgivingHorn() {
       horn.add(beam)
     }
 
-    // Sweeping taper, wider opening at the right. No filled cone mesh: ribs
-    // and circumferential rings remain visible through the whole structure.
+    // A true cornucopia silhouette: the narrow tail curls distinctly upward
+    // while the wider mouth opens forward to carry the wireframe harvest.
+    // No filled cone: the structural ribs and rings remain visible.
     const ribs = 12
     const sections = 20
     const center = (t: number) => new THREE.Vector3(
-      -1.13 + 2.12 * t,
-      -0.32 + 0.51 * Math.sin(t * Math.PI * 0.7) + 0.12 * t,
-      -0.02 + 0.16 * Math.sin(t * Math.PI),
+      -1.10 + 2.06 * t - 0.12 * Math.sin(Math.PI * t) * Math.exp(-3.5 * t),
+      -0.28 + 0.91 * Math.exp(-Math.pow(t / 0.135, 2)) + 0.29 * t,
+      -0.04 + 0.13 * Math.sin(Math.PI * t),
     )
     const radius = (t: number) => 0.035 + 0.61 * Math.pow(t, 1.47)
     const at = (t: number, angle: number) => {
@@ -108,26 +112,52 @@ export default function ThanksgivingHorn() {
       }
     }
 
-    // A small wire pumpkin inside the open mouth represents the contents
-    // without hiding the load-bearing geometry with solid fruit meshes.
-    const pumpkinCenter = new THREE.Vector3(0.72, -0.2, 0.19)
-    const pumpkinPoint = (phi: number, theta: number) => new THREE.Vector3(
-      pumpkinCenter.x + 0.27 * Math.sin(phi) * Math.cos(theta),
-      pumpkinCenter.y + 0.22 * Math.cos(phi),
-      pumpkinCenter.z + 0.27 * Math.sin(phi) * Math.sin(theta),
-    )
-    for (let i = 0; i < 10; i++) {
-      const a = i * Math.PI * 2 / 10
-      addBeam(Array.from({ length: 17 }, (_, j) => pumpkinPoint(j * Math.PI / 16, a)), 0.011, materials.load)
+    // A small harvest emerging from the mouth: all items use real open
+    // rib-and-ring geometry, retaining the transparent blueprint aesthetic.
+    // Shapes are intentionally few and distinct at a narrow sidebar width.
+    const addWireProduce = (
+      centerPoint: THREE.Vector3,
+      radii: [number, number, number],
+      finish: THREE.Material,
+      ribCount = 8,
+      bands: number[] = [0.32, 0.5, 0.68],
+    ) => {
+      const atProduce = (phi: number, theta: number) => new THREE.Vector3(
+        centerPoint.x + radii[0] * Math.sin(phi) * Math.cos(theta),
+        centerPoint.y + radii[1] * Math.cos(phi),
+        centerPoint.z + radii[2] * Math.sin(phi) * Math.sin(theta),
+      )
+      for (let i = 0; i < ribCount; i++) {
+        const angle = i * Math.PI * 2 / ribCount
+        addBeam(Array.from({ length: 15 }, (_, j) => atProduce(j * Math.PI / 14, angle)), 0.009, finish)
+      }
+      for (const latitude of bands) {
+        addBeam(Array.from({ length: 37 }, (_, i) => atProduce(latitude * Math.PI, i * Math.PI * 2 / 36)), 0.006, finish)
+      }
     }
-    for (const phi of [0.34, 0.5, 0.66]) {
-      addBeam(Array.from({ length: 49 }, (_, j) => pumpkinPoint(Math.PI * phi, j * Math.PI * 2 / 48)), 0.008, materials.load)
-    }
+
+    // Pumpkin in front, a red apple and a slender golden squash behind it.
+    addWireProduce(new THREE.Vector3(1.05, -0.27, 0.27), [0.30, 0.24, 0.27], materials.load, 10)
     addBeam([
-      new THREE.Vector3(0.72, 0.02, 0.19),
-      new THREE.Vector3(0.73, 0.14, 0.19),
-      new THREE.Vector3(0.82, 0.21, 0.22),
-    ], 0.021, materials.leaf)
+      new THREE.Vector3(1.05, -0.03, 0.27),
+      new THREE.Vector3(1.03, 0.09, 0.27),
+      new THREE.Vector3(1.13, 0.15, 0.28),
+    ], 0.014, materials.leaf)
+    addWireProduce(new THREE.Vector3(1.16, 0.27, -0.14), [0.21, 0.21, 0.20], materials.apple)
+    addBeam([
+      new THREE.Vector3(1.16, 0.48, -0.14),
+      new THREE.Vector3(1.18, 0.59, -0.11),
+    ], 0.013, materials.leaf)
+    addWireProduce(new THREE.Vector3(1.32, -0.28, -0.18), [0.15, 0.29, 0.15], materials.harvest, 7)
+    addWireProduce(new THREE.Vector3(0.89, 0.29, -0.35), [0.17, 0.22, 0.17], materials.leaf, 7)
+
+    // Small grapes spill toward the opening, showing abundance without
+    // filling the wireframe basket with opaque meshes.
+    for (const [x, y, z] of [
+      [1.43, 0.20, 0.26], [1.57, 0.16, 0.28],
+      [1.49, 0.05, 0.38], [1.61, 0.03, 0.37],
+      [1.52, -0.10, 0.42],
+    ]) addWireProduce(new THREE.Vector3(x, y, z), [0.075, 0.078, 0.075], materials.grape, 6, [0.5])
 
     // Shadow receiver is identical in concept to October's HalloweenTruss.
     const floorGeometry = new THREE.PlaneGeometry(20, 20)
@@ -193,7 +223,7 @@ export default function ThanksgivingHorn() {
   return (
     <figure className="thanksgiving-horn">
       <div ref={mountRef} className="thanksgiving-horn-stage" role="img"
-        aria-label="Slowly rotating, three-dimensional cornucopia truss built from open structural ribs, rings and diagonal braces, casting a shadow">
+        aria-label="Slowly rotating open wireframe cornucopia, its narrow tail curled upward, with wireframe pumpkin, apple, squash, grapes and greens, casting a soft shadow">
       </div>
     </figure>
   )
