@@ -231,19 +231,8 @@
   margin-inline:0;
   padding-inline:0;
 }
-.studio-preview .newsletter-page .newsletter-editorial-grid.has-sidebar {
-  display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(185px,210px);
-  gap:clamp(20px,2.5vw,34px);
-  align-items:start;
-}
-.studio-preview .newsletter-page .newsletter-editorial-aside {
-  min-width:0;
-  width:auto;
-  border-top:0;
-  border-left:1px solid #dce7df;
-  padding:0 0 0 20px;
-}
+/* No duplicate editor-only column sizing here. The shared newsletter
+   editorial organism owns layout in both preview and the published view. */
 /* The public archive supplies these title rules, so apply them to the
    standalone editor preview too without adding the archive itself. */
 .studio-preview .newsletter-page .newsletter-intro h1 {
@@ -253,24 +242,8 @@
   line-height:1.12!important;
   letter-spacing:-.035em!important;
 }
-@media(max-width:1000px) {
-  .studio-preview .newsletter-page .newsletter-editorial-grid.has-sidebar {
-    grid-template-columns:minmax(0,1fr) minmax(165px,195px);
-    gap:18px;
-  }
-}
-@media(max-width:850px) {
-  .studio-preview .newsletter-page .newsletter-editorial-grid.has-sidebar {
-    display:flex;
-    flex-direction:column;
-  }
-  .studio-preview .newsletter-page .newsletter-editorial-aside {
-    width:100%;
-    border-left:0;
-    border-top:1px solid #dce7df;
-    padding:16px 0 0;
-  }
-}
+/* The shared @container breakpoint in newsletterLayouts.css stacks the
+   sidebar in narrow previews, independent of browser viewport size. */
 
 /* Location, style, and color are independent controls. */
 .studio-section-options {
