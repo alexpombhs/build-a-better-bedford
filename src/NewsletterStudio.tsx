@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { NewsletterRichEditor, newsletterBodyHtml, sanitizedNewsletterHtml, removeMediaFromBody, referencedMediaIds, isNewsletterRichBody } from './components/NewsletterRichEditor'
 import { MediaFilePicker } from './components/MediaFilePicker'
+import BridgeLoader from './components/molecules/BridgeLoader'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined'
@@ -112,6 +113,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [settingPassword, setSettingPassword] = useState(false)
   const [message, setMessage] = useState('')
   const [list, setList] = useState<NewsletterIssue[]>([])
+  const [loadingIssues, setLoadingIssues] = useState(false)
   const [draft, setDraft] = useState<NewsletterIssue>(emptyIssue)
   const [preview, setPreview] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -163,10 +165,17 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   }, [])
 
   const loadIssues = async () => {
-    const { data, error } = await supabase.from('newsletters').select('id,month,number,title,description,sections,details,footer,status,published_at').order('id', { ascending: false })
-    if (error) { setMessage(error.message); return }
-    setList((data ?? []) as NewsletterIssue[])
-    setMessage('')
+    setLoadingIssues(true)
+    try {
+      const { data, error } = await supabase.from('newsletters').select('id,month,number,title,description,sections,details,footer,status,published_at').order('id', { ascending: false })
+      if (error) { setMessage(error.message); return }
+      setList((data ?? []) as NewsletterIssue[])
+      setMessage('')
+    } catch {
+      setMessage('Could not load newsletter issues.')
+    } finally {
+      setLoadingIssues(false)
+    }
   }
   useEffect(() => { if (authorized && !needsPasswordChange) void loadIssues() }, [authorized, needsPasswordChange])
 
@@ -554,7 +563,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     if (status === 'published') onPublished()
   }
 
-  if (checking) return <div className="studio-shell"><p role="status">Checking editor access…</p></div>
+  if (checking) return <div className="studio-shell"><BridgeLoader label="Checking editor access" /></div>
   if (!user && needsSetup) return <section className="studio-shell studio-login">
     <p className="studio-kicker">ONE-TIME ADMIN SETUP</p>
     <h1>Choose your permanent password</h1>
@@ -636,7 +645,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       <aside className="studio-panel studio-sidebar">
         <button className="studio-primary" type="button" onClick={() => { setDraft(emptyIssue()); setNewIssue(true); setPreview(false); setMessage('') }}>+ New issue</button>
         <p className="studio-kicker">ALL ISSUES · INCLUDING HIDDEN</p>
-        {list.map(issue => <button key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => void selectSavedIssue(issue)} disabled={refreshingIssue}>
+        {loadingIssues ? <BridgeLoader label="Loading saved newsletters" /> : list.map(issue => <button key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => void selectSavedIssue(issue)} disabled={refreshingIssue}>
           <span className="studio-issue-title">{issue.title || 'Untitled issue'}</span>
           <span className="studio-issue-meta">
             <span className="studio-issue-month">{issue.month}</span>
