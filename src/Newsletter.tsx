@@ -473,6 +473,7 @@ export function IssueView({ issue, layout = 'article', editorPreview = false, on
 }
 
 export default function Newsletter() {
+  const restoredScroll = useRef(false)
   const [issues, setIssues] = useState<NewsletterIssue[]>([])
   const [selected, setSelected] = useState('')
   const [mobileIssuesOpen, setMobileIssuesOpen] = useState(false)
@@ -495,6 +496,35 @@ export default function Newsletter() {
   }
   useEffect(() => { void refresh() }, [])
   const chosen = issues.find(issue => issue.id === selected)
+  // The newsletter arrives asynchronously. Restore scroll only after the
+  // article is available, otherwise the browser clamps the position to zero.
+  useEffect(() => {
+    if (!chosen || restoredScroll.current) return
+    restoredScroll.current = true
+    let saved: number | null = null
+    try {
+      const raw = window.sessionStorage.getItem('bbb-scroll:' + window.location.pathname)
+      if (raw !== null) {
+        const value = Number(raw)
+        if (Number.isFinite(value) && value > 0) saved = value
+      }
+    } catch { /* session storage may be disabled */ }
+    if (saved === null) return
+    const y = saved
+    let cancelled = false
+    let frame = 0
+    let handle = 0
+    const restore = () => {
+      if (cancelled) return
+      window.scrollTo(0, y)
+      frame += 1
+      if (Math.abs(window.scrollY - y) > 2 && frame < 90) {
+        handle = window.requestAnimationFrame(restore)
+      }
+    }
+    handle = window.requestAnimationFrame(restore)
+    return () => { cancelled = true; window.cancelAnimationFrame(handle) }
+  }, [chosen?.id])
   return <div>
     <div className="newsletter-library">
       <aside className="newsletter-archive" aria-label="Newsletter issue library">
