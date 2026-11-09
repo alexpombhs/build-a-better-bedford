@@ -143,6 +143,35 @@ function App() {
   const [projectPage, setProjectPage] = useState(0)
   const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>(() => pageFromLocation() === 'lab' ? 'simulators' : 'ideas')
 
+  // Preserve the reading position when readers open an external source in a
+  // separate tab and then return. Browsers normally retain scroll state, but
+  // an app remount or an asynchronously loaded newsletter can reset it.
+  useEffect(() => {
+    const key = () => 'bbb-scroll:' + window.location.pathname
+    const save = () => {
+      try { window.sessionStorage.setItem(key(), String(window.scrollY)) } catch { /* storage unavailable */ }
+    }
+    const onVisibility = () => { if (document.visibilityState === 'hidden') save() }
+    const restore = () => {
+      try {
+        const saved = window.sessionStorage.getItem(key())
+        if (saved !== null) {
+          const y = Number(saved)
+          if (Number.isFinite(y) && y > 0) window.scrollTo(0, y)
+        }
+      } catch { /* storage unavailable */ }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('pagehide', save)
+    window.addEventListener('pageshow', restore)
+    restore()
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('pagehide', save)
+      window.removeEventListener('pageshow', restore)
+    }
+  }, [])
+
   useEffect(() => {
     const handlePopState = () => {
       const next = pageFromLocation()
@@ -300,7 +329,12 @@ function App() {
 
   const go = (next: Page) => {
     const path = `${basePath}${pagePaths[next]}`
-    if (window.location.pathname !== path) window.history.pushState(null, '', path)
+    if (window.location.pathname !== path) {
+      // An intentional in-app navigation starts at the top; returning from
+      // another browser tab is not an intentional navigation.
+      try { window.sessionStorage.removeItem('bbb-scroll:' + path) } catch { /* optional */ }
+      window.history.pushState(null, '', path)
+    }
     setPage(next)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
