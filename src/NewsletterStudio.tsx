@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { NewsletterRichEditor, newsletterBodyHtml, sanitizedNewsletterHtml, removeMediaFromBody, referencedMediaIds, isNewsletterRichBody } from './components/NewsletterRichEditor'
+import { NewsletterRichEditor, newsletterBodyHtml, sanitizedNewsletterHtml, removeMediaFromBody, isNewsletterRichBody } from './components/NewsletterRichEditor'
 import { MediaFilePicker } from './components/MediaFilePicker'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
