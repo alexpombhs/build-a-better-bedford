@@ -292,6 +292,9 @@ export function NewsletterMediaView({
         <div className="newsletter-crop-selection" style={{left:cropDraft.left+'%',top:cropDraft.top+'%',width:cropDraft.width+'%',height:cropDraft.height+'%'}}
           onPointerDown={event=>grab(event,'crop')}
           onPointerMove={gestureMove} onPointerUp={release} onPointerCancel={release}>
+          {imageUrl&&<img src={imageUrl} draggable={false} alt="" className="newsletter-crop-visible"
+            style={{width:(10000/cropDraft.width)+'%',height:(10000/cropDraft.height)+'%',
+              left:(-100*cropDraft.left/cropDraft.width)+'%',top:(-100*cropDraft.top/cropDraft.height)+'%'}}/>}
           <span className="newsletter-crop-thirds"/>
           <span className="newsletter-crop-corner" onPointerDown={event=>grab(event,'crop-size')}
             onPointerMove={gestureMove} onPointerUp={release} onPointerCancel={release}/>
