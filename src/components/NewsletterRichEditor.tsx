@@ -44,8 +44,34 @@ function sanitize(node:Node):string {
   }
   return '<'+tag+attributes+'>'+inner+'</'+tag+'>'
 }
+// A media token is a block in the article, even if the editor inserted it
+// inside an ordinary paragraph. Split at each token without losing any text.
+// This normalisation is shared by Edit, Preview and the published reader.
+function splitInlineMediaParagraphs(dom: Document) {
+  for(const paragraph of Array.from(dom.body.querySelectorAll('p'))){
+    const parts=Array.from(paragraph.childNodes)
+    if(!parts.some(node=>node.nodeType===1&&(node as Element).hasAttribute('data-media-id')))continue
+    const fragment=dom.createDocumentFragment()
+    let textParagraph=dom.createElement('p')
+    const flush=()=>{
+      if(textParagraph.textContent?.trim()||textParagraph.querySelector('br,a,strong,em,u'))fragment.appendChild(textParagraph)
+      textParagraph=dom.createElement('p')
+    }
+    for(const part of parts){
+      if(part.nodeType===1&&(part as Element).hasAttribute('data-media-id')){
+        flush()
+        const mediaBlock=dom.createElement('div')
+        mediaBlock.appendChild(part)
+        fragment.appendChild(mediaBlock)
+      }else textParagraph.appendChild(part)
+    }
+    flush()
+    paragraph.replaceWith(fragment)
+  }
+}
 export function sanitizedNewsletterHtml(html:string){
   const dom=new DOMParser().parseFromString(html,'text/html')
+  splitInlineMediaParagraphs(dom)
   return Array.from(dom.body.childNodes).map(sanitize).join('')
 }
 export const storeNewsletterHtml=(html:string)=>prefix+sanitizedNewsletterHtml(html)
