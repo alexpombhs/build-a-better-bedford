@@ -1035,3 +1035,56 @@
     height:auto;
   }
 }
+
+/* Thanksgiving corner uses the existing editorial organism and palette tokens.
+   It is an optional side-panel style, not a fourth main article chapter. */
+.newsletter-page .newsletter-side-story.newsletter-thanksgiving-feature,
+.newsletter-page .newsletter-expand-panel .newsletter-thanksgiving-feature {
+  margin:12px 0 18px;
+  padding:17px 16px 18px;
+  border:1px solid var(--newsletter-feature-line,#ebddc6);
+  border-radius:12px;
+  background:var(--newsletter-feature-bg,#fff7ec);
+}
+.newsletter-page .newsletter-thanksgiving-eyebrow {
+  display:block;
+  margin-bottom:9px;
+  font-size:.6875rem;
+  line-height:1.4;
+  letter-spacing:.075em;
+  font-weight:700;
+  color:var(--newsletter-feature-ink,#88592b);
+}
+.newsletter-page .newsletter-thanksgiving-feature h2 {
+  margin:0 0 11px;
+  font-size:1.02rem;
+  line-height:1.35;
+  color:var(--newsletter-feature-ink,#6c492d);
+  font-weight:650;
+}
+.newsletter-page .newsletter-thanksgiving-feature .newsletter-rich-copy {
+  display:grid;
+  gap:0;
+  max-width:100%;
+}
+.newsletter-page .newsletter-thanksgiving-feature .newsletter-rich-copy > p {
+  margin:0!important;
+  padding:12px 0;
+  border-top:1px solid rgba(132,92,48,.16);
+  color:#624c3b;
+  line-height:1.65;
+  font-size:.84rem;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.newsletter-page .newsletter-thanksgiving-feature .newsletter-rich-copy > p:first-child {
+  border-top:0;
+}
+.newsletter-page .newsletter-thanksgiving-feature .newsletter-rich-copy strong {
+  display:inline;
+  color:#523e2c;
+  font-weight:650;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-thanksgiving-feature .thanksgiving-horn {
+  max-width:360px;
+}
