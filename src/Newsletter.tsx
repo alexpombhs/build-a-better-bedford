@@ -1,4 +1,5 @@
-import Typography from '@mui/material/Typography'
+import { UiText } from './components/atoms/MuiPrimitives'
+import NewsletterSidebarSection from './components/molecules/NewsletterSidebarSection'
 import { createElement, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { isNewsletterRichBody, newsletterBodyHtml, sanitizedNewsletterHtml } from './components/NewsletterRichEditor'
@@ -241,7 +242,7 @@ function NewsletterArticleBody({ body }: { body: string }) {
               <span className="newsletter-leadership-name">{person}</span>
             </div>)}
         </div>
-      : <Typography component="p" variant="body1" key={index}>{block.text}</Typography>)}
+      : <UiText component="p" variant="body1" key={index}>{block.text}</UiText>)}
   </div>
 }
 
@@ -268,9 +269,9 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
               return <section className={`design-problem ${newsletterSectionClass(section)}${halloween || thanksgiving ? ' newsletter-main-halloween-feature' : ''}`} key={index} id={sectionId(index)}>
                 {newsletterSectionStyle(section) === 'club-corner' && <span className="newsletter-feature-kicker">CLUB CORNER</span>}
                 {newsletterSectionStyle(section) === 'did-you-know' && <span className="newsletter-feature-kicker">DID YOU KNOW?</span>}
-                {halloween && <div className="newsletter-main-seasonal"><span className="newsletter-halloween-eyebrow">🎃 SEASONAL FEATURE</span><HalloweenTruss /></div>}
-                {thanksgiving && <div className="newsletter-main-seasonal"><span className="newsletter-halloween-eyebrow">🍁 CLUB CORNER</span><ThanksgivingHorn /></div>}
-                <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography>{isNewsletterRichBody(section.body) ? <NewsletterRichBody body={section.body} media={section.media}/> : <NewsletterArticleBody body={section.body} />}</div></div>
+                {halloween && <div className="newsletter-main-seasonal"><span className="newsletter-feature-kicker">CLUB CORNER</span><HalloweenTruss /></div>}
+                {thanksgiving && <div className="newsletter-main-seasonal"><span className="newsletter-feature-kicker">CLUB CORNER</span><ThanksgivingHorn /></div>}
+                <div className="expand-grid"><div><UiText component="h2" variant="h6">{section.heading}</UiText>{isNewsletterRichBody(section.body) ? <NewsletterRichBody body={section.body} media={section.media}/> : <NewsletterArticleBody body={section.body} />}</div></div>
                 {!isNewsletterRichBody(section.body) && (section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
               </section>
             })}
@@ -304,16 +305,17 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
           </nav>}
           {sideDetails.length > 0 && <div className="newsletter-side-stories">
             {sideDetails.map((section, index) => {
-              const halloween = newsletterSectionStyle(section) === 'halloween'
-              const thanksgiving = newsletterSectionStyle(section) === 'thanksgiving'
-              return <section className={`newsletter-side-story ${newsletterSectionClass(section)}${halloween || thanksgiving ? ' newsletter-halloween-feature' : ''}`} key={index}>
-                {halloween && <span className="newsletter-halloween-eyebrow" aria-hidden="true">🎃 CLUB CORNER</span>}
-                {thanksgiving && <span className="newsletter-halloween-eyebrow" aria-hidden="true">🍁 CLUB CORNER</span>}
-                {newsletterSectionStyle(section) === 'club-corner' && <span className="newsletter-feature-kicker">CLUB CORNER</span>}
-                {newsletterSectionStyle(section) === 'did-you-know' && <span className="newsletter-feature-kicker">DID YOU KNOW?</span>}
-                {halloween && <HalloweenTruss />}
-                {thanksgiving && <ThanksgivingHorn />}
-                <Typography component="h2" variant="subtitle1">{section.heading}</Typography>
+              const style = newsletterSectionStyle(section)
+              const halloween = style === 'halloween'
+              const thanksgiving = style === 'thanksgiving'
+              const variant = style === 'did-you-know' ? 'did-you-know'
+                : (style === 'club-corner' || halloween || thanksgiving) ? 'club-corner' : 'default'
+              return <NewsletterSidebarSection
+                key={index}
+                variant={variant}
+                title={section.heading}
+                className={`${newsletterSectionClass(section)}${halloween || thanksgiving ? ' newsletter-halloween-feature' : ''}`}
+                ornament={halloween ? <HalloweenTruss /> : thanksgiving ? <ThanksgivingHorn /> : undefined}>
                 {isNewsletterRichBody(section.body)
                   ? thanksgiving
                     ? <div className="newsletter-halloween-copy newsletter-thanksgiving-copy"><NewsletterRichBody body={section.body} media={section.media} /></div>
@@ -322,9 +324,9 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
                     ? <div className="newsletter-halloween-copy">{section.body.split(/\n\s*\n/).filter(Boolean).map((paragraph, paragraphIndex) =>
                       <p className={/^(Why |Because )/i.test(paragraph.trim()) ? 'newsletter-halloween-joke' : undefined} key={paragraphIndex}>{paragraph}</p>
                     )}</div>
-                  : <Typography component="p" variant="body2">{section.body}</Typography>}
+                  : <UiText component="p" variant="body2">{section.body}</UiText>}
                 {!isNewsletterRichBody(section.body) && (section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
-              </section>
+              </NewsletterSidebarSection>
             })}
           </div>}
           {isOctober2026 && <section className="newsletter-nerd-facts" aria-label="Did you know? Bedford dog facts">
