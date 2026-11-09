@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { UiBox, UiText } from '../atoms/MuiPrimitives'
+import NewsletterRailHeading from '../atoms/NewsletterRailHeading'
 
 export type NewsletterSidebarVariant = 'default' | 'club-corner' | 'did-you-know'
 
@@ -27,7 +28,7 @@ export default function NewsletterSidebarSection({
   return (
     <UiBox component="section"
       className={['newsletter-side-story', `newsletter-sidebar-variant-${variant}`, className].filter(Boolean).join(' ')}>
-      {label && <UiText component="h2" variant="subtitle1" className="newsletter-sidebar-label">{label}</UiText>}
+      {label && <NewsletterRailHeading>{label}</NewsletterRailHeading>}
       {showTitle && <UiText component={label ? 'h3' : 'h2'} variant="subtitle1"
         className="newsletter-sidebar-title">{title}</UiText>}
       {ornament}
