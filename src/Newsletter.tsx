@@ -2,7 +2,7 @@ import { UiText } from './components/atoms/MuiPrimitives'
 import NewsletterSidebarSection from './components/molecules/NewsletterSidebarSection'
 import NewsletterRailHeading from './components/atoms/NewsletterRailHeading'
 import { createElement, useEffect, useRef, useState } from 'react'
-import type { ReactNode, PointerEvent as ReactPointerEvent } from 'react'
+import type { ReactNode, CSSProperties, PointerEvent as ReactPointerEvent } from 'react'
 import { isNewsletterRichBody, newsletterBodyHtml, sanitizedNewsletterHtml } from './components/NewsletterRichEditor'
 import PageHeading from './components/PageHeading'
 import HalloweenTruss from './components/HalloweenTruss'
@@ -246,7 +246,7 @@ export function NewsletterMediaView({
   }
   return <figure ref={figureRef}
     className={'newsletter-media newsletter-media-aligned-'+(media.align==='right'?'right':'left')+(width===100?' newsletter-media-full-width':'')+(editable&&selected?' newsletter-photo-selected':'')+(moving?' newsletter-photo-moving':'')}
-    style={media.type==='image'?{width:width+'%', '--bbb-photo-width':width+'%'} as React.CSSProperties:undefined}
+    style={media.type==='image'?{width:width+'%', '--bbb-photo-width':width+'%'} as CSSProperties:undefined}
     onPointerDown={event=>{if(event.target===figureRef.current)setSelected(true)}}
     onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setSelected(false)}}>
     {media.type==='image'&&imageUrl&&<div
