@@ -38,8 +38,10 @@ const cleanSections = (sections: NewsletterSection[]) =>
     style: section.style,
     colorTheme: section.colorTheme,
     summary: section.summary?.trim() ?? '',
+    // Layout metadata is independent of body HTML. A text edit must never
+    // silently discard a crop, width, position, or uploaded asset.
+    // Removal is explicit through removeMedia(), never inferred from typing.
     media: (section.media ?? [])
-      .filter(item => !isNewsletterRichBody(section.body) || referencedMediaIds(section.body).has(item.id))
       .map(item => ({
         ...item, alt: item.alt?.trim() ?? '', caption: item.caption?.trim() ?? '',
       })),
@@ -374,12 +376,10 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       ...current, [field]: current[field].map((section,i) => {
         if(i!==index)return section
         if(property!=='body')return {...section,[property]:value}
-        // If the editor chip is deleted manually, do not resurrect its media
-        // from the attachment array after a save or preview refresh.
-        const previously=referencedMediaIds(section.body)
-        const now=referencedMediaIds(value)
-        return {...section,body:value,
-          media:(section.media??[]).filter(item=>!previously.has(item.id)||now.has(item.id))}
+        // Keep the exact media objects intact while editing text. Browser
+        // contentEditable may temporarily move DOM tokens during typing.
+        // Never interpret those transient states as a request to delete media.
+        return {...section,body:value}
       }),
     }))
   const addSidebarStory = () =>
@@ -580,6 +580,17 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         setMessage('Each fact in “' + (uncited.heading || 'Did You Know?') + '” needs a clickable source link before review or publishing.')
         return
       }
+    }
+    // Fail closed if a rich-text edit accidentally detaches a photo token.
+    // We preserve its metadata above, but saving a body with no marker would
+    // still make the photo disappear from the published story.
+    const detachedPhoto = next.details.find(section => isNewsletterRichBody(section.body) &&
+      (section.media ?? []).some(item => !referencedMediaIds(section.body).has(item.id)))
+    if (detachedPhoto) {
+      setMessage('Save blocked: a photo or video is no longer positioned in “' +
+        (detachedPhoto.heading || 'this section') +
+        '”. Put the attachment back into the text before saving. Your stored image and layout settings are unchanged.')
+      return
     }
     if (uploading) { setMessage('Finish uploading attachments before saving.'); return }
     if (status === 'published' && !window.confirm('Publish this issue to the public newsletter page?')) return
