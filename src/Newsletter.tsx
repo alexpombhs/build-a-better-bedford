@@ -33,6 +33,10 @@ export type NewsletterMedia = {
   cropX?: number
   cropY?: number
   cropZoom?: number
+  cropLeft?: number
+  cropTop?: number
+  cropWidth?: number
+  cropHeight?: number
 }
 export type NewsletterSectionStyle = 'default' | 'club-corner' | 'did-you-know' | 'halloween' | 'thanksgiving'
 export type NewsletterColorTheme = 'default' | 'sage' | 'blue' | 'amber' | 'lavender'
@@ -138,20 +142,22 @@ export type MediaDragDestination = { id: string; x: number; y: number }
 /** Shared visual photo in both the article editor and the editorial preview.
  *  No resize toolbar: drag a corner, drag the image, or double-click to crop. */
 export function NewsletterMediaView({
-  media,onResize,onUpdate,onMove,
+  media,onResize,onUpdate,onMove,onEdit,
 }: {
   media:NewsletterMedia
   onResize?:(id:string,width:number)=>void
   onUpdate?:(id:string,patch:Partial<NewsletterMedia>)=>void
   onMove?:(id:string,x:number,y:number)=>void
+  onEdit?: (id:string)=>void
 }) {
   const [signedUrl,setSignedUrl]=useState('')
   const [loadingError,setLoadingError]=useState(false)
   const [selected,setSelected]=useState(false)
   const [cropping,setCropping]=useState(false)
   const [moving,setMoving]=useState(false)
+  const [naturalRatio,setNaturalRatio]=useState<number|null>(null)
   const figureRef=useRef<HTMLElement>(null)
-  const gesture=useRef<{kind:'resize'|'move'|'crop'|'crop-size';x:number;y:number;width:number;column:number;cropX:number;cropY:number;zoom:number;side:number}|null>(null)
+  const gesture=useRef<{kind:'resize'|'move'|'crop'|'crop-size';x:number;y:number;width:number;column:number;cropX:number;cropY:number;zoom:number;side:number;cropLeft:number;cropTop:number;cropWidth:number;cropHeight:number}|null>(null)
   useEffect(()=>{
     let active=true
     setSignedUrl('')
@@ -170,7 +176,12 @@ export function NewsletterMediaView({
   const googleMapsClip=media.type==='video'&&media.url?externalGoogleMapsVideoUrl(media.url):null
   const clamp=(n:number,min:number,max:number)=>Math.max(min,Math.min(max,n))
   const width=clamp(media.widthPercent??42,25,100)
-  const ratio=media.cropAspect==='square'?'1 / 1':media.cropAspect==='landscape'?'4 / 3':media.cropAspect==='portrait'?'3 / 4':media.cropAspect==='wide'?'16 / 9':undefined
+  const cropLeft=clamp(media.cropLeft??0,0,95)
+  const cropTop=clamp(media.cropTop??0,0,95)
+  const cropWidth=clamp(media.cropWidth??100,5,100-cropLeft)
+  const cropHeight=clamp(media.cropHeight??100,5,100-cropTop)
+  const hasCrop=cropWidth<99.99||cropHeight<99.99||cropLeft>0||cropTop>0
+  const ratio=(hasCrop&&naturalRatio)?String(naturalRatio*cropWidth/cropHeight):undefined
   const editable=Boolean(onResize || onUpdate || onMove)
   const grab=(event:ReactPointerEvent<HTMLElement>,kind:'resize'|'move'|'crop'|'crop-size',side=1)=>{
     if(!editable)return
@@ -178,7 +189,7 @@ export function NewsletterMediaView({
     event.stopPropagation()
     setSelected(true)
     const column=figureRef.current?.closest('.newsletter-rich-media-layout, .studio-rich-surface')?.getBoundingClientRect().width??600
-    gesture.current={kind,x:event.clientX,y:event.clientY,width,column,cropX:media.cropX??50,cropY:media.cropY??50,zoom:media.cropZoom??1,side}
+    gesture.current={kind,x:event.clientX,y:event.clientY,width,column,cropX:media.cropX??50,cropY:media.cropY??50,zoom:media.cropZoom??1,side,cropLeft,cropTop,cropWidth,cropHeight}
     event.currentTarget.setPointerCapture(event.pointerId)
   }
   const gestureMove=(event:ReactPointerEvent<HTMLElement>)=>{
@@ -192,9 +203,11 @@ export function NewsletterMediaView({
     }else if(g.kind==='crop'){
       const rect=figureRef.current?.querySelector('.newsletter-photo-frame')?.getBoundingClientRect()
       if(!rect)return
-      onUpdate?.(media.id,{cropX:clamp(g.cropX-dx/rect.width*100,0,100),cropY:clamp(g.cropY-dy/rect.height*100,0,100)})
+      onUpdate?.(media.id,{cropLeft:clamp(g.cropLeft-dx/rect.width*g.cropWidth,0,100-g.cropWidth),cropTop:clamp(g.cropTop-dy/rect.height*g.cropHeight,0,100-g.cropHeight)})
     }else if(g.kind==='crop-size'){
-      onUpdate?.(media.id,{cropZoom:clamp(Math.round((g.zoom+(dx+dy)/260)*100)/100,1,3)})
+      const rect=figureRef.current?.querySelector('.newsletter-photo-frame')?.getBoundingClientRect()
+      if(!rect)return
+      onUpdate?.(media.id,{cropWidth:clamp(g.cropWidth+dx/rect.width*g.cropWidth,8,100-g.cropLeft),cropHeight:clamp(g.cropHeight+dy/rect.height*g.cropHeight,8,100-g.cropTop)})
     }
   }
   const release=(event:ReactPointerEvent<HTMLElement>)=>{
@@ -215,13 +228,14 @@ export function NewsletterMediaView({
     {media.type==='image'&&imageUrl&&<div
       className={'newsletter-photo-frame'+(cropping?' is-cropping':'')}
       style={ratio?{aspectRatio:ratio}:undefined}
-      onDoubleClick={event=>{if(!editable)return;event.preventDefault();event.stopPropagation();setSelected(true);setCropping(!cropping);if(!cropping&&media.cropAspect===undefined)onUpdate?.(media.id,{cropAspect:'landscape'})}}
+      onDoubleClick={event=>{if(!editable)return;event.preventDefault();event.stopPropagation();setSelected(true);setCropping(!cropping)}}
       onPointerDown={event=>grab(event,cropping?'crop':'move')}
       onPointerMove={gestureMove}
       onPointerUp={release}
       onPointerCancel={release}>
       <img loading="lazy" draggable={false} src={imageUrl} alt={media.alt||'Newsletter illustration'}
-        style={ratio?{height:'100%',objectFit:'cover',objectPosition:(media.cropX??50)+'% '+(media.cropY??50)+'%',transform:'scale('+(media.cropZoom??1)+')'}:undefined}/>
+        onLoad={event=>setNaturalRatio(event.currentTarget.naturalWidth/event.currentTarget.naturalHeight)}
+        style={hasCrop&&naturalRatio?{position:'absolute',maxWidth:'none',maxHeight:'none',width:(10000/cropWidth)+'%',height:(10000/cropHeight)+'%',left:(-100*cropLeft/cropWidth)+'%',top:(-100*cropTop/cropHeight)+'%',objectFit:'fill',transform:'none'}:undefined}/>
       {editable&&cropping&&<div className="newsletter-crop-overlay" aria-label="Drag inside to move crop, drag corner to zoom">
         <span className="newsletter-crop-corner" onPointerDown={event=>grab(event,'crop-size')}
           onPointerMove={gestureMove} onPointerUp={release} onPointerCancel={release}/>
@@ -251,9 +265,8 @@ export function NewsletterMediaView({
         aria-label="Drag the lower left corner to resize photo" aria-valuemin={25} aria-valuemax={100} aria-valuenow={width}
         onKeyDown={event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();onResize?.(media.id,clamp(width+(event.key==='ArrowRight'?5:-5),25,100))}}}
         onPointerDown={event=>grab(event,'resize',-1)} onPointerMove={gestureMove} onPointerUp={release} onPointerCancel={release}/>
-      {cropping&&<button type="button" className="newsletter-crop-done"
-        onClick={()=>{setCropping(false);setSelected(false)}}>Done cropping</button>}
-      {selected&&!cropping&&<span className="newsletter-photo-hint">Drag photo to move · corners to resize · double-click to crop</span>}
+      {cropping&&<div className="newsletter-crop-actions"><button type="button" onClick={()=>onUpdate?.(media.id,{cropLeft:0,cropTop:0,cropWidth:100,cropHeight:100})}>Reset</button><button type="button" onClick={()=>setCropping(false)}>Done</button></div>}
+      {selected&&!cropping&&<><span className="newsletter-photo-hint">Drag to move · drag corners to resize · double-click to crop</span>{onEdit&&<button type="button" className="newsletter-photo-context-edit" onClick={()=>onEdit(media.id)}>Replace photo</button>}</>}
     </>}
   </figure>
 }
