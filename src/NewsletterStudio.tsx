@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { NewsletterRichEditor, newsletterBodyHtml, sanitizedNewsletterHtml, removeMediaFromBody, isNewsletterRichBody } from './components/NewsletterRichEditor'
+import { NewsletterRichEditor, newsletterBodyHtml, sanitizedNewsletterHtml, removeMediaFromBody, referencedMediaIds, isNewsletterRichBody } from './components/NewsletterRichEditor'
 import { MediaFilePicker } from './components/MediaFilePicker'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
@@ -580,6 +580,17 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         setMessage('Each fact in “' + (uncited.heading || 'Did You Know?') + '” needs a clickable source link before review or publishing.')
         return
       }
+    }
+    // Fail closed if a rich-text edit accidentally detaches a photo token.
+    // We preserve its metadata above, but saving a body with no marker would
+    // still make the photo disappear from the published story.
+    const detachedPhoto = next.details.find(section => isNewsletterRichBody(section.body) &&
+      (section.media ?? []).some(item => !referencedMediaIds(section.body).has(item.id)))
+    if (detachedPhoto) {
+      setMessage('Save blocked: a photo or video is no longer positioned in “' +
+        (detachedPhoto.heading || 'this section') +
+        '”. Put the attachment back into the text before saving. Your stored image and layout settings are unchanged.')
+      return
     }
     if (uploading) { setMessage('Finish uploading attachments before saving.'); return }
     if (status === 'published' && !window.confirm('Publish this issue to the public newsletter page?')) return
