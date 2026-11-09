@@ -1,0 +1,47 @@
+/* Decorative 3D atom for a seasonal newsletter feature. */
+.thanksgiving-horn {
+  width:100%;
+  min-width:0;
+  margin:8px 0 16px;
+}
+.thanksgiving-horn-stage {
+  position:relative;
+  width:100%;
+  height:216px;
+  overflow:hidden;
+  border-radius:12px;
+  border:1px solid #edddc1;
+  background:
+    radial-gradient(ellipse at 50% 90%, rgba(231,191,137,.31), transparent 64%),
+    linear-gradient(145deg, #fffaf1 4%, #f6ecdc 100%);
+}
+.thanksgiving-horn-canvas {
+  position:absolute;
+  inset:0;
+  display:block;
+  width:100%;
+  height:100%;
+}
+.thanksgiving-horn-fallback { display:none; }
+.thanksgiving-horn-stage[data-webgl-unavailable="true"] .thanksgiving-horn-fallback {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100%;
+  padding:18px;
+  color:#785637;
+  text-align:center;
+  font-size:13px;
+  line-height:1.5;
+}
+.thanksgiving-horn figcaption {
+  padding:7px 0 0;
+  margin:0;
+  color:#856e52;
+  font-size:.69rem;
+  line-height:1.45;
+  text-align:center;
+}
+@media (max-width:640px) {
+  .thanksgiving-horn-stage {height:232px;}
+}
