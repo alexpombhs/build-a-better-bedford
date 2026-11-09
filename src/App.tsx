@@ -172,32 +172,53 @@ function App() {
   const [projectPage, setProjectPage] = useState(0)
   const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>(() => pageFromLocation() === 'lab' ? 'simulators' : 'ideas')
 
-  // Preserve the reading position when readers open an external source in a
-  // separate tab and then return. Browsers normally retain scroll state, but
-  // an app remount or an asynchronously loaded newsletter can reset it.
+  // External citations open in another tab. Returning to this tab must leave
+  // the reader in the same place, including after a browser page restore.
   useEffect(() => {
     const key = () => 'bbb-scroll:' + window.location.pathname
-    const save = () => {
-      try { window.sessionStorage.setItem(key(), String(window.scrollY)) } catch { /* storage unavailable */ }
-    }
-    const onVisibility = () => { if (document.visibilityState === 'hidden') save() }
-    const restore = () => {
+    let restoring = false
+    let frameId = 0
+    const read = () => {
       try {
-        const saved = window.sessionStorage.getItem(key())
-        if (saved !== null) {
-          const y = Number(saved)
-          if (Number.isFinite(y) && y > 0) window.scrollTo(0, y)
-        }
-      } catch { /* storage unavailable */ }
+        const y = Number(window.sessionStorage.getItem(key()))
+        return Number.isFinite(y) && y > 0 ? y : 0
+      } catch { return 0 }
     }
+    const save = () => {
+      if (restoring) return
+      try { window.sessionStorage.setItem(key(), String(window.scrollY)) } catch { /* optional */ }
+    }
+    const restore = () => {
+      window.cancelAnimationFrame(frameId)
+      const y = read()
+      if (!y || Math.abs(window.scrollY - y) < 2) return
+      restoring = true
+      let attempts = 0
+      const step = () => {
+        window.scrollTo({top:y,behavior:'instant'})
+        if (Math.abs(window.scrollY - y) > 2 && ++attempts < 60) {
+          frameId = window.requestAnimationFrame(step)
+        } else {
+          restoring = false
+        }
+      }
+      frameId = window.requestAnimationFrame(step)
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') save()
+      else restore()
+    }
+    const onPageShow = () => restore()
+    window.addEventListener('scroll', save, {passive:true})
     document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('pageshow', onPageShow)
     window.addEventListener('pagehide', save)
-    window.addEventListener('pageshow', restore)
-    restore()
     return () => {
+      window.cancelAnimationFrame(frameId)
+      window.removeEventListener('scroll', save)
       document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('pageshow', onPageShow)
       window.removeEventListener('pagehide', save)
-      window.removeEventListener('pageshow', restore)
     }
   }, [])
 
