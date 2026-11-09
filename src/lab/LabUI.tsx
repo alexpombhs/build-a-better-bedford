@@ -28,6 +28,6 @@ export function LabSlider({label,value,min,max,step=1,unit,onChange}:{label:stri
 
 export function LabTabs({value,onChange}:{value:string;onChange:(value:string)=>void}) {
   return <UiTabs value={value} onChange={(_,v)=>onChange(v)} variant="scrollable" scrollButtons="auto" aria-label="Engineering workspace sections" sx={{borderBottom:'1px solid '+labColors.border,mb:3,'& .MuiTabs-indicator':{backgroundColor:labColors.accent},'& .Mui-selected':{color:labColors.ink+' !important',fontWeight:800}}}>
-    <UiTab value="simulators" label="Simulators"/><UiTab value="ideas" label="Ideas"/><UiTab value="lab" label="Lab"/><UiTab value="hands-on" label="Hands-on"/>
+    <UiTab value="ideas" label="Ideas"/><UiTab value="lab" label="Labs"/><UiTab value="hands-on" label="Hands-on"/>
   </UiTabs>
 }
