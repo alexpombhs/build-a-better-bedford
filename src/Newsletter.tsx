@@ -212,7 +212,8 @@ export function NewsletterMediaView({
   // listeners remain stable until pointerup, and we commit size exactly once.
   const grab=(event:ReactPointerEvent<HTMLElement>,kind:'resize'|'move'|'crop'|'crop-size',side=1)=>{
     if(!editable || event.button!==0)return
-    event.preventDefault()
+    // Preserving native click events is essential for double-click to crop.
+    if(kind!=='move')event.preventDefault()
     event.stopPropagation()
     stopDrag.current?.()
     setSelected(true)
@@ -222,9 +223,7 @@ export function NewsletterMediaView({
     const base={...cropDraft}
     const baseWidth=displayedWidth
     let nextWidth=baseWidth
-    let lastX=originX,lastY=originY
     const onMovePointer=(move:PointerEvent)=>{
-      lastX=move.clientX;lastY=move.clientY
       const dx=move.clientX-originX,dy=move.clientY-originY
       if(kind==='resize'){
         nextWidth=clamp(Math.round(baseWidth+(side*dx*100)/Math.max(1,column)),25,100)
@@ -265,7 +264,7 @@ export function NewsletterMediaView({
     window.addEventListener('pointercancel',onCancelPointer)
   }
   return <figure ref={figureRef}
-    className={'newsletter-media newsletter-media-aligned-'+(media.align==='right'?'right':'left')+(width===100?' newsletter-media-full-width':'')+(editable&&selected?' newsletter-photo-selected':'')+(moving?' newsletter-photo-moving':'')}
+    className={'newsletter-media newsletter-media-aligned-'+(media.align==='right'?'right':'left')+(displayedWidth===100?' newsletter-media-full-width':'')+(editable&&selected?' newsletter-photo-selected':'')+(moving?' newsletter-photo-moving':'')}
     style={media.type==='image'?{width:displayedWidth+'%', '--bbb-photo-width':displayedWidth+'%'} as CSSProperties:undefined}
     onPointerDown={event=>{if(event.target===figureRef.current)setSelected(true)}}
     onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setSelected(false)}}>
@@ -273,8 +272,7 @@ export function NewsletterMediaView({
       className={'newsletter-photo-frame'+(cropping?' is-cropping':'')}
       style={ratio?{aspectRatio:ratio}:undefined}
       onDoubleClick={event=>{if(!editable)return;event.preventDefault();event.stopPropagation();if(!cropping)startCrop()}}
-      onPointerDown={event=>{if(!cropping)grab(event,'move')}}
->
+      onPointerDown={event=>{if(!cropping)grab(event,'move')}}>
       <img loading="lazy" draggable={false} src={imageUrl} alt={media.alt||'Newsletter illustration'}
         onLoad={event=>setNaturalRatio(event.currentTarget.naturalWidth/event.currentTarget.naturalHeight)}
         style={hasCrop&&naturalRatio?{position:'absolute',maxWidth:'none',maxHeight:'none',width:(10000/cropWidth)+'%',height:(10000/cropHeight)+'%',left:(-100*cropLeft/cropWidth)+'%',top:(-100*cropTop/cropHeight)+'%',objectFit:'fill',transform:'none'}:!hasNewCrop&&legacyRatio?{height:'100%',objectFit:'cover',objectPosition:(media.cropX??50)+'% '+(media.cropY??50)+'%',transform:'scale('+(media.cropZoom??1)+')'}:undefined}/>
