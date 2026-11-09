@@ -141,7 +141,7 @@ const labels: Record<Page, string> = {
 function App() {
   const [page, setPage] = useState<Page>(pageFromLocation)
   const [projectPage, setProjectPage] = useState(0)
-  const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>(() => pageFromLocation() === 'lab' ? 'simulators' : 'ideas')
+  const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>(() => pageFromLocation() === 'lab' ? 'lab' : 'ideas')
 
   // Preserve the reading position when readers open an external source in a
   // separate tab and then return. Browsers normally retain scroll state, but
@@ -176,7 +176,7 @@ function App() {
     const handlePopState = () => {
       const next = pageFromLocation()
       setPage(next)
-      if (next === 'lab') setProjectTab('simulators')
+      if (next === 'lab') setProjectTab('lab')
       if (next === 'projects') setProjectTab('ideas')
     }
     window.addEventListener('popstate', handlePopState)
@@ -341,10 +341,9 @@ function App() {
 
   return <main className="site-shell">
     <SiteHeader
-      active={page === 'projects' || page === 'lab' ? (projectTab === 'ideas' ? 'projects' : 'lab') : page === 'newsletter' ? 'newsletter' : page === 'about' ? 'about' : 'home'}
+      active={page === 'projects' || page === 'lab' ? 'projects' : page === 'newsletter' ? 'newsletter' : page === 'about' ? 'about' : 'home'}
       onNavigate={section => {
-        if (section === 'lab') { setProjectTab('simulators'); go('lab') }
-        else if (section === 'projects') { setProjectTab('ideas'); go('projects') }
+        if (section === 'projects') { setProjectTab('ideas'); go('projects') }
         else go(section)
       }}
       onJoin={joinClub}
@@ -361,7 +360,7 @@ function App() {
           <span className="portfolio-project-copy"><strong>01 / Bridge Project</strong><small>STRUCTURAL MECHANICS · CURRENT PROJECT</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
         </button>
-        <button className="portfolio-project portfolio-lab" onClick={() => {setProjectTab('simulators');go('lab')}}>
+        <button className="portfolio-project portfolio-lab" onClick={() => {setProjectTab('lab');go('projects')}}>
           {homepageImage("bridge_blueprint_64.png") ? <img src={homepageImage("bridge_blueprint_64.png")} alt="Technical line drawing showing truss bridge elevations and details" /> : <span className="portfolio-missing-image">Bridge blueprint not found</span>}
           <span className="portfolio-project-copy"><strong>02 / Engineering Lab</strong><small>SIMULATIONS · EXPERIMENTS · DESIGN TOOLS</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
@@ -379,7 +378,7 @@ function App() {
 
     {(page === 'projects' || page === 'lab') && <section className="projects-page">
       <div className="projects-heading projects-toolbar">
-        <EngineeringTabs active={projectTab} onChange={tab => { setProjectTab(tab); go(tab === 'ideas' ? 'projects' : 'lab') }} />
+        <EngineeringTabs active={projectTab} onChange={tab => { setProjectTab(tab); go('projects') }} />
       </div>
       <EngineeringSectionIntro tab={projectTab} actions={projectTab === 'ideas' ? (
 <div className="ideas-toolbar"><div className="project-pagination" aria-label="Project pages">
