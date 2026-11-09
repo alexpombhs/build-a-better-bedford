@@ -1,6 +1,6 @@
 # Build a Better Bedford
 
-Unofficial student-led civil engineering club website.
+Website for Build a Better Bedford, an approved, student-led civil engineering club at Bedford High School.
 
 ## Tech stack
 
