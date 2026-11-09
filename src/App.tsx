@@ -141,7 +141,7 @@ const labels: Record<Page, string> = {
 function App() {
   const [page, setPage] = useState<Page>(pageFromLocation)
   const [projectPage, setProjectPage] = useState(0)
-  const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>(() => pageFromLocation() === 'lab' ? 'lab' : 'ideas')
+  const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>(() => pageFromLocation() === 'lab' ? 'simulators' : 'ideas')
 
   // Preserve the reading position when readers open an external source in a
   // separate tab and then return. Browsers normally retain scroll state, but
@@ -176,7 +176,7 @@ function App() {
     const handlePopState = () => {
       const next = pageFromLocation()
       setPage(next)
-      if (next === 'lab') setProjectTab('lab')
+      if (next === 'lab') setProjectTab('simulators')
       if (next === 'projects') setProjectTab('ideas')
     }
     window.addEventListener('popstate', handlePopState)
@@ -360,7 +360,7 @@ function App() {
           <span className="portfolio-project-copy"><strong>01 / Bridge Project</strong><small>STRUCTURAL MECHANICS · CURRENT PROJECT</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
         </button>
-        <button className="portfolio-project portfolio-lab" onClick={() => {setProjectTab('lab');go('projects')}}>
+        <button className="portfolio-project portfolio-lab" onClick={() => {setProjectTab('simulators');go('projects')}}>
           {homepageImage("bridge_blueprint_64.png") ? <img src={homepageImage("bridge_blueprint_64.png")} alt="Technical line drawing showing truss bridge elevations and details" /> : <span className="portfolio-missing-image">Bridge blueprint not found</span>}
           <span className="portfolio-project-copy"><strong>02 / Engineering Lab</strong><small>SIMULATIONS · EXPERIMENTS · DESIGN TOOLS</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
