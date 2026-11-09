@@ -531,7 +531,10 @@ export default function Newsletter() {
     setError('')
     const visible = ((data ?? []) as NewsletterIssue[]).filter(issue => issue.status === 'published')
     setIssues(visible)
-    setSelected(previous => visible.some(issue => issue.id === previous) ? previous : (visible[0]?.id ?? ''))
+    let remembered = ''
+    try { remembered = window.sessionStorage.getItem('bbb-newsletter-selected-issue') ?? '' } catch { /* optional */ }
+    setSelected(previous => visible.some(issue => issue.id === previous)
+      ? previous : visible.some(issue => issue.id === remembered) ? remembered : (visible[0]?.id ?? ''))
   }
   useEffect(() => { void refresh() }, [])
   const chosen = issues.find(issue => issue.id === selected)
@@ -564,7 +567,14 @@ export default function Newsletter() {
     handle = window.requestAnimationFrame(restore)
     return () => { cancelled = true; window.cancelAnimationFrame(handle) }
   }, [chosen?.id])
-  return <div>
+  return <div onClickCapture={event => {
+    // Capture the exact reading position before an external source opens.
+    if (!(event.target instanceof Element) || !event.target.closest('a[target="_blank"]')) return
+    try {
+      window.sessionStorage.setItem('bbb-scroll:' + window.location.pathname, String(window.scrollY))
+      if (selected) window.sessionStorage.setItem('bbb-newsletter-selected-issue', selected)
+    } catch { /* optional */ }
+  }}>
     <div className="newsletter-library">
       <aside className="newsletter-archive" aria-label="Newsletter issue library">
         <div className="archive-head">
@@ -575,7 +585,15 @@ export default function Newsletter() {
         </div>
         <nav id="newsletter-issue-list" className={mobileIssuesOpen ? 'archive-list is-open' : 'archive-list'} aria-label="Browse newsletter issues">
           {issues.map(issue =>
-            <button key={issue.id} type="button" className={issue.id === selected ? 'archive-item selected' : 'archive-item'} aria-current={issue.id === selected ? 'page' : undefined} onClick={() => { setSelected(issue.id); setMobileIssuesOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+            <button key={issue.id} type="button" className={issue.id === selected ? 'archive-item selected' : 'archive-item'} aria-current={issue.id === selected ? 'page' : undefined} onClick={() => {
+              setSelected(issue.id)
+              try {
+                window.sessionStorage.setItem('bbb-newsletter-selected-issue', issue.id)
+                window.sessionStorage.removeItem('bbb-scroll:' + window.location.pathname)
+              } catch { /* optional */ }
+              setMobileIssuesOpen(false)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}>
               <span className="archive-month">{issue.month} <small>NO. {issue.number}</small></span>
               <strong>{issue.title}</strong>
             </button>)}
