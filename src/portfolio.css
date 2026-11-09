@@ -354,3 +354,55 @@ body:has(.portfolio-home){overflow-y:auto!important}
     letter-spacing:.045em;
   }
 }
+
+
+/* Desktop height budget: allocate space to the footer FIRST, then let the
+   hero and project cards share only the remaining viewport height. The
+   earlier 39svh card height plus intrinsic hero/detail heights overflowed. */
+@media (min-width:1001px) and (min-height:700px) {
+  .site-shell:has(.portfolio-home){
+    height:100svh!important;
+    min-height:0!important;
+    max-height:100svh!important;
+    grid-template-rows:76px minmax(0,1fr) auto!important;
+  }
+  .site-shell:has(.portfolio-home) .portfolio-home{
+    height:100%!important;
+    min-height:0!important;
+    grid-template-rows:minmax(0,.83fr) minmax(0,1.65fr) auto!important;
+    align-content:stretch!important;
+    gap:clamp(10px,1.3svh,16px)!important;
+    padding:clamp(9px,1.4svh,15px) 0!important;
+  }
+  .site-shell:has(.portfolio-home) .portfolio-hero{
+    min-height:0!important;
+    height:100%!important;
+    overflow:hidden;
+  }
+  .site-shell:has(.portfolio-home) .portfolio-hero-sketch{
+    height:100%;
+    max-height:100%!important;
+    object-fit:contain;
+  }
+  .site-shell:has(.portfolio-home) .portfolio-projects{
+    height:100%!important;
+    min-height:0!important;
+  }
+  .site-shell:has(.portfolio-home) .portfolio-project{
+    height:100%!important;
+    min-height:0!important;
+    aspect-ratio:auto!important;
+  }
+  .site-shell:has(.portfolio-home) .portfolio-details{
+    padding-top:clamp(10px,1.2svh,15px)!important;
+  }
+  .site-shell:has(.portfolio-home) .portfolio-detail small{margin-bottom:4px}
+  .site-shell:has(.portfolio-home) .portfolio-detail p{margin-top:4px}
+  .site-shell:has(.portfolio-home) footer{
+    height:auto!important;
+    min-height:32px!important;
+    padding:6px 0!important;
+  }
+}
+/* Short desktop windows and browser zoom retain normal scrolling; never
+   solve a height constraint by hiding the footer or cropping text. */
