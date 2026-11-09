@@ -1,0 +1,45 @@
+/* Shared loading molecule: no card, gray stage, or opaque backdrop. */
+.bbb-bridge-loader {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 210px;
+  background: transparent;
+}
+
+.bbb-bridge-loader-stage {
+  position: relative;
+  width: min(224px, 75vw);
+  height: 168px;
+  background: transparent;
+  overflow: visible;
+}
+
+.bbb-bridge-loader-canvas,
+.bbb-bridge-loader-fallback {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.bbb-bridge-loader-fallback {
+  overflow: visible;
+}
+
+.bbb-bridge-loader-stage[data-webgl-active="true"] .bbb-bridge-loader-fallback {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .bbb-bridge-loader {
+    min-height: 176px;
+  }
+
+  .bbb-bridge-loader-stage {
+    width: min(192px, 65vw);
+    height: 148px;
+  }
+}
