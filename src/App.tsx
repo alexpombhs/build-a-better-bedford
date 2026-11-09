@@ -195,7 +195,7 @@ function App() {
       restoring = true
       let attempts = 0
       const step = () => {
-        window.scrollTo({top:y,behavior:'instant'})
+        window.scrollTo({top:y,behavior:'auto'})
         if (Math.abs(window.scrollY - y) > 2 && ++attempts < 60) {
           frameId = window.requestAnimationFrame(step)
         } else {
