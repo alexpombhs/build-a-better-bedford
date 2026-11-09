@@ -2,7 +2,7 @@ import { UiText } from './components/atoms/MuiPrimitives'
 import NewsletterSidebarSection from './components/molecules/NewsletterSidebarSection'
 import NewsletterRailHeading from './components/atoms/NewsletterRailHeading'
 import { createElement, useEffect, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
+import type { ReactNode, PointerEvent as ReactPointerEvent } from 'react'
 import { isNewsletterRichBody, newsletterBodyHtml, sanitizedNewsletterHtml } from './components/NewsletterRichEditor'
 import PageHeading from './components/PageHeading'
 import HalloweenTruss from './components/HalloweenTruss'
@@ -172,7 +172,7 @@ export function NewsletterMediaView({
   const width=clamp(media.widthPercent??42,25,100)
   const ratio=media.cropAspect==='square'?'1 / 1':media.cropAspect==='landscape'?'4 / 3':media.cropAspect==='portrait'?'3 / 4':media.cropAspect==='wide'?'16 / 9':undefined
   const editable=Boolean(onResize || onUpdate || onMove)
-  const grab=(event:React.PointerEvent<HTMLElement>,kind:'resize'|'move'|'crop'|'crop-size',side=1)=>{
+  const grab=(event:ReactPointerEvent<HTMLElement>,kind:'resize'|'move'|'crop'|'crop-size',side=1)=>{
     if(!editable)return
     event.preventDefault()
     event.stopPropagation()
@@ -181,7 +181,7 @@ export function NewsletterMediaView({
     gesture.current={kind,x:event.clientX,y:event.clientY,width,column,cropX:media.cropX??50,cropY:media.cropY??50,zoom:media.cropZoom??1,side}
     event.currentTarget.setPointerCapture(event.pointerId)
   }
-  const gestureMove=(event:React.PointerEvent<HTMLElement>)=>{
+  const gestureMove=(event:ReactPointerEvent<HTMLElement>)=>{
     const g=gesture.current
     if(!g)return
     const dx=event.clientX-g.x,dy=event.clientY-g.y
@@ -197,7 +197,7 @@ export function NewsletterMediaView({
       onUpdate?.(media.id,{cropZoom:clamp(Math.round((g.zoom+(dx+dy)/260)*100)/100,1,3)})
     }
   }
-  const release=(event:React.PointerEvent<HTMLElement>)=>{
+  const release=(event:ReactPointerEvent<HTMLElement>)=>{
     const g=gesture.current
     if(!g)return
     gesture.current=null
@@ -298,12 +298,11 @@ function NewsletterRichBody({body,media=[],onResizeMedia,onUpdateMedia,onMoveMed
   for(let i=0;i<nodes.length;i++){
     const getPhoto=(n:Node)=>{if(n.nodeType!==1)return undefined;const el=n as Element;const id=el.getAttribute('data-media-id')??el.querySelector('[data-media-id]')?.getAttribute('data-media-id');return media.find(m=>m.id===id&&m.type==='image')}
     const first=getPhoto(nodes[i]),second=i+1<nodes.length?getPhoto(nodes[i+1]):undefined
-    if(first&&second){renderNodes.push(<div className="newsletter-photo-row" key={'photos-'+i}>{[first,second].map(m=><NewsletterMediaView key={m.id} media={m} onResize={onResizeMedia} onUpdate={onUpdateMedia} onMove={onMoveMedia?(id,x,y)=>onMoveMedia(id,x,y):undefined}/>)}</div>);i++;continue}
+    if(first&&second){renderNodes.push(<div className="newsletter-photo-row" key={'photos-'+i} data-drop-index={i}>{[first,second].map(m=><NewsletterMediaView key={m.id} media={m} onResize={onResizeMedia} onUpdate={onUpdateMedia} onMove={onMoveMedia?(id,x,y)=>onMoveMedia(id,x,y):undefined}/>)}</div>);i++;continue}
     renderNodes.push(<div className="newsletter-story-block" data-drop-index={i} key={'node-'+i}>{convert(nodes[i])}</div>)
   }
   return <div className="newsletter-article-copy newsletter-rich-copy newsletter-rich-media-layout"
-    onDragOver={event=>{if(onMoveMedia){event.preventDefault();event.dataTransfer.dropEffect='move'}}}
-    onDrop={event=>{if(!onMoveMedia)return;const id=event.dataTransfer.getData('text/plain');if(!media.some(m=>m.id===id))return;event.preventDefault();const block=(event.target as Element).closest('[data-drop-index]');const idx=block?Number(block.getAttribute('data-drop-index')):nodes.length;const rect=block?.getBoundingClientRect();onMoveMedia(id,idx,rect?event.clientY>rect.top+rect.height/2:true)}}>
+    >
     {renderNodes}
   </div>
 }
