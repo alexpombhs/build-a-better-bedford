@@ -1,5 +1,6 @@
 import { UiText } from './components/atoms/MuiPrimitives'
 import NewsletterSidebarSection from './components/molecules/NewsletterSidebarSection'
+import NewsletterRailHeading from './components/atoms/NewsletterRailHeading'
 import { createElement, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { isNewsletterRichBody, newsletterBodyHtml, sanitizedNewsletterHtml } from './components/NewsletterRichEditor'
@@ -279,7 +280,7 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
         </div>
         {hasSideRail && <aside className="newsletter-editorial-aside" aria-label="Issue contents and related stories">
           {contents.length > 0 && <nav className="newsletter-issue-contents" aria-label="In this issue">
-            <div className="newsletter-side-heading">IN THIS ISSUE</div>
+            <NewsletterRailHeading>In This Issue</NewsletterRailHeading>
             <ol className="newsletter-toc-list">
               {contents.map((section, index) => {
                 const exactIndex = articleSections.findIndex(article => article.heading.trim().toLowerCase() === section.heading.trim().toLowerCase())
