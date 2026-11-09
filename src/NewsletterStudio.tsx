@@ -71,6 +71,22 @@ const normalize = (issue: NewsletterIssue): NewsletterIssue => ({
   details: orderNewsletterDetails(cleanSections(issue.details)),
 })
 
+// Citations may appear as separate paragraphs beneath their facts.
+// Require at least one valid clickable source in the factual section, without
+// forcing every fact paragraph to contain an inline anchor.
+const didYouKnowHasSourceLink = (section: NewsletterSection): boolean => {
+  const document = new DOMParser().parseFromString(
+    sanitizedNewsletterHtml(newsletterBodyHtml(section.body)), 'text/html'
+  )
+  return Array.from(document.body.querySelectorAll('a[href]')).some(link => {
+    try {
+      return ['https:', 'http:'].includes(new URL(link.getAttribute('href') ?? '').protocol)
+    } catch {
+      return false
+    }
+  })
+}
+
 const validIssueId = (id: string) => /^\d{4}-(0[1-9]|1[0-2])$/.test(id)
 const defaultMonth = (id: string) => {
   if (!validIssueId(id)) return ''
@@ -553,6 +569,16 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     if (status === 'published' && article.some(section => !section.heading || !section.body)) {
       setMessage('Complete each main article heading and its content before publishing.'); return
     }
+    if (status !== 'draft') {
+      const missingSource = next.details.find(section =>
+        newsletterSectionStyle(section) === 'did-you-know' && !didYouKnowHasSourceLink(section))
+      if (missingSource) {
+        setMessage('Add at least one clickable source link to “' +
+          (missingSource.heading || 'Did You Know?') +
+          '”. Links can be in separate source paragraphs beneath the facts.')
+        return
+      }
+    }
     // Fail closed if a rich-text edit accidentally detaches a photo token.
     // We preserve its metadata above, but saving a body with no marker would
     // still make the photo disappear from the published story.
@@ -759,7 +785,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
               </div>
               {newsletterSectionPlacement(section) === 'main' && <label>Optional index summary (saved, currently hidden)<textarea rows={2} maxLength={800} value={section.summary ?? draft.sections.find(item => item.heading === section.heading)?.body ?? ''} onChange={e => updateSection('details', index, 'summary', e.target.value)} /></label>}
               {newsletterSectionStyle(section) === 'did-you-know' &&
-                <p className="studio-template-help">Editorial reminder: include clickable links to credible sources for factual claims. A source may appear after the relevant paragraph; missing links will not block review or publishing.</p>}
+                <p className="studio-template-help">Include clickable links to credible sources. Source links can be in separate paragraphs beneath the facts; one valid link is required in this section to publish.</p>}
               <NewsletterRichEditor
                 key={draft.id + ':' + index}
                 ref={instance => {editorRefs.current[index]=instance}}
