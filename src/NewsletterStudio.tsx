@@ -661,6 +661,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                     { value: 'club-corner', label: 'Club Corner' },
                     { value: 'did-you-know', label: 'Did You Know?' },
                     { value: 'halloween', label: 'Halloween (animated)' },
+                    { value: 'thanksgiving', label: 'Thanksgiving (animated 3D horn)' },
                   ]}
                 />
                 <UiSelect
