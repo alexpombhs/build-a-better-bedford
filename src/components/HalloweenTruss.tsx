@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
-import './HalloweenTruss.css'
+import './atoms/NewsletterSculpture.css'
 
 // Real Three.js geometry and shadow-casting beams, inspired by the WebGL
 // approach in the supplied blog. No copied scene code or flat SVG rotation.
@@ -20,6 +20,9 @@ export default function HalloweenTruss() {
       return
     }
 
+    // Match Thanksgiving: per-pixel alpha keeps the newsletter's own palette
+    // visible under the pumpkin's geometry and translucent cast shadow.
+    renderer.setClearColor(0x000000, 0)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFSoftShadowMap
@@ -182,7 +185,6 @@ export default function HalloweenTruss() {
       <div ref={mountRef} className="halloween-truss-stage" role="img" aria-label="Slowly rotating 3D pumpkin-shaped engineering truss casting a soft shadow on the floor">
         <span className="halloween-truss-fallback" aria-hidden="true">Structural pumpkin · 3D model</span>
       </div>
-      <figcaption>Pumpkin truss · light, structure &amp; shadow</figcaption>
     </figure>
   )
 }
