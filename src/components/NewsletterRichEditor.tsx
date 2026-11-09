@@ -116,7 +116,9 @@ export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(funct
     const activeSelection=window.getSelection()
     if(activeSelection?.rangeCount && editor.current?.contains(activeSelection.anchorNode)){
       const range=activeSelection.getRangeAt(0)
-      range.deleteContents()
+      // Placement is non-destructive: selecting text must never delete it.
+      // Insert just after any selected range, at the chosen location.
+      range.collapse(false)
       range.insertNode(span)
       range.setStartAfter(span)
       range.collapse(true)
@@ -130,9 +132,18 @@ export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(funct
     insertMedia:insertAtCaret,
     moveMedia:(id:string)=>{
       if(!editor.current)return
+      // The reader chooses the destination by positioning the cursor first.
+      // Preserve that caret even when removing the old marker changes the DOM.
       const marker=Array.from(editor.current.querySelectorAll('[data-media-id]'))
         .find(element=>element.getAttribute('data-media-id')===id)
       if(marker){
+        const range=selection.current
+        if(range && marker.contains(range.commonAncestorContainer)){
+          const after=document.createRange()
+          after.setStartAfter(marker)
+          after.collapse(true)
+          selection.current=after
+        }
         const parent=marker.parentElement
         if(parent && (parent.tagName==='DIV'||parent.tagName==='P') &&
            parent.childNodes.length===1)parent.remove()
