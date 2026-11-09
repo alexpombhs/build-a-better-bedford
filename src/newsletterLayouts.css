@@ -1040,10 +1040,24 @@
   }
 }
 
-/* The MUI NewsletterRailHeading atom is also used by "In This Issue".
-   Club Corner and Did You Know share its font size, case and tracking.
-   Variants only change the parent card palette, not the type hierarchy. */
-.newsletter-page .newsletter-side-story .newsletter-rail-heading {
+/* Shared MUI rail-heading atom. In This Issue, Club Corner and
+   Did You Know MUST retain exactly the same typography. More specific than
+   the story h2 and the holiday/theme h2 rules above, which would otherwise
+   enlarge only the Club Corner heading. Do not change the text hierarchy per
+   sidebar variant. */
+.newsletter-page .newsletter-editorial-aside h2.newsletter-rail-heading {
+  display:block;
+  margin:0;
+  padding:11px 0 14px;
+  font-family:inherit;
+  font-size:.6875rem;
+  font-weight:600;
+  line-height:1.4;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:#718475;
+}
+.newsletter-page .newsletter-editorial-aside .newsletter-side-story h2.newsletter-rail-heading {
   padding:0 0 10px;
   color:var(--newsletter-feature-ink,#718475);
 }
