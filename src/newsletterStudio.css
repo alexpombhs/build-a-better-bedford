@@ -21,6 +21,9 @@
 .studio-issue.selected{background:#edf5ef;border-color:#639878}
 .studio-issue strong{font-size:13px}.studio-issue span{color:#506557;font-size:12px}.studio-issue small{text-transform:uppercase;color:#5c856b;font-size:10px;letter-spacing:.07em}
 .studio-main{min-width:0}.studio-actions{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.studio-actions-right{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px}
+@media(max-width:550px){.studio-actions{align-items:flex-start;gap:10px;flex-wrap:wrap}.studio-actions-right{justify-content:flex-start}}
+
 .studio-tabs{display:flex;gap:3px;background:#edf2ed;padding:4px;border-radius:10px}.studio-tabs button{padding:9px 20px;border:0;background:transparent;border-radius:7px;cursor:pointer;font-weight:750;color:#415e49}
 .studio-tabs button.active{background:white;box-shadow:0 1px 5px #153b2017}
 .studio-status{text-transform:uppercase;font-size:10px;letter-spacing:.12em;font-weight:800;color:#4a8060}
