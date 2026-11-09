@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { NewsletterRichEditor, newsletterBodyHtml, sanitizedNewsletterHtml } from './components/NewsletterRichEditor'
+import { NewsletterRichEditor, newsletterBodyHtml, sanitizedNewsletterHtml, removeMediaFromBody, referencedMediaIds, isNewsletterRichBody } from './components/NewsletterRichEditor'
 import { MediaFilePicker } from './components/MediaFilePicker'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
@@ -38,9 +38,11 @@ const cleanSections = (sections: NewsletterSection[]) =>
     style: section.style,
     colorTheme: section.colorTheme,
     summary: section.summary?.trim() ?? '',
-    media: (section.media ?? []).map(item => ({
-      ...item, alt: item.alt?.trim() ?? '', caption: item.caption?.trim() ?? '',
-    })),
+    media: (section.media ?? [])
+      .filter(item => !isNewsletterRichBody(section.body) || referencedMediaIds(section.body).has(item.id))
+      .map(item => ({
+        ...item, alt: item.alt?.trim() ?? '', caption: item.caption?.trim() ?? '',
+      })),
   })).filter(section => section.heading || section.body || section.media.length)
 // Older newsletters may only contain the legacy sections array. Adapt them
 // for editing without changing what is stored until the user explicitly saves.
@@ -321,7 +323,18 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const updateField = <K extends keyof NewsletterIssue>(field: K, value: NewsletterIssue[K]) =>
     setDraft(current => ({ ...current, [field]: value }))
   const updateSection = (field: 'sections' | 'details', index: number, property: 'heading' | 'body' | 'placement' | 'style' | 'colorTheme' | 'summary', value: string) =>
-    setDraft(current => ({ ...current, [field]: current[field].map((section, i) => i === index ? { ...section, [property]: value } : section) }))
+    setDraft(current => ({
+      ...current, [field]: current[field].map((section,i) => {
+        if(i!==index)return section
+        if(property!=='body')return {...section,[property]:value}
+        // If the editor chip is deleted manually, do not resurrect its media
+        // from the attachment array after a save or preview refresh.
+        const previously=referencedMediaIds(section.body)
+        const now=referencedMediaIds(value)
+        return {...section,body:value,
+          media:(section.media??[]).filter(item=>!previously.has(item.id)||now.has(item.id))}
+      }),
+    }))
   const addSidebarStory = () =>
     setDraft(current => ({ ...current, details: [...current.details, { heading: '', body: '', media: [], placement: 'sidebar', style: 'default', colorTheme: 'default' }] }))
   const removeSection = (field: 'sections' | 'details', index: number) =>
@@ -330,6 +343,12 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setDraft(current => ({
       ...current, [field]: current[field].map((section, index) => index !== sectionIndex ? section : ({
         ...section, media: (section.media ?? []).map((item, i) => i === mediaIndex ? { ...item, ...patch } : item),
+      })),
+    }))
+  const replaceMedia = (field: 'sections' | 'details', sectionIndex: number, mediaIndex: number, replacement: NewsletterMedia) =>
+    setDraft(current => ({
+      ...current, [field]: current[field].map((section,index)=>index!==sectionIndex ? section : ({
+        ...section, media:(section.media??[]).map((item,i)=>i===mediaIndex ? replacement : item),
       })),
     }))
   const addMedia = (field: 'sections' | 'details', sectionIndex: number, item: NewsletterMedia) =>
@@ -341,7 +360,9 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const removeMedia = (field: 'sections' | 'details', sectionIndex: number, mediaIndex: number) =>
     setDraft(current => ({
       ...current, [field]: current[field].map((section, index) => index !== sectionIndex ? section : ({
-        ...section, media: (section.media ?? []).filter((_, i) => i !== mediaIndex),
+        ...section,
+        media:(section.media??[]).filter((_, i) => i !== mediaIndex),
+        body:removeMediaFromBody(section.body,section.media?.[mediaIndex]?.id ?? ''),
       })),
     }))
   const openMediaDialog = (field: 'sections' | 'details', sectionIndex: number, mediaIndex?: number) => {
@@ -364,10 +385,12 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     if (!mediaTarget || uploading) return
     const { field, sectionIndex, mediaIndex } = mediaTarget
     const existing = mediaIndex == null ? undefined : draft[field][sectionIndex]?.media?.[mediaIndex]
-    if (existing) {
-      changeMedia(field, sectionIndex, mediaIndex!, { alt: mediaAlt.trim(), caption: mediaCaption.trim() })
-      closeMediaDialog()
-      return
+    const saveItem = (item:NewsletterMedia) => {
+      if (existing && mediaIndex != null) replaceMedia(field,sectionIndex,mediaIndex,item)
+      else {
+        addMedia(field,sectionIndex,item)
+        if(field==='details')editorRefs.current[sectionIndex]?.insertMedia(item.id)
+      }
     }
     if (mediaMode === 'embed' || mediaMode === 'google-maps') {
       const url = mediaUrl.trim()
@@ -376,21 +399,26 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         return
       }
       if (mediaMode === 'google-maps' && !externalGoogleMapsVideoUrl(url)) {
-        setMediaError('Paste the Google Search video link that includes the selected Maps clip (#lpg=... ,ik:...).')
+        setMediaError('Paste the Google Search video link containing the selected Maps clip.')
         return
       }
-      const mediaId=crypto.randomUUID()
-      addMedia(field, sectionIndex, {
-        id: mediaId, type: 'video', url,
-        alt: mediaAlt.trim() || 'Newsletter video', caption: mediaCaption.trim(),
+      saveItem({
+        id:existing?.id ?? crypto.randomUUID(),type:'video',url,
+        alt:mediaAlt.trim()||'Newsletter video',caption:mediaCaption.trim(),
       })
-      if(field==='details')editorRefs.current[sectionIndex]?.insertMedia(mediaId)
-      setMessage(mediaMode === 'google-maps' ? 'Google Maps clip added as a link preview. Playback opens on Google Maps.' : 'Video added to the draft. Save the newsletter to keep it.')
+      setMessage(mediaMode === 'google-maps' ? 'Google Maps link preview saved. It opens on Google Maps.' : 'Video saved in the article.')
+      closeMediaDialog()
+      return
+    }
+    // When editing an existing upload, changing only title/caption should not
+    // force another upload. Selecting a file genuinely REPLACES that file.
+    if (!mediaFile && existing?.storagePath) {
+      saveItem({...existing,alt:mediaAlt.trim(),caption:mediaCaption.trim()})
       closeMediaDialog()
       return
     }
     const file = mediaFile
-    if (!file) { setMediaError('Choose an image or video file.'); return }
+    if (!file) { setMediaError('Choose an image or video file to upload or replace the existing attachment.'); return }
     if (!validIssueId(draft.id)) { setMediaError('Enter a valid issue ID (YYYY-MM) before uploading.'); return }
     const type = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : null
     const accepted = ['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm']
@@ -411,16 +439,14 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         contentType: file.type, upsert: false,
       })
       if (error) { setMediaError(`Upload failed: ${error.message}`); return }
-      const mediaId=crypto.randomUUID()
-      addMedia(field, sectionIndex, {
-        id: mediaId, type, storagePath,
-        alt: mediaAlt.trim() || (type === 'image' ? file.name.replace(/\.[^.]+$/, '') : 'Newsletter video'),
-        caption: mediaCaption.trim(),
+      saveItem({
+        id:existing?.id ?? crypto.randomUUID(),type,storagePath,
+        alt:mediaAlt.trim() || (type === 'image' ? file.name.replace(/\\.[^.]+$/, '') : 'Newsletter video'),
+        caption:mediaCaption.trim(),
       })
-      if(field==='details')editorRefs.current[sectionIndex]?.insertMedia(mediaId)
+      setMessage(existing ? 'File replaced. Save the draft to keep this change.' : 'Media inserted. Save the draft to keep this change.')
       setMediaTarget(null)
       setMediaFile(null)
-      setMessage('Media uploaded and added to the draft. Save the newsletter to keep it.')
     } catch {
       setMediaError('Upload failed. Please try again.')
     } finally {
@@ -658,12 +684,17 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                 value={section.body}
                 onChange={value => updateSection('details',index,'body',value)}
                 onAddMedia={() => openMediaDialog('details',index)}
+                onEditMedia={id=>{
+                  const mediaIndex=(section.media??[]).findIndex(item=>item.id===id)
+                  if(mediaIndex>=0)openMediaDialog('details',index,mediaIndex)
+                }}
               />
               <div className="studio-inline-media">
                 {(section.media ?? []).length > 0 && <div className="studio-attachment-list" aria-label="Attached media">
                   {(section.media ?? []).map((item, mediaIndex) => <div className="studio-attachment" key={item.id}>
                     <span className="studio-attachment-name">{item.type === 'image' ? 'Photo' : 'Video'}{item.caption ? ` · ${item.caption}` : item.alt ? ` · ${item.alt}` : ''}</span>
-                    <button type="button" className="studio-attachment-action" onClick={() => openMediaDialog('details',index,mediaIndex)}>Edit</button>
+                    <button type="button" className="studio-attachment-action" onClick={() => openMediaDialog('details',index,mediaIndex)}>Edit / Replace</button>
+                    <button type="button" className="studio-attachment-action" title="First place the cursor in the article where this media should go" onClick={()=>editorRefs.current[index]?.moveMedia(item.id)}>Move to cursor</button>
                     <button type="button" className="studio-attachment-action studio-attachment-remove" onClick={() => removeMedia('details',index,mediaIndex)}>Remove</button>
                   </div>)}
                 </div>}
@@ -678,23 +709,23 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <button type="button" className="studio-primary" disabled={busy || uploading} onClick={() => void save('published')}>{busy ? 'Saving…' : 'Publish issue'}</button>
         </div>
         <UiDialog open={mediaTarget !== null} onClose={closeMediaDialog} fullWidth maxWidth="sm" aria-labelledby="studio-media-dialog-title">
-          <UiDialogTitle id="studio-media-dialog-title">{mediaTarget?.mediaIndex == null ? 'Add photo or video' : 'Edit media details'}</UiDialogTitle>
+          <UiDialogTitle id="studio-media-dialog-title">{mediaTarget?.mediaIndex == null ? 'Add photo or video' : 'Edit or replace photo or video'}</UiDialogTitle>
           <UiDialogContent dividers>
             <div className="studio-media-dialog-fields">
-              {mediaTarget?.mediaIndex == null && <UiSelect
+              <UiSelect
                 label="Media source"
                 value={mediaMode}
                 onValueChange={value => {setMediaMode(value as 'upload' | 'embed' | 'google-maps');setMediaError('')}}
                 options={[{value:'upload',label:'Upload photo or video'},{value:'embed',label:'Embed YouTube or Vimeo video'},{value:'google-maps',label:'Link to Google Maps contributor video'}]}
-              />}
-              {mediaTarget?.mediaIndex == null && (mediaMode === 'upload'
+              />
+              {(mediaMode === 'upload'
                 ? <div className="studio-dialog-file">
                     <MediaFilePicker file={mediaFile} disabled={uploading} onFileChange={file => {setMediaFile(file);setMediaError('')}} />
-                    <small>Images: JPG, PNG, WebP, GIF up to 8 MB. Videos: MP4, WebM up to 30 MB.</small>
+                    <small>{mediaTarget?.mediaIndex == null ? 'Images: JPG, PNG, WebP, GIF up to 8 MB. Videos: MP4, WebM up to 30 MB.' : 'Choose a new file to replace this attachment, or leave it empty to edit the caption. Original aspect ratio will be preserved.'}</small>
                   </div>
                 : <UiTextField fullWidth label="Video URL" type="url" size="small" value={mediaUrl}
                     onChange={event => setMediaUrl(event.target.value)} placeholder={mediaMode === 'google-maps' ? 'https://www.google.com/search?q=...#lpg=...' : 'https://www.youtube.com/watch?v=…'} />)}
-              {mediaMode === 'google-maps' && mediaTarget?.mediaIndex == null && <p className="studio-template-help">Google Maps does not provide an embeddable player for these clips. This adds a labeled video card linked to the original, not an uploaded copy.</p>}
+              {mediaMode === 'google-maps' && <p className="studio-template-help">Google Maps does not provide an embeddable player for these clips. This adds a labeled video card linked to the original, not an uploaded copy.</p>}
               <UiTextField fullWidth size="small" label={mediaMode === 'embed' || mediaMode === 'google-maps' || mediaFile?.type.startsWith('video/') ? 'Video title' : 'Image description (alt text)'}
                 helperText="Describe the media for accessibility." value={mediaAlt} onChange={event => setMediaAlt(event.target.value)} inputProps={{maxLength:220}} />
               <UiTextField fullWidth size="small" label="Caption or credit (optional)" value={mediaCaption}
@@ -705,7 +736,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <UiDialogActions>
             <button type="button" className="studio-secondary" disabled={uploading} onClick={closeMediaDialog}>Cancel</button>
             <button type="button" className="studio-primary" disabled={uploading} onClick={() => void saveMediaDialog()}>
-              {uploading ? 'Uploading…' : mediaTarget?.mediaIndex == null ? 'Add to section' : 'Save details'}
+              {uploading ? 'Uploading…' : mediaTarget?.mediaIndex == null ? 'Add to section' : 'Save changes'}
             </button>
           </UiDialogActions>
         </UiDialog>
