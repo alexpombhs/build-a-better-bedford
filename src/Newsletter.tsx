@@ -198,7 +198,12 @@ function NewsletterRichBody({body,media=[]}:{body:string;media?:NewsletterMedia[
     if(tag==='p' && Array.from(element.children).some(child=>child.hasAttribute('data-media-id')))
       return createElement('div',{key:index++,className:'newsletter-rich-media-paragraph'},...children)
     if(tag==='a')return createElement('a',{key:index++,href:element.getAttribute('href') ?? undefined,target:'_blank',rel:'noopener noreferrer'},...children)
-    return createElement(tag,{key:index++},...children)
+    return createElement(tag,{
+      key:index++,
+      // One safe, semantic newsletter introduction style survives sanitization.
+      className:tag==='div' && element.classList.contains('newsletter-intro-block')
+        ? 'newsletter-intro-block' : undefined,
+    },...children)
   }
   return <div className="newsletter-article-copy newsletter-rich-copy newsletter-rich-media-layout">{Array.from(dom.body.childNodes).map(convert)}</div>
 }
