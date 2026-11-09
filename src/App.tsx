@@ -7,6 +7,9 @@ import SiteHeader from './components/SiteHeader'
 import PageHeading from './components/PageHeading'
 import ProjectCard from './components/ProjectCard'
 import { UiIconButton } from './components/atoms/MuiPrimitives'
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
+import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined'
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import './components/IdeaFlip.css'
 import { EngineeringTabs, EngineeringWorkspace, EngineeringSectionIntro } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
@@ -367,9 +370,9 @@ function App() {
         </button>
       </div>
       <div className="portfolio-details">
-        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true">▣</span><div><small>NEXT MEETING</small><strong>Monday, November 2</strong><p>2:30–3:30 PM · Guidance Office</p></div></div>
-        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true">▤</span><div><small>CURRENT FOCUS</small><strong>Bridge Design &amp; Testing</strong><p>Structural systems, materials, loads, and real-world examples.</p></div></div>
-        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true">♧</span><div><strong>Everyone’s welcome</strong><p>No engineering experience needed. Just curiosity.</p></div></div>
+        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><CalendarMonthOutlinedIcon fontSize="inherit" /></span><div><small>NEXT MEETING</small><strong>Monday, November 2</strong><p>2:30–3:30 PM · Guidance Office</p></div></div>
+        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><EngineeringOutlinedIcon fontSize="inherit" /></span><div><small>CURRENT FOCUS</small><strong>Bridge Design &amp; Testing</strong><p>Structural systems, materials, loads, and real-world examples.</p></div></div>
+        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><GroupsOutlinedIcon fontSize="inherit" /></span><div><strong>Everyone’s welcome</strong><p>No engineering experience needed. Just curiosity.</p></div></div>
       </div>
     </section>}
 
