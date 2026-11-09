@@ -734,6 +734,12 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
             </div>
           </UiDialogContent>
           <UiDialogActions>
+            {mediaTarget?.mediaIndex != null && <button type="button" className="studio-secondary studio-remove-media-dialog" disabled={uploading}
+              onClick={()=>{
+                removeMedia(mediaTarget.field,mediaTarget.sectionIndex,mediaTarget.mediaIndex!)
+                closeMediaDialog()
+                setMessage('Media removed from the article. Save draft to keep the change.')
+              }}>Remove media</button>}
             <button type="button" className="studio-secondary" disabled={uploading} onClick={closeMediaDialog}>Cancel</button>
             <button type="button" className="studio-primary" disabled={uploading} onClick={() => void saveMediaDialog()}>
               {uploading ? 'Uploading…' : mediaTarget?.mediaIndex == null ? 'Add to section' : 'Save changes'}
