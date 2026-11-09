@@ -71,26 +71,6 @@ const normalize = (issue: NewsletterIssue): NewsletterIssue => ({
   details: orderNewsletterDetails(cleanSections(issue.details)),
 })
 
-// "Did You Know?" is a factual format, so each fact needs direct evidence.
-// Check each paragraph/list item, not just whether the section contains any link.
-const didYouKnowHasSources = (section: NewsletterSection): boolean => {
-  const document = new DOMParser().parseFromString(
-    sanitizedNewsletterHtml(newsletterBodyHtml(section.body)), 'text/html'
-  )
-  const facts = Array.from(document.body.querySelectorAll('p, li, blockquote'))
-    .filter(node => !node.closest('li') || node.tagName === 'LI')
-    .filter(node => Boolean(node.textContent?.trim()))
-  return facts.length > 0 && facts.every(fact =>
-    Array.from(fact.querySelectorAll('a[href]')).some(link => {
-      try {
-        return ['https:', 'http:'].includes(new URL(link.getAttribute('href') ?? '').protocol)
-      } catch {
-        return false
-      }
-    })
-  )
-}
-
 const validIssueId = (id: string) => /^\d{4}-(0[1-9]|1[0-2])$/.test(id)
 const defaultMonth = (id: string) => {
   if (!validIssueId(id)) return ''
@@ -573,14 +553,6 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     if (status === 'published' && article.some(section => !section.heading || !section.body)) {
       setMessage('Complete each main article heading and its content before publishing.'); return
     }
-    if (status !== 'draft') {
-      const uncited = next.details.find(section =>
-        newsletterSectionStyle(section) === 'did-you-know' && !didYouKnowHasSources(section))
-      if (uncited) {
-        setMessage('Each fact in “' + (uncited.heading || 'Did You Know?') + '” needs a clickable source link before review or publishing.')
-        return
-      }
-    }
     // Fail closed if a rich-text edit accidentally detaches a photo token.
     // We preserve its metadata above, but saving a body with no marker would
     // still make the photo disappear from the published story.
@@ -787,7 +759,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
               </div>
               {newsletterSectionPlacement(section) === 'main' && <label>Optional index summary (saved, currently hidden)<textarea rows={2} maxLength={800} value={section.summary ?? draft.sections.find(item => item.heading === section.heading)?.body ?? ''} onChange={e => updateSection('details', index, 'summary', e.target.value)} /></label>}
               {newsletterSectionStyle(section) === 'did-you-know' &&
-                <p className="studio-template-help">Evidence required: add a direct source link for each factual paragraph using the link tool. Uncited facts cannot be sent for review or published.</p>}
+                <p className="studio-template-help">Editorial reminder: include clickable links to credible sources for factual claims. A source may appear after the relevant paragraph; missing links will not block review or publishing.</p>}
               <NewsletterRichEditor
                 key={draft.id + ':' + index}
                 ref={instance => {editorRefs.current[index]=instance}}
