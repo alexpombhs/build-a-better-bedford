@@ -1,0 +1,39 @@
+/* Atomic WebGL sculpture presentation shared by Halloween and Thanksgiving.
+   The Three.js model and its cast shadow sit directly on the parent newsletter
+   card color; neither scene has a framed grey stage or caption. */
+:is(.halloween-truss, .thanksgiving-horn) {
+  width:100%;
+  min-width:0;
+  margin:4px 0 14px;
+}
+:is(.halloween-truss-stage, .thanksgiving-horn-stage) {
+  position:relative;
+  display:block;
+  width:100%;
+  height:194px;
+  border:0;
+  border-radius:0;
+  overflow:visible;
+  background:transparent;
+}
+:is(.halloween-truss-canvas, .thanksgiving-horn-canvas) {
+  position:absolute;
+  inset:0;
+  display:block;
+  width:100%;
+  height:100%;
+  background:transparent;
+}
+.halloween-truss-fallback {
+  display:none;
+}
+.halloween-truss-stage[data-webgl-unavailable="true"] .halloween-truss-fallback {
+  display:grid;
+  place-items:center;
+  width:100%;
+  height:100%;
+  padding:16px;
+  color:inherit;
+  font-size:.8125rem;
+  text-align:center;
+}
