@@ -1,6 +1,11 @@
 /* Newsletter content experiments. The issue archive stays unchanged. */
 .newsletter-page.newsletter-layout-article,
 .newsletter-page.newsletter-layout-feature {
+  /* These are the editorial organism's shared spacing/layout tokens, reused
+     by the live issue and Newsletter Studio preview. */
+  --bbb-newsletter-rail-width:270px;
+  --bbb-newsletter-column-gap:24px;
+  --bbb-newsletter-rail-inset:16px;
   min-width:0;
   color:#263e31;
 }
@@ -76,13 +81,20 @@
 }
 .newsletter-page.newsletter-layout-article .newsletter-expand-panel,
 .newsletter-page.newsletter-layout-feature .newsletter-expand-panel {
-  max-width:850px;
+  max-width:100%;
+  min-width:0;
   padding:0;
 }
 .newsletter-page.newsletter-layout-article .newsletter-expand-panel section,
 .newsletter-page.newsletter-layout-feature .newsletter-expand-panel section {
   padding:16px 0;
   border-top:1px solid #e6ede8;
+}
+/* The former 70ch cap left a broad unused strip inside the main column.
+   Allow text and story media to share the available width instead. */
+.newsletter-page.newsletter-layout-article .expand-grid p,
+.newsletter-page.newsletter-layout-feature .expand-grid p {
+  max-width:100%;
 }
 .newsletter-page.newsletter-layout-article .expand-grid,
 .newsletter-page.newsletter-layout-feature .expand-grid {
@@ -192,14 +204,14 @@
 .newsletter-page .newsletter-editorial-grid { min-width:0; }
 .newsletter-page .newsletter-editorial-grid.has-sidebar {
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(185px,210px);
-  gap:clamp(20px,2.5vw,34px);
+  grid-template-columns:minmax(0,1fr) minmax(0,var(--bbb-newsletter-rail-width));
+  gap:var(--bbb-newsletter-column-gap);
   align-items:start;
 }
 .newsletter-page .newsletter-editorial-main { min-width:0; }
 .newsletter-page .newsletter-editorial-aside {
   min-width:0;
-  padding:0 0 0 20px;
+  padding:0 0 0 var(--bbb-newsletter-rail-inset);
   border-left:1px solid #dce7df;
 }
 .newsletter-page .newsletter-side-heading {
@@ -595,7 +607,8 @@
   display:flex;
   flex-direction:column;
   gap:12px;
-  max-width:70ch;
+  max-width:100%;
+  min-width:0;
 }
 .newsletter-page.newsletter-layout-article .newsletter-article-copy > p,
 .newsletter-page.newsletter-layout-feature .newsletter-article-copy > p {
@@ -933,7 +946,8 @@
 .newsletter-page.newsletter-layout-article .newsletter-expand-panel .newsletter-article-copy.newsletter-rich-media-layout,
 .newsletter-page.newsletter-layout-feature .newsletter-expand-panel .newsletter-article-copy.newsletter-rich-media-layout {
   display:flow-root;
-  max-width:70ch;
+  max-width:100%;
+  min-width:0;
 }
 .newsletter-page.newsletter-layout-article .newsletter-expand-panel .newsletter-rich-media-layout > p,
 .newsletter-page.newsletter-layout-feature .newsletter-expand-panel .newsletter-rich-media-layout > p,
