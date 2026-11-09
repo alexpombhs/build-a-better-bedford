@@ -5,6 +5,7 @@ import { createElement, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { isNewsletterRichBody, newsletterBodyHtml, sanitizedNewsletterHtml } from './components/NewsletterRichEditor'
 import PageHeading from './components/PageHeading'
+import BridgeLoader from './components/molecules/BridgeLoader'
 import HalloweenTruss from './components/HalloweenTruss'
 import ThanksgivingHorn from './components/ThanksgivingHorn'
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined'
@@ -365,23 +366,35 @@ export default function Newsletter() {
   const [selected, setSelected] = useState('')
   const [mobileIssuesOpen, setMobileIssuesOpen] = useState(false)
   const [error, setError] = useState('')
-  const refresh = async () => {
-    // The public route always fetches published issues, regardless of login state.
-    // Editing and hidden content belong exclusively to /admin.
-    const query = supabase.from('newsletters')
-      .select('id,month,number,title,description,sections,details,footer,status,published_at')
-      .eq('status', 'published')
-    const { data, error: loadError } = await query.order('id', { ascending: false })
-    if (loadError) {
-      setError('Newsletters could not be refreshed. Please try again.')
-      return
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let active = true
+    const loadPublishedIssues = async () => {
+      try {
+        // Only published issues belong on the public route; drafts stay in /admin.
+        const { data, error: loadError } = await supabase.from('newsletters')
+          .select('id,month,number,title,description,sections,details,footer,status,published_at')
+          .eq('status', 'published')
+          .order('id', { ascending: false })
+        if (!active) return
+        if (loadError) {
+          setError('Newsletters could not be loaded. Please try again later.')
+          return
+        }
+        setError('')
+        const visible = ((data ?? []) as NewsletterIssue[]).filter(issue => issue.status === 'published')
+        setIssues(visible)
+        setSelected(previous => visible.some(issue => issue.id === previous) ? previous : (visible[0]?.id ?? ''))
+      } catch {
+        if (active) setError('Newsletters could not be loaded. Please try again later.')
+      } finally {
+        if (active) setLoading(false)
+      }
     }
-    setError('')
-    const visible = ((data ?? []) as NewsletterIssue[]).filter(issue => issue.status === 'published')
-    setIssues(visible)
-    setSelected(previous => visible.some(issue => issue.id === previous) ? previous : (visible[0]?.id ?? ''))
-  }
-  useEffect(() => { void refresh() }, [])
+    void loadPublishedIssues()
+    return () => { active = false }
+  }, [])
   const chosen = issues.find(issue => issue.id === selected)
   return <div>
     <div className="newsletter-library">
@@ -402,8 +415,10 @@ export default function Newsletter() {
         <p className="archive-coming">Explore the latest published issues of Build a Better Bedford.</p>
       </aside>
       <div className="newsletter-reading-area">
-        {error && <p role="status" className="newsletter-load-message">{error}</p>}
-        {chosen ? <IssueView issue={chosen} /> : <div className="newsletter-empty"><PageHeading title="No published issues yet" description="Check back for updates from Build a Better Bedford." /></div>}
+        {loading ? <BridgeLoader label="Loading newsletters" />
+          : error ? <p role="alert" className="newsletter-load-message">{error}</p>
+          : chosen ? <IssueView issue={chosen} />
+          : <div className="newsletter-empty"><PageHeading title="No published issues yet" description="Check back for updates from Build a Better Bedford." /></div>}
       </div>
     </div>
   </div>
