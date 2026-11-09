@@ -1505,3 +1505,27 @@
     flex:0 0 100%!important;
   }
 }
+
+/* The bright selection shows exactly the source pixels that will be retained. */
+.newsletter-crop-selection{overflow:visible}
+.newsletter-crop-selection .newsletter-crop-visible,
+.studio-rich-surface .newsletter-crop-selection .newsletter-crop-visible,
+.newsletter-page .newsletter-crop-selection .newsletter-crop-visible{
+  position:absolute!important;
+  display:block!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:fill!important;
+  object-position:center!important;
+  transform:none!important;
+  border-radius:0!important;
+  clip-path:inset(0);
+  pointer-events:none;
+}
+.newsletter-crop-selection {clip-path:none}
+.newsletter-crop-selection:has(.newsletter-crop-visible) {
+  isolation:isolate;
+}
+.newsletter-crop-selection .newsletter-crop-visible{
+  clip-path:inset(0);
+}
