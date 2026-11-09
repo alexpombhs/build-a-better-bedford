@@ -45,7 +45,8 @@
 .studio-message{padding:10px;color:#245a3c}
 .studio-login{max-width:510px;margin:8vh auto;box-shadow:0 5px 30px #123a1910;border:1px solid #dee9df;padding:32px;border-radius:16px}
 .studio-login form{display:grid;gap:14px;margin-top:20px}
-.studio-preview{border:1px solid #dbe5dc;border-radius:12px;padding:22px;overflow:hidden}
+/* Preview uses the same 8px spacing step as the site's MUI/atomic layout. */
+.studio-preview{--bbb-newsletter-preview-gutter:8px;border:1px solid #dbe5dc;border-radius:12px;padding:var(--bbb-newsletter-preview-gutter);overflow:hidden}
 .studio-preview .newsletter-clean{height:auto;min-height:350px;grid-template-columns:1fr 1fr;gap:25px}
 .studio-preview .newsletter-intro h1{font-size:clamp(26px,3vw,46px)!important}
 .studio-preview .newsletter-expand-panel{padding:0}
@@ -217,13 +218,18 @@
   width:100%;
   min-width:0;
 }
-/* The preview card already has its own border and sits inside the studio.
-   Avoid a second oversized gutter around the reading column. */
-.studio-preview {
-  padding:12px;
+/* Keep the preview's article column aligned with the card edge.
+   Spacing belongs to the preview organism, not each story or paragraph. */
+.studio-preview .newsletter-editorial-main,
+.studio-preview .newsletter-expand-panel,
+.studio-preview .newsletter-expand-panel > .design-problem,
+.studio-preview .newsletter-editorial-main > .newsletter-intro {
+  margin-inline:0;
+  padding-inline:0;
 }
-@media(max-width:600px) {
-  .studio-preview { padding:10px; }
+.studio-preview .newsletter-expand-panel > .design-problem > .expand-grid {
+  margin-inline:0;
+  padding-inline:0;
 }
 .studio-preview .newsletter-page .newsletter-editorial-grid.has-sidebar {
   display:grid;
