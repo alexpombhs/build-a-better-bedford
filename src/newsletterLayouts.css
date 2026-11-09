@@ -927,3 +927,79 @@
   .newsletter-page .newsletter-external-video-poster{min-height:215px;padding:18px;}
   .newsletter-page .newsletter-external-video-source{top:12px;left:14px;}
 }
+
+/* Inline Instagram-style portrait/landscape media with text wrap.
+   The source file's natural aspect ratio is never cropped or stretched. */
+.newsletter-page.newsletter-layout-article .newsletter-expand-panel .newsletter-article-copy.newsletter-rich-media-layout,
+.newsletter-page.newsletter-layout-feature .newsletter-expand-panel .newsletter-article-copy.newsletter-rich-media-layout {
+  display:flow-root;
+  max-width:70ch;
+}
+.newsletter-page.newsletter-layout-article .newsletter-expand-panel .newsletter-rich-media-layout > p,
+.newsletter-page.newsletter-layout-feature .newsletter-expand-panel .newsletter-rich-media-layout > p,
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout > .newsletter-rich-media-paragraph {
+  display:block;
+  margin:0 0 15px!important;
+  line-height:1.6;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media {
+  float:left;
+  clear:left;
+  width:min(42%,280px);
+  min-width:0;
+  max-width:none;
+  margin:4px 20px 16px 0!important;
+  overflow:visible;
+  background:transparent;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media img,
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media video {
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:none;
+  object-fit:contain;
+  border-radius:10px;
+  background:#edf1ed;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media figcaption {
+  display:block;
+  margin:8px 2px 0;
+  font-size:.75rem;
+  line-height:1.5;
+  color:#62786a;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-video-frame,
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video {
+  width:100%;
+  max-width:100%;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-poster {
+  min-height:180px;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-source {
+  position:static;
+  font-size:.6rem;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-icon {
+  width:52px;
+  height:52px;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-icon svg {font-size:36px}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-overlay {font-size:1rem}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-action {padding:10px 12px 4px;font-size:.8rem}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-description {padding:0 12px 10px;font-size:.73rem}
+@media(max-width:540px) {
+  .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media {
+    float:none;
+    clear:both;
+    width:min(100%,320px);
+    max-width:100%;
+    margin:10px 0 18px!important;
+  }
+  .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media img,
+  .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media video {
+    width:100%;
+    height:auto;
+  }
+}
