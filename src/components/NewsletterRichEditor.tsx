@@ -32,6 +32,10 @@ function sanitize(node:Node):string {
   const tag=e.tagName.toLowerCase() === 'b' ? 'strong' : e.tagName.toLowerCase() === 'i' ? 'em' : e.tagName.toLowerCase()
   if(tag==='br')return '<br>'
   let attributes=''
+  // Preserve only this intentional editorial block class. Never copy
+  // arbitrary HTML classes or attributes from rich-text input.
+  if(tag==='div' && e.classList.contains('newsletter-intro-block'))
+    attributes=' class="newsletter-intro-block"'
   if(tag==='a'){
     try {const u=new URL(e.getAttribute('href') ?? '');if(['https:','http:'].includes(u.protocol))attributes=' href="'+escapeHtml(u.href)+'" target="_blank" rel="noopener noreferrer"'}catch { /* ignore invalid href */ }
   }
