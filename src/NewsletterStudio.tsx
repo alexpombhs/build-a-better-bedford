@@ -5,7 +5,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined'
 import type { NewsletterEditorHandle } from './components/NewsletterRichEditor'
-import { UiDialog, UiDialogTitle, UiDialogContent, UiDialogActions, UiSelect, UiTextField } from './components/atoms/MuiPrimitives'
+import { UiBox, UiDialog, UiDialogTitle, UiDialogContent, UiDialogActions, UiSelect, UiTextField } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { emptyIssue, IssueView, embeddedVideoUrl, externalGoogleMapsVideoUrl, newsletterSectionStyle, newsletterSectionPlacement, newsletterColorTheme } from './Newsletter'
@@ -608,7 +608,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         </div>
         {preview ? <div className="studio-preview-area">
           <p className="studio-layout-description">Article preview: main content and side panel, with the same article styling as the published page. The issue index is hidden here. Nothing is published until you choose “Publish issue.”</p>
-          <div className="studio-preview"><IssueView issue={draft} layout="article" editorPreview /></div>
+          <UiBox className="studio-preview"><IssueView issue={draft} layout="article" editorPreview /></UiBox>
         </div> : <div className="studio-panel studio-form">
           <h2>Issue details</h2>
           <div className="studio-fields-two">
