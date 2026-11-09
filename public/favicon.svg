@@ -1,13 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <title>Build a Better Bedford favicon</title>
-  <rect width="64" height="64" rx="9" fill="#061c48"/>
   <!-- The arched bridge, deck and perspective road echo the approved BBB logo. -->
-  <path d="M8 24Q32 5 56 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/>
-  <g fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="square">
+  <path d="M8 24Q32 5 56 24" fill="none" stroke="#10222e" stroke-width="3.6" stroke-linecap="round"/>
+  <g fill="none" stroke="#10222e" stroke-width="1.7" stroke-linecap="square">
     <path d="M15 19v8M23 14v13M32 12v15M41 14v13M49 19v8"/>
     <path d="M7 27h50"/>
   </g>
-  <path d="M10 29h44M12 29l-6 10h13l9-10M52 29l6 10H45l-9-10" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
-  <path d="M32 30v9" stroke="#fff" stroke-width="1.6" stroke-dasharray="3 2"/>
-  <text x="32" y="57" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="25" font-weight="900" letter-spacing="-2.1" fill="#fff">BBB</text>
+  <path d="M10 29h44M12 29l-6 10h13l9-10M52 29l6 10H45l-9-10" fill="none" stroke="#10222e" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M32 30v9" stroke="#10222e" stroke-width="1.6" stroke-dasharray="3 2"/>
+  <text x="32" y="57" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="25" font-weight="900" letter-spacing="-2.1" fill="#10222e">BBB</text>
 </svg>
