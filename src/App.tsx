@@ -378,7 +378,7 @@ function App() {
       onJoin={joinClub}
     />
 
-    {page === 'home' && <UiBox component="section" className="portfolio-home">
+    {page === 'home' && <UiBox className="portfolio-home">
       <UiBox className="portfolio-hero">
         <PageHeading className="portfolio-hero-copy" title="Build a Better Bedford" description="A student-led civil engineering club exploring structural engineering, design, and local infrastructure through research, modeling, and hands-on projects." />
         {homepageImage("bridge_sketch_64.png") ? <img className="portfolio-hero-sketch" src={homepageImage("bridge_sketch_64.png")} alt="Conceptual pen sketch of a truss bridge" /> : <div className="portfolio-missing-sketch" role="status">Bridge sketch unavailable</div>}
