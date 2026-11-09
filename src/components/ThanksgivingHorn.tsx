@@ -21,6 +21,9 @@ export default function ThanksgivingHorn() {
       container.dataset.webglUnavailable = 'true'
       return
     }
+    // Preserve per-pixel transparency so the section's seasonal palette
+    // shows through the model, including the real Three.js cast shadow.
+    renderer.setClearColor(0x000000, 0)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFSoftShadowMap
@@ -191,9 +194,7 @@ export default function ThanksgivingHorn() {
     <figure className="thanksgiving-horn">
       <div ref={mountRef} className="thanksgiving-horn-stage" role="img"
         aria-label="Slowly rotating, three-dimensional cornucopia truss built from open structural ribs, rings and diagonal braces, casting a shadow">
-        <span className="thanksgiving-horn-fallback" aria-hidden="true">Cornucopia truss · 3D structure</span>
       </div>
-      <figcaption>Cornucopia truss · ribs, bracing &amp; shadow</figcaption>
     </figure>
   )
 }
