@@ -153,12 +153,14 @@ export function NewsletterMediaView({
   const [signedUrl,setSignedUrl]=useState('')
   const [loadingError,setLoadingError]=useState(false)
   const [selected,setSelected]=useState(false)
+  const [dragWidth,setDragWidth]=useState<number|null>(null)
   const [cropping,setCropping]=useState(false)
   const [cropDraft,setCropDraft]=useState({left:0,top:0,width:100,height:100})
   const [moving,setMoving]=useState(false)
   const [naturalRatio,setNaturalRatio]=useState<number|null>(null)
   const figureRef=useRef<HTMLElement>(null)
-  const gesture=useRef<{kind:'resize'|'move'|'crop'|'crop-size';x:number;y:number;width:number;column:number;side:number;cropLeft:number;cropTop:number;cropWidth:number;cropHeight:number;stageWidth:number;stageHeight:number}|null>(null)
+  const stopDrag=useRef<(()=>void)|null>(null)
+  useEffect(()=>()=>{stopDrag.current?.()},[])
   useEffect(()=>{
     let active=true
     setSignedUrl('')
@@ -177,6 +179,7 @@ export function NewsletterMediaView({
   const googleMapsClip=media.type==='video'&&media.url?externalGoogleMapsVideoUrl(media.url):null
   const clamp=(n:number,min:number,max:number)=>Math.max(min,Math.min(max,n))
   const width=clamp(media.widthPercent??42,25,100)
+  const displayedWidth=dragWidth??width
   const cropLeft=clamp(media.cropLeft??0,0,95)
   const cropTop=clamp(media.cropTop??0,0,95)
   const cropWidth=clamp(media.cropWidth??100,5,100-cropLeft)
@@ -204,49 +207,66 @@ export function NewsletterMediaView({
     setSelected(true)
   }
   const editable=Boolean(onResize || onUpdate || onMove)
+  // Track the whole pointer gesture on window, not on the resize handle.
+  // React may render a new photo node during text editing. Native window
+  // listeners remain stable until pointerup, and we commit size exactly once.
   const grab=(event:ReactPointerEvent<HTMLElement>,kind:'resize'|'move'|'crop'|'crop-size',side=1)=>{
-    if(!editable)return
+    if(!editable || event.button!==0)return
     event.preventDefault()
     event.stopPropagation()
+    stopDrag.current?.()
     setSelected(true)
+    const originX=event.clientX,originY=event.clientY
     const column=figureRef.current?.closest('.newsletter-rich-media-layout, .studio-rich-surface')?.getBoundingClientRect().width??600
-    const bounds=(event.currentTarget.closest('.newsletter-crop-stage') as HTMLElement|null)?.getBoundingClientRect()
-    gesture.current={kind,x:event.clientX,y:event.clientY,width,column,side,
-      cropLeft:cropDraft.left,cropTop:cropDraft.top,cropWidth:cropDraft.width,cropHeight:cropDraft.height,
-      stageWidth:bounds?.width??1,stageHeight:bounds?.height??1}
-    event.currentTarget.setPointerCapture(event.pointerId)
-  }
-  const gestureMove=(event:ReactPointerEvent<HTMLElement>)=>{
-    const g=gesture.current
-    if(!g)return
-    const dx=event.clientX-g.x,dy=event.clientY-g.y
-    if(g.kind==='resize'){
-      onResize?.(media.id,clamp(Math.round(g.width+(dx*g.side*100)/g.column),25,100))
-    }else if(g.kind==='move'){
-      if(Math.hypot(dx,dy)>5)setMoving(true)
-    }else if(g.kind==='crop'){
-      setCropDraft(current=>({...current,
-        left:clamp(g.cropLeft+dx/g.stageWidth*100,0,100-g.cropWidth),
-        top:clamp(g.cropTop+dy/g.stageHeight*100,0,100-g.cropHeight)}))
-    }else if(g.kind==='crop-size'){
-      setCropDraft(current=>({...current,
-        width:clamp(g.cropWidth+dx/g.stageWidth*100,8,100-g.cropLeft),
-        height:clamp(g.cropHeight+dy/g.stageHeight*100,8,100-g.cropTop)}))
+    const stage=(event.currentTarget.closest('.newsletter-crop-stage') as HTMLElement|null)?.getBoundingClientRect()
+    const base={...cropDraft}
+    const baseWidth=displayedWidth
+    let nextWidth=baseWidth
+    let lastX=originX,lastY=originY
+    const onMovePointer=(move:PointerEvent)=>{
+      lastX=move.clientX;lastY=move.clientY
+      const dx=move.clientX-originX,dy=move.clientY-originY
+      if(kind==='resize'){
+        nextWidth=clamp(Math.round(baseWidth+(side*dx*100)/Math.max(1,column)),25,100)
+        setDragWidth(nextWidth)
+      }else if(kind==='move'){
+        if(Math.hypot(dx,dy)>6)setMoving(true)
+      }else if(kind==='crop'){
+        setCropDraft({...base,
+          left:clamp(base.left+(dx/Math.max(1,stage?.width??1))*100,0,100-base.width),
+          top:clamp(base.top+(dy/Math.max(1,stage?.height??1))*100,0,100-base.height)})
+      }else if(kind==='crop-size'){
+        setCropDraft({...base,
+          width:clamp(base.width+dx/Math.max(1,stage?.width??1)*100,8,100-base.left),
+          height:clamp(base.height+dy/Math.max(1,stage?.height??1)*100,8,100-base.top)})
+      }
     }
-  }
-  const release=(event:ReactPointerEvent<HTMLElement>)=>{
-    const g=gesture.current
-    if(!g)return
-    gesture.current=null
-    if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId)
-    if(g.kind==='move'&&Math.hypot(event.clientX-g.x,event.clientY-g.y)>8){
-      onMove?.(media.id,event.clientX,event.clientY)
+    const cleanup=()=>{
+      window.removeEventListener('pointermove',onMovePointer)
+      window.removeEventListener('pointerup',onEndPointer)
+      window.removeEventListener('pointercancel',onCancelPointer)
+      stopDrag.current=null
+      setMoving(false)
     }
-    setMoving(false)
+    const onEndPointer=(up:PointerEvent)=>{
+      cleanup()
+      if(kind==='resize'){
+        if(nextWidth!==baseWidth)onResize?.(media.id,nextWidth)
+        setDragWidth(null)
+      }
+      if(kind==='move'&&Math.hypot(up.clientX-originX,up.clientY-originY)>8){
+        onMove?.(media.id,up.clientX,up.clientY)
+      }
+    }
+    const onCancelPointer=()=>{cleanup();setDragWidth(null)}
+    stopDrag.current=cleanup
+    window.addEventListener('pointermove',onMovePointer)
+    window.addEventListener('pointerup',onEndPointer)
+    window.addEventListener('pointercancel',onCancelPointer)
   }
   return <figure ref={figureRef}
     className={'newsletter-media newsletter-media-aligned-'+(media.align==='right'?'right':'left')+(width===100?' newsletter-media-full-width':'')+(editable&&selected?' newsletter-photo-selected':'')+(moving?' newsletter-photo-moving':'')}
-    style={media.type==='image'?{width:width+'%', '--bbb-photo-width':width+'%'} as CSSProperties:undefined}
+    style={media.type==='image'?{width:displayedWidth+'%', '--bbb-photo-width':displayedWidth+'%'} as CSSProperties:undefined}
     onPointerDown={event=>{if(event.target===figureRef.current)setSelected(true)}}
     onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setSelected(false)}}>
     {media.type==='image'&&imageUrl&&<div
@@ -254,9 +274,7 @@ export function NewsletterMediaView({
       style={ratio?{aspectRatio:ratio}:undefined}
       onDoubleClick={event=>{if(!editable)return;event.preventDefault();event.stopPropagation();if(!cropping)startCrop()}}
       onPointerDown={event=>{if(!cropping)grab(event,'move')}}
-      onPointerMove={gestureMove}
-      onPointerUp={release}
-      onPointerCancel={release}>
+>
       <img loading="lazy" draggable={false} src={imageUrl} alt={media.alt||'Newsletter illustration'}
         onLoad={event=>setNaturalRatio(event.currentTarget.naturalWidth/event.currentTarget.naturalHeight)}
         style={hasCrop&&naturalRatio?{position:'absolute',maxWidth:'none',maxHeight:'none',width:(10000/cropWidth)+'%',height:(10000/cropHeight)+'%',left:(-100*cropLeft/cropWidth)+'%',top:(-100*cropTop/cropHeight)+'%',objectFit:'fill',transform:'none'}:!hasNewCrop&&legacyRatio?{height:'100%',objectFit:'cover',objectPosition:(media.cropX??50)+'% '+(media.cropY??50)+'%',transform:'scale('+(media.cropZoom??1)+')'}:undefined}/>
@@ -279,25 +297,24 @@ export function NewsletterMediaView({
     {media.caption&&<figcaption>{media.caption}</figcaption>}
     {editable&&media.type==='image'&&<>
       <span className="newsletter-photo-grip newsletter-photo-grip-se" role="slider" tabIndex={0}
-        aria-label="Drag the lower right corner to resize photo" aria-valuemin={25} aria-valuemax={100} aria-valuenow={width}
+        aria-label="Drag the lower right corner to resize photo" aria-valuemin={25} aria-valuemax={100} aria-valuenow={displayedWidth}
         onKeyDown={event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();onResize?.(media.id,clamp(width+(event.key==='ArrowRight'?5:-5),25,100))}}}
-        onPointerDown={event=>grab(event,'resize',1)} onPointerMove={gestureMove} onPointerUp={release} onPointerCancel={release}/>
+        onPointerDown={event=>grab(event,'resize',1)}/>
       <span className="newsletter-photo-grip newsletter-photo-grip-sw" role="slider" tabIndex={0}
         aria-label="Drag the lower left corner to resize photo" aria-valuemin={25} aria-valuemax={100} aria-valuenow={width}
         onKeyDown={event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();onResize?.(media.id,clamp(width+(event.key==='ArrowRight'?5:-5),25,100))}}}
-        onPointerDown={event=>grab(event,'resize',-1)} onPointerMove={gestureMove} onPointerUp={release} onPointerCancel={release}/>
+        onPointerDown={event=>grab(event,'resize',-1)}/>
       {cropping&&<div className="newsletter-crop-stage" style={naturalRatio?{aspectRatio:naturalRatio}:undefined}>
         {imageUrl&&<img draggable={false} src={imageUrl} alt="" className="newsletter-crop-source"/>}
         <div className="newsletter-crop-shade"/>
         <div className="newsletter-crop-selection" style={{left:cropDraft.left+'%',top:cropDraft.top+'%',width:cropDraft.width+'%',height:cropDraft.height+'%'}}
-          onPointerDown={event=>grab(event,'crop')}
-          onPointerMove={gestureMove} onPointerUp={release} onPointerCancel={release}>
+          onPointerDown={event=>grab(event,'crop')}>
           {imageUrl&&<img src={imageUrl} draggable={false} alt="" className="newsletter-crop-visible"
             style={{width:(10000/cropDraft.width)+'%',height:(10000/cropDraft.height)+'%',
               left:(-100*cropDraft.left/cropDraft.width)+'%',top:(-100*cropDraft.top/cropDraft.height)+'%'}}/>}
           <span className="newsletter-crop-thirds"/>
           <span className="newsletter-crop-corner" onPointerDown={event=>grab(event,'crop-size')}
-            onPointerMove={gestureMove} onPointerUp={release} onPointerCancel={release}/>
+/>
         </div>
         <div className="newsletter-crop-actions">
           <button type="button" onClick={()=>setCropDraft({left:0,top:0,width:100,height:100})}>Reset frame</button>
