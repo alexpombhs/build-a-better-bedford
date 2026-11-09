@@ -1083,13 +1083,21 @@
   color:#513d2b;
   font-weight:650;
 }
-/* As in October, the holiday introduction is normal copy, not a joke card. */
-.newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy > p:first-child {
+/* The introduction is an explicit, editable block rather than the first
+   paragraph. This keeps BOTH joke paragraphs styled as joke cards even if a
+   saved preview is stale or an editor reorders the text. */
+.newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy > .newsletter-intro-block {
   padding:0 0 3px;
   border:0;
-  border-radius:0;
   background:transparent;
   color:#5b554a;
+  font-size:.8125rem;
   font-weight:400;
   line-height:1.6;
+}
+.newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy > .newsletter-intro-block > p {
+  margin:0!important;
+  color:inherit;
+  font-size:inherit;
+  line-height:inherit;
 }
