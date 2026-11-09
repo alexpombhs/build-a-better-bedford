@@ -86,6 +86,15 @@
       "colorTheme": "sage",
       "summary": "",
       "media": []
+    },
+    {
+      "heading": "Thanksgiving Engineering Corner",
+      "body": "<!--bbb-rich--><p><strong>Why did the civil engineer bring a calculator to Thanksgiving dinner?</strong><br>To make sure the table could handle the load!</p><p><strong>Why did the turkey want to become a bridge engineer?</strong><br>It wanted to build something that would last longer than Thanksgiving leftovers!</p>",
+      "media": [],
+      "placement": "sidebar",
+      "style": "thanksgiving",
+      "colorTheme": "amber",
+      "summary": ""
     }
   ],
   "footer": "Build a Better Bedford · Civil Engineering Club at Bedford High School",
