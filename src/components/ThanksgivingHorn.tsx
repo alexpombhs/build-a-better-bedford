@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
-import './ThanksgivingHorn.css'
+import './atoms/NewsletterSculpture.css'
 
 /**
  * Three.js cornucopia truss: ribs, ring beams and diagonal cross-braces.
