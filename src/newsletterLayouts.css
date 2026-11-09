@@ -1529,3 +1529,10 @@
 .newsletter-crop-selection .newsletter-crop-visible{
   clip-path:inset(0);
 }
+
+.newsletter-crop-selection{overflow:hidden}
+.newsletter-crop-stage .newsletter-crop-selection .newsletter-crop-corner{
+  right:0;
+  bottom:0;
+  z-index:8;
+}
