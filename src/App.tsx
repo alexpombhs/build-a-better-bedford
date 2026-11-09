@@ -8,8 +8,6 @@ import PageHeading from './components/PageHeading'
 import ProjectCard from './components/ProjectCard'
 import { UiIconButton } from './components/atoms/MuiPrimitives'
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
-import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined'
-import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import './components/IdeaFlip.css'
 import { EngineeringTabs, EngineeringWorkspace, EngineeringSectionIntro } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
@@ -371,8 +369,8 @@ function App() {
       </div>
       <div className="portfolio-details">
         <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><CalendarMonthOutlinedIcon fontSize="inherit" /></span><div><small>NEXT MEETING</small><strong>Monday, November 2</strong><p>2:30–3:30 PM · Guidance Office</p></div></div>
-        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><EngineeringOutlinedIcon fontSize="inherit" /></span><div><small>CURRENT FOCUS</small><strong>Bridge Design &amp; Testing</strong><p>Structural systems, materials, loads, and real-world examples.</p></div></div>
-        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><GroupsOutlinedIcon fontSize="inherit" /></span><div><strong>Everyone’s welcome</strong><p>No engineering experience needed. Just curiosity.</p></div></div>
+        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 18h20"/><path d="M4 18v-3a8 8 0 0 1 16 0v3"/><path d="M10 10V5a2 2 0 0 1 4 0v5"/></svg></span><div><small>CURRENT FOCUS</small><strong>Bridge Design &amp; Testing</strong><p>Structural systems, materials, loads, and real-world examples.</p></div></div>
+        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><div><strong>Everyone’s welcome</strong><p>No engineering experience needed. Just curiosity.</p></div></div>
       </div>
     </section>}
 
