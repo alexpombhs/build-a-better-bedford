@@ -501,3 +501,16 @@ body::before{position:fixed!important;top:0;left:0;right:0;width:100%;height:var
   .home-content .lede{font-size:18px}
   .home-content .focus-row p{font-size:14px}
 }
+
+
+/* Projects-only identity: lightweight transparent logo beside the workspace tabs. */
+.projects-toolbar .projects-brand-mark{
+  display:block;
+  width:clamp(62px,6vw,86px);
+  height:auto;
+  flex:none;
+  object-fit:contain;
+}
+@media(max-width:760px){
+  .projects-toolbar .projects-brand-mark{width:64px;max-height:64px}
+}
