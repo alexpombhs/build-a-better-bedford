@@ -1536,3 +1536,36 @@
   bottom:0;
   z-index:8;
 }
+
+/* Pointer editing fixes: large, hittable corner grips and a clear selection.
+   Keep resize controls out of the normal layout and show only on selection. */
+.newsletter-page .newsletter-photo-grip,
+.studio-rich-surface .newsletter-photo-grip {
+  width:19px!important;
+  height:19px!important;
+  z-index:60!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+  border:2px solid #fff!important;
+  box-shadow:0 0 0 2px #336c4d!important;
+}
+.newsletter-page .newsletter-photo-grip-se,
+.studio-rich-surface .newsletter-photo-grip-se {right:-9px!important;bottom:-9px!important}
+.newsletter-page .newsletter-photo-grip-sw,
+.studio-rich-surface .newsletter-photo-grip-sw {left:-9px!important;bottom:-9px!important}
+.newsletter-page .newsletter-photo-selected .newsletter-photo-grip,
+.studio-rich-surface .newsletter-photo-selected .newsletter-photo-grip{opacity:1!important}
+.newsletter-page .newsletter-crop-stage,
+.studio-rich-surface .newsletter-crop-stage{min-height:120px;z-index:65;touch-action:none}
+.newsletter-crop-stage .newsletter-crop-selection{
+  cursor:move;
+  touch-action:none;
+  outline:2px solid #39724f;
+}
+.newsletter-crop-stage .newsletter-crop-selection .newsletter-crop-corner{
+  width:20px!important;
+  height:20px!important;
+  right:0!important;
+  bottom:0!important;
+  z-index:70!important;
+}
