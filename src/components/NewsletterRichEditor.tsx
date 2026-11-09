@@ -26,7 +26,7 @@ function sanitize(node:Node):string {
   const e=node as Element
   const mediaId=e.getAttribute('data-media-id')
   if(mediaId && /^[0-9a-f-]{20,50}$/i.test(mediaId))
-    return '<span contenteditable="false" data-media-id="'+mediaId+'">▣ Media</span>'
+    return '<span contenteditable="false" data-media-id="'+mediaId+'" role="button" tabindex="0" aria-label="Edit media">▣ Media · Edit</span>'
   const inner=Array.from(e.childNodes).map(sanitize).join('')
   if(!supportedTags.has(e.tagName)) return inner
   const tag=e.tagName.toLowerCase() === 'b' ? 'strong' : e.tagName.toLowerCase() === 'i' ? 'em' : e.tagName.toLowerCase()
@@ -43,9 +43,27 @@ export function sanitizedNewsletterHtml(html:string){
 }
 export const storeNewsletterHtml=(html:string)=>prefix+sanitizedNewsletterHtml(html)
 
-export type NewsletterEditorHandle={ insertMedia:(id:string)=>void }
-type Props={value:string;onChange:(body:string)=>void;onAddMedia:()=>void;label?:string;children?:ReactNode}
-export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(function NewsletterRichEditor({value,onChange,onAddMedia,label='Article text'},ref){
+// Removing a media attachment must remove its placeholder too, so it cannot
+// return after the issue is saved and reloaded.
+export function removeMediaFromBody(body:string,id:string):string {
+  if(!isNewsletterRichBody(body))return body
+  const dom=new DOMParser().parseFromString(newsletterBodyHtml(body),'text/html')
+  for(const token of Array.from(dom.body.querySelectorAll('[data-media-id]'))){
+    if(token.getAttribute('data-media-id')!==id)continue
+    const wrapper=token.parentElement
+    if(wrapper && (wrapper.tagName==='P'||wrapper.tagName==='DIV') &&
+       wrapper.childNodes.length===1)wrapper.remove()
+    else token.remove()
+  }
+  return storeNewsletterHtml(dom.body.innerHTML)
+}
+export function referencedMediaIds(body:string):Set<string>{
+  return new Set(Array.from(body.matchAll(/data-media-id=["']([0-9a-f-]{20,50})["']/gi),m=>m[1]))
+}
+
+export type NewsletterEditorHandle={ insertMedia:(id:string)=>void; moveMedia:(id:string)=>void }
+type Props={value:string;onChange:(body:string)=>void;onAddMedia:()=>void;onEditMedia?:(id:string)=>void;label?:string;children?:ReactNode}
+export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(function NewsletterRichEditor({value,onChange,onAddMedia,onEditMedia,label='Article text'},ref){
   const editor=useRef<HTMLDivElement>(null)
   const selection=useRef<Range|null>(null)
   const current=useRef(value)
@@ -86,25 +104,43 @@ export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(funct
     capture()
     emit()
   }
-  useImperativeHandle(ref,()=>({insertMedia:(id:string)=>{
+  const insertAtCaret=(id:string)=>{
     restore()
     const span=document.createElement('span')
     span.setAttribute('contenteditable','false')
     span.setAttribute('data-media-id',id)
-    span.textContent='▣ Media'
-    const selection=window.getSelection()
-    if(selection?.rangeCount && editor.current?.contains(selection.anchorNode)){
-      const range=selection.getRangeAt(0)
+    span.setAttribute('role','button')
+    span.setAttribute('tabindex','0')
+    span.setAttribute('aria-label','Edit media')
+    span.textContent='▣ Media · Edit'
+    const activeSelection=window.getSelection()
+    if(activeSelection?.rangeCount && editor.current?.contains(activeSelection.anchorNode)){
+      const range=activeSelection.getRangeAt(0)
       range.deleteContents()
       range.insertNode(span)
       range.setStartAfter(span)
       range.collapse(true)
-      selection.removeAllRanges()
-      selection.addRange(range)
+      activeSelection.removeAllRanges()
+      activeSelection.addRange(range)
     }else editor.current?.appendChild(span)
     capture()
     emit()
-  }}))
+  }
+  useImperativeHandle(ref,()=>({
+    insertMedia:insertAtCaret,
+    moveMedia:(id:string)=>{
+      if(!editor.current)return
+      const marker=Array.from(editor.current.querySelectorAll('[data-media-id]'))
+        .find(element=>element.getAttribute('data-media-id')===id)
+      if(marker){
+        const parent=marker.parentElement
+        if(parent && (parent.tagName==='DIV'||parent.tagName==='P') &&
+           parent.childNodes.length===1)parent.remove()
+        else marker.remove()
+      }
+      insertAtCaret(id)
+    },
+  }))
   const tool=(title:string,icon:ReactNode,run:()=>void)=> <UiIconButton key={title} size="small" title={title} aria-label={title} onMouseDown={e=>e.preventDefault()} onClick={run}>{icon}</UiIconButton>
   return <div className="studio-rich-editor">
     <div className="studio-rich-toolbar" role="toolbar" aria-label={label+' formatting'}>
@@ -125,6 +161,18 @@ export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(funct
       {tool('Insert photo or video',<InsertPhotoOutlinedIcon fontSize="small"/>,()=>{capture();onAddMedia()})}
     </div>
     <div ref={editor} className="studio-rich-surface" contentEditable suppressContentEditableWarning role="textbox" aria-label={label} aria-multiline="true"
-      data-placeholder="Write your newsletter section…" onInput={()=>{capture();emit()}} onKeyUp={capture} onMouseUp={capture} onFocus={capture}/>
+      data-placeholder="Write your newsletter section…" onInput={()=>{capture();emit()}} onKeyUp={capture} onMouseUp={capture} onFocus={capture}
+      onClick={event=>{
+        const element=(event.target as Element).closest?.('[data-media-id]')
+        const mediaId=element?.getAttribute('data-media-id')
+        if(mediaId){event.preventDefault();onEditMedia?.(mediaId)}
+      }}
+      onKeyDown={event=>{
+        if(event.key==='Enter' && event.target instanceof Element && event.target.matches('[data-media-id]')){
+          event.preventDefault()
+          const id=event.target.getAttribute('data-media-id')
+          if(id)onEditMedia?.(id)
+        }
+      }}/>
   </div>
 })
