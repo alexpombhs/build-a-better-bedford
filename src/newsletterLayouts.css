@@ -214,8 +214,12 @@
   padding:0 0 0 var(--bbb-newsletter-rail-inset);
   border-left:1px solid #dce7df;
 }
-.newsletter-page .newsletter-side-heading {
+.newsletter-page .newsletter-side-heading,
+.newsletter-page .newsletter-rail-heading {
+  display:block;
+  margin:0;
   padding:11px 0 14px;
+  text-transform:uppercase;
   color:#728578;
   font-size:.6875rem;
   font-weight:750;
@@ -1036,15 +1040,12 @@
   }
 }
 
-/* Club Corner and Did You Know are variants of one sidebar organism.
-   The title hierarchy stays identical; palette tokens provide the theme. */
-.newsletter-page .newsletter-side-story .newsletter-sidebar-label {
-  margin:0 0 10px;
-  color:var(--newsletter-feature-ink,#244631);
-  font-size:.9375rem;
-  line-height:1.4;
-  letter-spacing:0;
-  font-weight:650;
+/* The MUI NewsletterRailHeading atom is also used by "In This Issue".
+   Club Corner and Did You Know share its font size, case and tracking.
+   Variants only change the parent card palette, not the type hierarchy. */
+.newsletter-page .newsletter-side-story .newsletter-rail-heading {
+  padding:0 0 10px;
+  color:var(--newsletter-feature-ink,#718475);
 }
 .newsletter-page .newsletter-side-story .newsletter-sidebar-title {
   margin:0 0 11px;
@@ -1081,4 +1082,14 @@
 .newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy strong {
   color:#513d2b;
   font-weight:650;
+}
+/* As in October, the holiday introduction is normal copy, not a joke card. */
+.newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy > p:first-child {
+  padding:0 0 3px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:#5b554a;
+  font-weight:400;
+  line-height:1.6;
 }
