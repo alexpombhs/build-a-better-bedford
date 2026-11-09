@@ -28,8 +28,8 @@ const sectionCopy: Record<Tab,{eyebrow:string;title:string;description:string}> 
   },
   'hands-on':{
     eyebrow:'BUILD CHALLENGES',
-    title:'Build it. Then test it.',
-    description:'Small builds for comparing forces, structural shapes, and design choices.',
+    title:'Coming Soon',
+    description:'Hands-on projects are on the way.',
   },
 }
 
@@ -47,7 +47,7 @@ export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
   const right=load*a/span
   const maxMoment=left*a
   if(tab==='lab') return <UiBox sx={{pb:4}}><UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',md:'repeat(3,minmax(0,1fr))'},gap:2}}><LabCard eyebrow="01 / QUESTION" title="Make a prediction">Choose a problem and decide what you expect before testing.</LabCard><LabCard eyebrow="02 / TEST" title="Change one variable">Keep the other conditions the same, record measurements, and repeat trials.</LabCard><LabCard eyebrow="03 / REVIEW" title="Check the results">Graph your results, explain unexpected behavior, and revise the design.</LabCard></UiBox></UiBox>
-  if(tab==='hands-on') return <UiBox sx={{pb:4}}><UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',md:'repeat(3,minmax(0,1fr))'},gap:2}}><LabCard eyebrow="BRIDGES" title="Paper beam challenge">Compare flat and folded paper spanning the same gap, using small weights.</LabCard><LabCard eyebrow="STRUCTURES" title="Triangle vs. square">Build straw frames and gently compare how their shapes resist deformation.</LabCard><LabCard eyebrow="ROAD DESIGN" title="Crosswalk model">Compare tabletop street layouts with toy cars for visibility and crossing distance.</LabCard></UiBox></UiBox>
+  if(tab==='hands-on') return <UiBox sx={{pb:4}}><UiText variant="h5" sx={{fontWeight:600}}>Coming Soon</UiText></UiBox>
   return <UiBox sx={{pb:4}}>
     <UiTabs value={simulator} onChange={(_,value) => setSimulator(value as 'beam'|'funicular')} aria-label="Choose a force simulator" sx={{mb:3,minHeight:40,'& .MuiTabs-indicator':{backgroundColor:labColors.ink}}}>
       <UiTab value="funicular" label="Funicular cable" sx={{textTransform:'none',minHeight:40}}/>
