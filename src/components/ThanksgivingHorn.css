@@ -1,19 +1,19 @@
-/* Decorative 3D atom for a seasonal newsletter feature. */
+/* The same visual system as October's HalloweenTruss: a clean light stage,
+   actual WebGL-lit 3D structure, and a caption beneath. */
 .thanksgiving-horn {
   width:100%;
   min-width:0;
-  margin:8px 0 16px;
+  margin:6px 0 16px;
 }
 .thanksgiving-horn-stage {
   position:relative;
+  display:block;
   width:100%;
-  height:216px;
+  height:206px;
   overflow:hidden;
-  border-radius:12px;
-  border:1px solid #edddc1;
-  background:
-    radial-gradient(ellipse at 50% 90%, rgba(231,191,137,.31), transparent 64%),
-    linear-gradient(145deg, #fffaf1 4%, #f6ecdc 100%);
+  border:1px solid #e1e6e2;
+  border-radius:10px;
+  background:linear-gradient(155deg,#fbfcfb,#edf1ee);
 }
 .thanksgiving-horn-canvas {
   position:absolute;
@@ -22,26 +22,21 @@
   width:100%;
   height:100%;
 }
-.thanksgiving-horn-fallback { display:none; }
+.thanksgiving-horn-fallback {display:none;}
 .thanksgiving-horn-stage[data-webgl-unavailable="true"] .thanksgiving-horn-fallback {
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display:grid;
+  place-items:center;
+  width:100%;
   height:100%;
-  padding:18px;
-  color:#785637;
-  text-align:center;
+  padding:20px;
+  color:#617769;
   font-size:13px;
-  line-height:1.5;
+  text-align:center;
 }
 .thanksgiving-horn figcaption {
-  padding:7px 0 0;
-  margin:0;
-  color:#856e52;
-  font-size:.69rem;
-  line-height:1.45;
+  margin:7px 2px 0;
   text-align:center;
-}
-@media (max-width:640px) {
-  .thanksgiving-horn-stage {height:232px;}
+  color:#748278;
+  font-size:.6875rem;
+  line-height:1.4;
 }
