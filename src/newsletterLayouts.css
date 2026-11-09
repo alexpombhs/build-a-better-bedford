@@ -970,6 +970,44 @@
   overflow:visible;
   background:transparent;
 }
+/* Full-width photos stay in the article flow rather than floating beside text. */
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media.newsletter-media-full-width {
+  float:none;
+  clear:both;
+  max-width:100%;
+  margin:16px 0 20px!important;
+}
+.newsletter-photo-resize-controls {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 0 2px;
+  font-size:.77rem;
+  color:#435f4e;
+  white-space:nowrap;
+}
+.newsletter-photo-resize-controls button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #b8c9bd;
+  border-radius:6px;
+  background:#f7faf7;
+  color:#294b37;
+  padding:4px 9px;
+  min-height:29px;
+  cursor:pointer;
+  font:inherit;
+}
+.newsletter-photo-resize-controls button:disabled {opacity:.4;cursor:default}
+.newsletter-photo-resize-controls button:focus-visible {outline:2px solid #37644a;outline-offset:2px}
+.newsletter-media-missing {
+  padding:10px 12px;
+  background:#fff8e8;
+  border:1px solid #e9d2a2;
+  border-radius:6px;
+  color:#72510e;
+}
 /* Alignment is a property of the reusable media item, not of the article.
    Text flows around the asset at the chosen insertion point. */
 .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media.newsletter-media-aligned-right {

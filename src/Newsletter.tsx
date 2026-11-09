@@ -27,6 +27,8 @@ export type NewsletterMedia = {
   caption?: string
   /** Inline media floats within the story; undefined is left for older issues. */
   align?: 'left' | 'right'
+  /** Percentage of the article column used by the photo (25–100). */
+  widthPercent?: number
 }
 export type NewsletterSectionStyle = 'default' | 'club-corner' | 'did-you-know' | 'halloween' | 'thanksgiving'
 export type NewsletterColorTheme = 'default' | 'sage' | 'blue' | 'amber' | 'lavender'
@@ -127,7 +129,7 @@ function externalGoogleMapsVideoUrl(value: string): string | null {
 }
 export { embeddedVideoUrl, externalGoogleMapsVideoUrl }
 
-export function NewsletterMediaView({ media }: { media: NewsletterMedia }) {
+export function NewsletterMediaView({ media, onResize }: { media: NewsletterMedia; onResize?: (id: string, width: number) => void }) {
   const [signedUrl, setSignedUrl] = useState('')
   const [loadingError, setLoadingError] = useState(false)
   useEffect(() => {
@@ -148,7 +150,8 @@ export function NewsletterMediaView({ media }: { media: NewsletterMedia }) {
   const imageUrl = media.asset === 'road-solution' ? roadSolution : signedUrl
   const embedded = media.type === 'video' && media.url ? embeddedVideoUrl(media.url) : null
   const googleMapsClip = media.type === 'video' && media.url ? externalGoogleMapsVideoUrl(media.url) : null
-  return <figure className={`newsletter-media newsletter-media-aligned-${media.align === 'right' ? 'right' : 'left'}`}>
+  const width = Math.min(100, Math.max(25, media.widthPercent ?? 42))
+  return <figure className={`newsletter-media newsletter-media-aligned-${media.align === 'right' ? 'right' : 'left'}${width === 100 ? ' newsletter-media-full-width' : ''}`} style={media.type === 'image' ? { width: `${width}%` } : undefined}>
     {media.type === 'image' && imageUrl && <img loading="lazy" src={imageUrl} alt={media.alt || 'Newsletter illustration'} />}
     {media.type === 'video' && media.storagePath && signedUrl &&
       <video src={signedUrl} controls playsInline preload="metadata" aria-label={media.alt || 'Newsletter video'} />}
@@ -168,6 +171,12 @@ export function NewsletterMediaView({ media }: { media: NewsletterMedia }) {
     {(!imageUrl && media.type === 'image' || media.type === 'video' && !signedUrl && !embedded && !googleMapsClip) &&
       <p className="newsletter-media-placeholder" role="status">{loadingError ? 'This attachment could not be loaded.' : 'Loading attachment…'}</p>}
     {media.caption && <figcaption>{media.caption}</figcaption>}
+    {onResize && media.type === 'image' && <div className="newsletter-photo-resize-controls" aria-label="Photo size in newsletter preview">
+      <button type="button" disabled={width <= 25} aria-label="Make photo smaller" onClick={() => onResize(media.id, Math.max(25, width - 10))}>−</button>
+      <span aria-live="polite">{width}%</span>
+      <button type="button" disabled={width >= 100} aria-label="Make photo larger" onClick={() => onResize(media.id, Math.min(100, width + 10))}>+</button>
+      <button type="button" onClick={() => onResize(media.id, 100)}>Full width</button>
+    </div>}
   </figure>
 }
 
@@ -175,7 +184,7 @@ export type NewsletterLayout = 'article' | 'feature'
 
 // Rich content uses a small safe markup subset. Media tokens resolve to the
 // issue's own uploaded assets and can appear between paragraphs.
-function NewsletterRichBody({body,media=[]}:{body:string;media?:NewsletterMedia[]}){
+function NewsletterRichBody({body,media=[],onResizeMedia,editorPreview=false}:{body:string;media?:NewsletterMedia[];onResizeMedia?:(id:string,width:number)=>void;editorPreview?:boolean}){
   const safe=sanitizedNewsletterHtml(newsletterBodyHtml(body))
   const dom=new DOMParser().parseFromString(safe,'text/html')
   let index=0
@@ -186,7 +195,7 @@ function NewsletterRichBody({body,media=[]}:{body:string;media?:NewsletterMedia[
     const mediaId=element.getAttribute('data-media-id')
     if(mediaId){
       const asset=media.find(item=>item.id===mediaId)
-      return asset ? <NewsletterMediaView key={index++} media={asset}/> : null
+      return asset ? <NewsletterMediaView key={index++} media={asset} onResize={onResizeMedia}/> : editorPreview ? <p key={index++} role="alert" className="newsletter-media-missing">This photo has no saved attachment. Reinsert it from Edit to display it.</p> : null
     }
     const tag=element.tagName.toLowerCase()
     const tags=new Set(['p','div','h3','h4','strong','em','u','ul','ol','li','blockquote','br','a'])
@@ -252,7 +261,7 @@ function NewsletterArticleBody({ body }: { body: string }) {
   </div>
 }
 
-export function IssueView({ issue, layout = 'article', editorPreview = false }: { issue: NewsletterIssue; layout?: NewsletterLayout; editorPreview?: boolean }) {
+export function IssueView({ issue, layout = 'article', editorPreview = false, onResizeMedia }: { issue: NewsletterIssue; layout?: NewsletterLayout; editorPreview?: boolean; onResizeMedia?: (id:string,width:number)=>void }) {
   const mainDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'main')
   const sideDetails = orderNewsletterDetails(issue.details).filter(section => newsletterSectionPlacement(section) === 'sidebar')
   const articleSections = mainDetails.length > 0 ? mainDetails : issue.sections
@@ -277,7 +286,7 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
                 {newsletterSectionStyle(section) === 'did-you-know' && <span className="newsletter-feature-kicker">DID YOU KNOW?</span>}
                 {halloween && <div className="newsletter-main-seasonal"><span className="newsletter-feature-kicker">CLUB CORNER</span><HalloweenTruss /></div>}
                 {thanksgiving && <div className="newsletter-main-seasonal"><span className="newsletter-feature-kicker">CLUB CORNER</span><ThanksgivingHorn /></div>}
-                <div className="expand-grid"><div><UiText component="h2" variant="h6">{section.heading}</UiText>{isNewsletterRichBody(section.body) ? <NewsletterRichBody body={section.body} media={section.media}/> : <NewsletterArticleBody body={section.body} />}</div></div>
+                <div className="expand-grid"><div><UiText component="h2" variant="h6">{section.heading}</UiText>{isNewsletterRichBody(section.body) ? <NewsletterRichBody body={section.body} media={section.media} onResizeMedia={onResizeMedia} editorPreview={editorPreview}/> : <NewsletterArticleBody body={section.body} />}</div></div>
                 {!isNewsletterRichBody(section.body) && (section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
               </section>
             })}
@@ -324,8 +333,8 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
                 ornament={halloween ? <HalloweenTruss /> : thanksgiving ? <ThanksgivingHorn /> : undefined}>
                 {isNewsletterRichBody(section.body)
                   ? thanksgiving
-                    ? <div className="newsletter-halloween-copy newsletter-thanksgiving-copy"><NewsletterRichBody body={section.body} media={section.media} /></div>
-                    : <NewsletterRichBody body={section.body} media={section.media} />
+                    ? <div className="newsletter-halloween-copy newsletter-thanksgiving-copy"><NewsletterRichBody body={section.body} media={section.media} onResizeMedia={onResizeMedia} editorPreview={editorPreview} /></div>
+                    : <NewsletterRichBody body={section.body} media={section.media} onResizeMedia={onResizeMedia} editorPreview={editorPreview} />
                   : halloween
                     ? <div className="newsletter-halloween-copy">{section.body.split(/\n\s*\n/).filter(Boolean).map((paragraph, paragraphIndex) =>
                       <p className={/^(Why |Because )/i.test(paragraph.trim()) ? 'newsletter-halloween-joke' : undefined} key={paragraphIndex}>{paragraph}</p>

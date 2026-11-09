@@ -392,6 +392,12 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         ...section, media: (section.media ?? []).map((item, i) => i === mediaIndex ? { ...item, ...patch } : item),
       })),
     }))
+  const resizePreviewMedia = (id: string, widthPercent: number) => {
+    setDraft(current => ({ ...current, details: current.details.map(section => ({
+      ...section,
+      media: (section.media ?? []).map(item => item.id === id ? { ...item, widthPercent } : item),
+    })) }))
+  }
   const replaceMedia = (field: 'sections' | 'details', sectionIndex: number, mediaIndex: number, replacement: NewsletterMedia) =>
     setDraft(current => ({
       ...current, [field]: current[field].map((section,index)=>index!==sectionIndex ? section : ({
@@ -436,8 +442,10 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     const saveItem = (item:NewsletterMedia) => {
       if (existing && mediaIndex != null) replaceMedia(field,sectionIndex,mediaIndex,item)
       else {
-        addMedia(field,sectionIndex,item)
+        // Insert the marker before registering its attachment. React can batch
+        // both state updates; this order avoids saving an orphaned inline marker.
         if(field==='details')editorRefs.current[sectionIndex]?.insertMedia(item.id)
+        addMedia(field,sectionIndex,item)
       }
     }
     if (mediaMode === 'embed' || mediaMode === 'google-maps') {
@@ -661,8 +669,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           </div>
         </div>
         {preview ? <div className="studio-preview-area">
-          <p className="studio-layout-description">Article preview: main content and side panel, with the same article styling as the published page. The issue index is hidden here. Nothing is published until you choose “Publish issue.”</p>
-          <UiBox className="studio-preview"><IssueView issue={draft} layout="article" editorPreview /></UiBox>
+          <p className="studio-layout-description">Article preview: use the − and + controls under a photo to resize it, or choose Full width. Your changes appear here immediately; save the draft to keep them. Nothing is published until you choose “Publish issue.”</p>
+          <UiBox className="studio-preview"><IssueView issue={draft} layout="article" editorPreview onResizeMedia={resizePreviewMedia} /></UiBox>
         </div> : <div className="studio-panel studio-form">
           <h2>Issue details</h2>
           <div className="studio-fields-two">
