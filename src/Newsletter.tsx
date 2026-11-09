@@ -51,6 +51,18 @@ export const newsletterSectionClass = (section: NewsletterSection) =>
   `newsletter-section-style-${newsletterSectionStyle(section)} newsletter-color-${newsletterColorTheme(section)}`
 export const newsletterSectionPlacement = (section: NewsletterSection): 'main' | 'sidebar' =>
   section.placement ?? (isLegacyHalloween(section) ? 'sidebar' : 'main')
+
+/** Editorial ordering rule: factual Did You Know panels always close the rail.
+ * Reused by public rendering and Newsletter Studio when saving or loading. */
+export const orderNewsletterDetails = (details: NewsletterSection[]): NewsletterSection[] => {
+  const main = details.filter(section => newsletterSectionPlacement(section) === 'main')
+  const side = details.filter(section => newsletterSectionPlacement(section) === 'sidebar')
+  return [
+    ...main,
+    ...side.filter(section => newsletterSectionStyle(section) !== 'did-you-know'),
+    ...side.filter(section => newsletterSectionStyle(section) === 'did-you-know'),
+  ]
+}
 export type NewsletterIssue = {
   id: string
   month: string
@@ -235,7 +247,7 @@ function NewsletterArticleBody({ body }: { body: string }) {
 
 export function IssueView({ issue, layout = 'article', editorPreview = false }: { issue: NewsletterIssue; layout?: NewsletterLayout; editorPreview?: boolean }) {
   const mainDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'main')
-  const sideDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'sidebar')
+  const sideDetails = orderNewsletterDetails(issue.details).filter(section => newsletterSectionPlacement(section) === 'sidebar')
   const articleSections = mainDetails.length > 0 ? mainDetails : issue.sections
   const contents = articleSections.filter(section => section.heading.trim()).map(section => ({...section, body: section.summary ?? issue.sections.find(entry => entry.heading.trim().toLowerCase() === section.heading.trim().toLowerCase())?.body ?? ''}))
   const isOctober2026 = issue.id.startsWith('2026-10') || /october\s+2026/i.test(issue.month)
@@ -253,11 +265,11 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
             {articleSections.map((section, index) => {
               const halloween = newsletterSectionStyle(section) === 'halloween'
               const thanksgiving = newsletterSectionStyle(section) === 'thanksgiving'
-              return <section className={`design-problem ${newsletterSectionClass(section)}${halloween ? ' newsletter-main-halloween-feature' : ''}${thanksgiving ? ' newsletter-thanksgiving-feature' : ''}`} key={index} id={sectionId(index)}>
+              return <section className={`design-problem ${newsletterSectionClass(section)}${halloween || thanksgiving ? ' newsletter-main-halloween-feature' : ''}`} key={index} id={sectionId(index)}>
                 {newsletterSectionStyle(section) === 'club-corner' && <span className="newsletter-feature-kicker">CLUB CORNER</span>}
                 {newsletterSectionStyle(section) === 'did-you-know' && <span className="newsletter-feature-kicker">DID YOU KNOW?</span>}
                 {halloween && <div className="newsletter-main-seasonal"><span className="newsletter-halloween-eyebrow">🎃 SEASONAL FEATURE</span><HalloweenTruss /></div>}
-                {thanksgiving && <div className="newsletter-main-seasonal"><span className="newsletter-thanksgiving-eyebrow">🍁 THANKSGIVING · ENGINEERING FUN</span><ThanksgivingHorn /></div>}
+                {thanksgiving && <div className="newsletter-main-seasonal"><span className="newsletter-halloween-eyebrow">🍁 CLUB CORNER</span><ThanksgivingHorn /></div>}
                 <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography>{isNewsletterRichBody(section.body) ? <NewsletterRichBody body={section.body} media={section.media}/> : <NewsletterArticleBody body={section.body} />}</div></div>
                 {!isNewsletterRichBody(section.body) && (section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
               </section>
@@ -294,16 +306,18 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
             {sideDetails.map((section, index) => {
               const halloween = newsletterSectionStyle(section) === 'halloween'
               const thanksgiving = newsletterSectionStyle(section) === 'thanksgiving'
-              return <section className={`newsletter-side-story ${newsletterSectionClass(section)}${halloween ? ' newsletter-halloween-feature' : ''}${thanksgiving ? ' newsletter-thanksgiving-feature' : ''}`} key={index}>
+              return <section className={`newsletter-side-story ${newsletterSectionClass(section)}${halloween || thanksgiving ? ' newsletter-halloween-feature' : ''}`} key={index}>
                 {halloween && <span className="newsletter-halloween-eyebrow" aria-hidden="true">🎃 CLUB CORNER</span>}
-                {thanksgiving && <span className="newsletter-thanksgiving-eyebrow">🍁 THANKSGIVING · ENGINEERING FUN</span>}
+                {thanksgiving && <span className="newsletter-halloween-eyebrow" aria-hidden="true">🍁 CLUB CORNER</span>}
                 {newsletterSectionStyle(section) === 'club-corner' && <span className="newsletter-feature-kicker">CLUB CORNER</span>}
                 {newsletterSectionStyle(section) === 'did-you-know' && <span className="newsletter-feature-kicker">DID YOU KNOW?</span>}
                 {halloween && <HalloweenTruss />}
-                <Typography component="h2" variant="subtitle1">{section.heading}</Typography>
                 {thanksgiving && <ThanksgivingHorn />}
+                <Typography component="h2" variant="subtitle1">{section.heading}</Typography>
                 {isNewsletterRichBody(section.body)
-                  ? <NewsletterRichBody body={section.body} media={section.media} />
+                  ? thanksgiving
+                    ? <div className="newsletter-halloween-copy newsletter-thanksgiving-copy"><NewsletterRichBody body={section.body} media={section.media} /></div>
+                    : <NewsletterRichBody body={section.body} media={section.media} />
                   : halloween
                     ? <div className="newsletter-halloween-copy">{section.body.split(/\n\s*\n/).filter(Boolean).map((paragraph, paragraphIndex) =>
                       <p className={/^(Why |Because )/i.test(paragraph.trim()) ? 'newsletter-halloween-joke' : undefined} key={paragraphIndex}>{paragraph}</p>
