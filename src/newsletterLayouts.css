@@ -1173,3 +1173,17 @@
 .newsletter-story-block{display:flow-root}
 .newsletter-story-block:has(> p),.newsletter-story-block:has(> div.newsletter-rich-media-paragraph){display:contents}
 @media(max-width:540px){.newsletter-photo-row{flex-direction:column}.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-row .newsletter-media{max-width:100%;width:100%!important}}
+
+/* Rich-text paragraphs, including those wrapped for drag targets, use the
+   exact same typography whether or not they sit beside a floated photo. */
+.newsletter-page.newsletter-layout-article .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-story-block p,
+.newsletter-page.newsletter-layout-feature .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-story-block p,
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout > p {
+  font-family:inherit;
+  font-size:inherit;
+  font-weight:400;
+  color:inherit;
+  letter-spacing:inherit;
+  line-height:1.6;
+  margin:0 0 15px;
+}
