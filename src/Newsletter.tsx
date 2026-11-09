@@ -22,6 +22,8 @@ export type NewsletterMedia = {
   url?: string
   alt?: string
   caption?: string
+  /** Inline media floats within the story; undefined is left for older issues. */
+  align?: 'left' | 'right'
 }
 export type NewsletterSectionStyle = 'default' | 'club-corner' | 'did-you-know' | 'halloween'
 export type NewsletterColorTheme = 'default' | 'sage' | 'blue' | 'amber' | 'lavender'
@@ -131,7 +133,7 @@ export function NewsletterMediaView({ media }: { media: NewsletterMedia }) {
   const imageUrl = media.asset === 'road-solution' ? roadSolution : signedUrl
   const embedded = media.type === 'video' && media.url ? embeddedVideoUrl(media.url) : null
   const googleMapsClip = media.type === 'video' && media.url ? externalGoogleMapsVideoUrl(media.url) : null
-  return <figure className="newsletter-media">
+  return <figure className={`newsletter-media newsletter-media-aligned-${media.align === 'right' ? 'right' : 'left'}`}>
     {media.type === 'image' && imageUrl && <img loading="lazy" src={imageUrl} alt={media.alt || 'Newsletter illustration'} />}
     {media.type === 'video' && media.storagePath && signedUrl &&
       <video src={signedUrl} controls playsInline preload="metadata" aria-label={media.alt || 'Newsletter video'} />}
