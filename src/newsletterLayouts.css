@@ -1363,3 +1363,33 @@
   .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-row{flex-direction:column}
   .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-row .newsletter-media{width:100%!important;max-width:100%!important}
 }
+
+/* The two image row uses the same flex layout and no floated wrappers in Edit. */
+.studio-rich-surface .newsletter-photo-row{
+  display:flex!important;
+  flex-flow:row nowrap;
+  clear:both;
+  width:100%;
+  align-items:flex-start;
+  gap:12px;
+  margin:12px 0 18px;
+}
+.studio-rich-surface .newsletter-photo-row > div,
+.newsletter-page .newsletter-photo-row > div{display:contents}
+.studio-rich-surface .newsletter-photo-row .newsletter-media{
+  float:none!important;
+  clear:none!important;
+  flex-basis:0!important;
+  flex-shrink:1!important;
+  margin:0!important;
+  max-width:none!important;
+  min-width:0;
+}
+.studio-rich-surface .newsletter-photo-row + p,
+.newsletter-page .newsletter-photo-row + p{clear:both}
+.studio-rich-surface .newsletter-photo-row .newsletter-photo-grip,
+.newsletter-page .newsletter-photo-row .newsletter-photo-grip{z-index:18}
+@media(max-width:540px){
+  .studio-rich-surface .newsletter-photo-row{flex-direction:column}
+  .studio-rich-surface .newsletter-photo-row .newsletter-media{width:100%!important;max-width:100%!important}
+}
