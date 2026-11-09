@@ -29,7 +29,14 @@ export default function SiteHeader({ active, onNavigate, onJoin }: Props) {
   return (
     <header className="bbb-site-header">
       <a className="bbb-site-brand" href={hrefFor('home')} onClick={event => linkClick(event, 'home')} aria-label="Build a Better Bedford home">
-        <strong>BBB</strong>
+        <img
+          className="bbb-site-brand-logo"
+          src={`${import.meta.env.BASE_URL}${active === 'projects' ? 'projects-logo.svg' : 'site-logo.svg'}`}
+          alt=""
+          width="94"
+          height="72"
+          decoding="async"
+        />
         <span>STUDENT-LED<br />CIVIL ENGINEERING CLUB</span>
       </a>
       <button
