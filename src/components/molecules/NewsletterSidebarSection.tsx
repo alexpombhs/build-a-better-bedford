@@ -26,7 +26,7 @@ export default function NewsletterSidebarSection({
   const showTitle = !label || title.trim().toLowerCase() !== label.toLowerCase()
 
   return (
-    <UiBox component="section"
+    <UiBox role="region" aria-label={label || title}
       className={['newsletter-side-story', `newsletter-sidebar-variant-${variant}`, className].filter(Boolean).join(' ')}>
       {label && <NewsletterRailHeading>{label}</NewsletterRailHeading>}
       {ornament}
