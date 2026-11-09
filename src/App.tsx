@@ -46,6 +46,24 @@ const pageFromLocation = (): Page => {
   return (Object.keys(pagePaths) as Page[]).find(page => pagePaths[page] === normalized) ?? 'home'
 }
 
+// Calculate the next Monday club meeting in Bedford's local time, not the viewer's timezone.
+// On Mondays, keep today's date until the 3:30 PM meeting ends.
+const upcomingMondayLabel = (now = new Date()): string => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', year: 'numeric', month: 'numeric', day: 'numeric',
+    hour: 'numeric', minute: 'numeric', hourCycle: 'h23',
+  }).formatToParts(now)
+  const part = (type: string) => Number(parts.find(p => p.type === type)?.value)
+  const date = new Date(Date.UTC(part('year'), part('month') - 1, part('day')))
+  const daysToMonday = (8 - date.getUTCDay()) % 7
+  const mondayMeetingEnded = daysToMonday === 0 &&
+    (part('hour') > 15 || (part('hour') === 15 && part('minute') >= 30))
+  date.setUTCDate(date.getUTCDate() + (mondayMeetingEnded ? 7 : daysToMonday))
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC',
+  }).format(date)
+}
+
 type SubmittedIdea = { id:number; title:string; subtitle:string; description:string; submitter_name:string|null; photo_url:string|null }
 type ProjectCard = {
   id?: number
@@ -141,6 +159,16 @@ const labels: Record<Page, string> = {
 
 function App() {
   const [page, setPage] = useState<Page>(pageFromLocation)
+  const [nextMeetingDate, setNextMeetingDate] = useState(upcomingMondayLabel)
+  useEffect(() => {
+    const refreshMeetingDate = () => setNextMeetingDate(upcomingMondayLabel())
+    const intervalId = window.setInterval(refreshMeetingDate, 60_000)
+    document.addEventListener('visibilitychange', refreshMeetingDate)
+    return () => {
+      window.clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', refreshMeetingDate)
+    }
+  }, [])
   const [projectPage, setProjectPage] = useState(0)
   const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>(() => pageFromLocation() === 'lab' ? 'simulators' : 'ideas')
 
@@ -368,7 +396,7 @@ function App() {
         </button>
       </div>
       <div className="portfolio-details">
-        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><CalendarMonthOutlinedIcon fontSize="inherit" /></span><div><small>NEXT MEETING</small><strong>Monday, November 2</strong><p>2:30–3:30 PM · Guidance Office</p></div></div>
+        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><CalendarMonthOutlinedIcon fontSize="inherit" /></span><div><small>NEXT MEETING</small><strong>{nextMeetingDate}</strong><p>2:30–3:30 PM · Guidance Office</p></div></div>
         <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 8h20M2 17h20M2 20h20"/><path d="M3 8v9m18-9v9M9 8v9m6-9v9"/><path d="m3 8 6 9 6-9 6 9"/></svg></span><div><small>CURRENT FOCUS</small><strong>Bridge Design &amp; Testing</strong><p>Structural systems, materials, loads, and real-world examples.</p></div></div>
         <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14.5c1 1.5 2.4 2.3 4 2.3s3-.8 4-2.3"/><path d="M8.5 9.5h.01M15.5 9.5h.01" strokeWidth="2.6"/></svg></span><div><strong>Everyone’s welcome</strong><p>No engineering experience needed. Just curiosity.</p></div></div>
       </div>
