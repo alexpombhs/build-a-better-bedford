@@ -966,6 +966,18 @@
   overflow:visible;
   background:transparent;
 }
+/* Alignment is a property of the reusable media item, not of the article.
+   Text flows around the asset at the chosen insertion point. */
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media.newsletter-media-aligned-right {
+  float:right;
+  clear:right;
+  margin:4px 0 16px 20px!important;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media.newsletter-media-aligned-left {
+  float:left;
+  clear:left;
+  margin:4px 20px 16px 0!important;
+}
 .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media img,
 .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media video {
   display:block;
@@ -1009,6 +1021,12 @@
     clear:both;
     width:min(100%,320px);
     max-width:100%;
+    margin:10px 0 18px!important;
+  }
+  .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media.newsletter-media-aligned-left,
+  .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media.newsletter-media-aligned-right {
+    float:none;
+    clear:both;
     margin:10px 0 18px!important;
   }
   .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media img,
