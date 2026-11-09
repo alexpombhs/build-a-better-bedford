@@ -1153,3 +1153,23 @@
   font-size:inherit;
   line-height:inherit;
 }
+
+
+/* Visual photo layout controls: only the studio preview supplies these controls. */
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-frame {overflow:hidden;border-radius:10px;position:relative}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-frame img{display:block;width:100%;height:auto;border-radius:0}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-frame[style*="aspect-ratio"] img{height:100%;max-height:none;object-fit:cover}
+.newsletter-photo-frame.cropping{cursor:grab;touch-action:none}
+.newsletter-photo-frame.cropping:active{cursor:grabbing}
+.newsletter-photo-grip{display:block;position:absolute;right:-9px;top:46%;z-index:2;cursor:ew-resize;touch-action:none;user-select:none;padding:5px;border-radius:5px;border:1px solid #8da898;background:#fff;color:#365742;line-height:1}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media{position:relative}
+.newsletter-photo-resize-controls{flex-wrap:wrap;gap:5px}
+.newsletter-photo-move{cursor:grab;user-select:none;border:1px dashed #a3b6a9;border-radius:5px;padding:5px 7px}
+.newsletter-photo-crop-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:7px;border:1px solid #d8e2d9;border-radius:6px;font-size:.72rem}
+.newsletter-photo-crop-controls label{display:flex;align-items:center;gap:5px}
+.newsletter-photo-crop-controls select{max-width:90px}
+.newsletter-photo-row{display:flex;align-items:flex-start;gap:12px;clear:both;margin:12px 0 20px}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-row .newsletter-media{float:none!important;clear:none!important;flex:1 1 0;min-width:0;max-width:calc(50% - 6px);width:calc(50% - 6px)!important;margin:0!important}
+.newsletter-story-block{display:flow-root}
+.newsletter-story-block:has(> p),.newsletter-story-block:has(> div.newsletter-rich-media-paragraph){display:contents}
+@media(max-width:540px){.newsletter-photo-row{flex-direction:column}.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-row .newsletter-media{max-width:100%;width:100%!important}}
