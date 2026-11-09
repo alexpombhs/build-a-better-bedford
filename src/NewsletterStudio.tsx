@@ -1,35 +1,94 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { NewsletterRichEditor, newsletterBodyHtml, sanitizedNewsletterHtml, removeMediaFromBody, referencedMediaIds, isNewsletterRichBody } from './components/NewsletterRichEditor'
+import { MediaFilePicker } from './components/MediaFilePicker'
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined'
+import type { NewsletterEditorHandle } from './components/NewsletterRichEditor'
+import { UiBox, UiButton, UiDialog, UiDialogTitle, UiDialogContent, UiDialogActions, UiSelect, UiTextField } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
-import { emptyIssue, IssueView, NewsletterMediaView, embeddedVideoUrl } from './Newsletter'
+import { emptyIssue, IssueView, embeddedVideoUrl, externalGoogleMapsVideoUrl, newsletterSectionStyle, newsletterSectionPlacement, newsletterColorTheme, orderNewsletterDetails } from './Newsletter'
 import type { NewsletterIssue, NewsletterSection, NewsletterMedia } from './Newsletter'
 
 type Template = 'club' | 'project' | 'announcement'
-const presets: Record<Template, { name: string; sections: NewsletterSection[]; details: NewsletterSection[] }> = {
-  club: { name: 'Club update', sections: [
-    { heading: 'This month', body: '' }, { heading: 'What we worked on', body: '' }, { heading: 'Coming up', body: '' },
-  ], details: [{ heading: 'Highlights and photos', body: '' }] },
-  project: { name: 'Project spotlight', sections: [
-    { heading: 'The challenge', body: '' }, { heading: 'Our approach', body: '' }, { heading: 'What we learned', body: '' },
-  ], details: [{ heading: 'Results and next steps', body: '' }] },
-  announcement: { name: 'Announcement', sections: [
-    { heading: 'The news', body: '' }, { heading: 'Important details', body: '' }, { heading: 'What to do next', body: '' },
-  ], details: [] },
+type Preset = { name: string; description: string; headings: string[] }
+const presets: Record<Template, Preset> = {
+  club: {
+    name: 'Club update',
+    description: 'Meetings, milestones, and what comes next',
+    headings: ['This month', 'What we worked on', 'Coming up'],
+  },
+  project: {
+    name: 'Project spotlight',
+    description: 'A challenge, the engineering process, and results',
+    headings: ['The challenge', 'Our approach', 'What we learned'],
+  },
+  announcement: {
+    name: 'Announcement',
+    description: 'A focused update with key details and next steps',
+    headings: ['The news', 'Important details', 'What to do next'],
+  },
 }
 const cleanSections = (sections: NewsletterSection[]) =>
   sections.map(section => ({
     heading: section.heading.trim(),
     body: section.body.trim(),
-    media: (section.media ?? []).map(item => ({
-      ...item, alt: item.alt?.trim() ?? '', caption: item.caption?.trim() ?? '',
-    })),
+    placement: section.placement,
+    style: section.style,
+    colorTheme: section.colorTheme,
+    summary: section.summary?.trim() ?? '',
+    media: (section.media ?? [])
+      .filter(item => !isNewsletterRichBody(section.body) || referencedMediaIds(section.body).has(item.id))
+      .map(item => ({
+        ...item, alt: item.alt?.trim() ?? '', caption: item.caption?.trim() ?? '',
+      })),
   })).filter(section => section.heading || section.body || section.media.length)
+// Older newsletters may only contain the legacy sections array. Adapt them
+// for editing without changing what is stored until the user explicitly saves.
+const forEditing = (issue: NewsletterIssue): NewsletterIssue => ({
+  ...issue,
+  details: issue.details.length > 0 ? issue.details.map(section => ({
+    ...section,
+    summary: section.summary ?? issue.sections.find(item => item.heading.trim().toLowerCase() === section.heading.trim().toLowerCase())?.body ?? '',
+  })) : issue.sections.map(section => ({
+    ...section,
+    placement: 'main' as const,
+    summary: section.body ? '' : undefined,
+  })),
+})
 const normalize = (issue: NewsletterIssue): NewsletterIssue => ({
   ...issue,
   title: issue.title.trim(), description: issue.description.trim(),
   footer: issue.footer.trim(),
-  sections: cleanSections(issue.sections), details: cleanSections(issue.details),
+  sections: cleanSections(issue.details.filter(section => newsletterSectionPlacement(section) === 'main').map(section => ({
+    heading: section.heading,
+    body: section.summary ?? issue.sections.find(item => item.heading.trim().toLowerCase() === section.heading.trim().toLowerCase())?.body ?? '',
+    media: [],
+  }))),
+  details: orderNewsletterDetails(cleanSections(issue.details)),
 })
+
+// "Did You Know?" is a factual format, so each fact needs direct evidence.
+// Check each paragraph/list item, not just whether the section contains any link.
+const didYouKnowHasSources = (section: NewsletterSection): boolean => {
+  const document = new DOMParser().parseFromString(
+    sanitizedNewsletterHtml(newsletterBodyHtml(section.body)), 'text/html'
+  )
+  const facts = Array.from(document.body.querySelectorAll('p, li, blockquote'))
+    .filter(node => !node.closest('li') || node.tagName === 'LI')
+    .filter(node => Boolean(node.textContent?.trim()))
+  return facts.length > 0 && facts.every(fact =>
+    Array.from(fact.querySelectorAll('a[href]')).some(link => {
+      try {
+        return ['https:', 'http:'].includes(new URL(link.getAttribute('href') ?? '').protocol)
+      } catch {
+        return false
+      }
+    })
+  )
+}
+
 const validIssueId = (id: string) => /^\d{4}-(0[1-9]|1[0-2])$/.test(id)
 const defaultMonth = (id: string) => {
   if (!validIssueId(id)) return ''
@@ -57,7 +116,16 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [preview, setPreview] = useState(false)
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [videoInputs, setVideoInputs] = useState<Record<string, string>>({})
+  const [refreshingIssue, setRefreshingIssue] = useState(false)
+  const editorRefs = useRef<Record<number,NewsletterEditorHandle|null>>({})
+  const [mediaTarget, setMediaTarget] = useState<{ field: 'sections' | 'details'; sectionIndex: number; mediaIndex?: number } | null>(null)
+  const [mediaMode, setMediaMode] = useState<'upload' | 'embed' | 'google-maps'>('upload')
+  const [mediaFile, setMediaFile] = useState<File | null>(null)
+  const [mediaUrl, setMediaUrl] = useState('')
+  const [mediaAlt, setMediaAlt] = useState('')
+  const [mediaCaption, setMediaCaption] = useState('')
+  const [mediaAlign, setMediaAlign] = useState<'left' | 'right'>('left')
+  const [mediaError, setMediaError] = useState('')
   const [newIssue, setNewIssue] = useState(true)
 
   useEffect(() => {
@@ -101,6 +169,51 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setMessage('')
   }
   useEffect(() => { if (authorized && !needsPasswordChange) void loadIssues() }, [authorized, needsPasswordChange])
+
+  // The issue list is a snapshot. Content can be edited from other sessions
+  // or directly in Supabase, so a preview must be able to retrieve the current
+  // saved version rather than continue showing its stale in-memory copy.
+  const readSavedIssue = async (id: string) => {
+    const { data, error } = await supabase.from('newsletters')
+      .select('id,month,number,title,description,sections,details,footer,status,published_at')
+      .eq('id', id).single()
+    if (error || !data) {
+      setMessage(error?.message || 'Could not reload the saved newsletter.')
+      return null
+    }
+    const fresh = data as NewsletterIssue
+    setList(current => current.map(issue => issue.id === fresh.id ? fresh : issue))
+    return fresh
+  }
+
+  const reloadSavedIssue = async () => {
+    if (newIssue || busy || uploading || refreshingIssue) return
+    if (!window.confirm('Reload the latest saved newsletter from Supabase? Any unsaved edits in this editor will be discarded.')) return
+    setRefreshingIssue(true)
+    try {
+      const fresh = await readSavedIssue(draft.id)
+      if (!fresh) return
+      setDraft(forEditing(fresh))
+      setMessage('Latest saved newsletter loaded from Supabase.')
+    } finally {
+      setRefreshingIssue(false)
+    }
+  }
+
+  const selectSavedIssue = async (issue: NewsletterIssue) => {
+    if (refreshingIssue || busy || uploading) return
+    setRefreshingIssue(true)
+    try {
+      const fresh = await readSavedIssue(issue.id)
+      if (!fresh) return
+      setDraft(forEditing(fresh))
+      setNewIssue(false)
+      setPreview(false)
+      setMessage('')
+    } finally {
+      setRefreshingIssue(false)
+    }
+  }
 
   const signIn = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -256,16 +369,33 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
 
   const updateField = <K extends keyof NewsletterIssue>(field: K, value: NewsletterIssue[K]) =>
     setDraft(current => ({ ...current, [field]: value }))
-  const updateSection = (field: 'sections' | 'details', index: number, property: keyof NewsletterSection, value: string) =>
-    setDraft(current => ({ ...current, [field]: current[field].map((section, i) => i === index ? { ...section, [property]: value } : section) }))
-  const addSection = (field: 'sections' | 'details') =>
-    setDraft(current => ({ ...current, [field]: [...current[field], { heading: '', body: '', media: [] }] }))
+  const updateSection = (field: 'sections' | 'details', index: number, property: 'heading' | 'body' | 'placement' | 'style' | 'colorTheme' | 'summary', value: string) =>
+    setDraft(current => ({
+      ...current, [field]: current[field].map((section,i) => {
+        if(i!==index)return section
+        if(property!=='body')return {...section,[property]:value}
+        // If the editor chip is deleted manually, do not resurrect its media
+        // from the attachment array after a save or preview refresh.
+        const previously=referencedMediaIds(section.body)
+        const now=referencedMediaIds(value)
+        return {...section,body:value,
+          media:(section.media??[]).filter(item=>!previously.has(item.id)||now.has(item.id))}
+      }),
+    }))
+  const addSidebarStory = () =>
+    setDraft(current => ({ ...current, details: [...current.details, { heading: '', body: '', media: [], placement: 'sidebar', style: 'default', colorTheme: 'default' }] }))
   const removeSection = (field: 'sections' | 'details', index: number) =>
     setDraft(current => ({ ...current, [field]: current[field].filter((_, i) => i !== index) }))
   const changeMedia = (field: 'sections' | 'details', sectionIndex: number, mediaIndex: number, patch: Partial<NewsletterMedia>) =>
     setDraft(current => ({
       ...current, [field]: current[field].map((section, index) => index !== sectionIndex ? section : ({
         ...section, media: (section.media ?? []).map((item, i) => i === mediaIndex ? { ...item, ...patch } : item),
+      })),
+    }))
+  const replaceMedia = (field: 'sections' | 'details', sectionIndex: number, mediaIndex: number, replacement: NewsletterMedia) =>
+    setDraft(current => ({
+      ...current, [field]: current[field].map((section,index)=>index!==sectionIndex ? section : ({
+        ...section, media:(section.media??[]).map((item,i)=>i===mediaIndex ? replacement : item),
       })),
     }))
   const addMedia = (field: 'sections' | 'details', sectionIndex: number, item: NewsletterMedia) =>
@@ -277,57 +407,135 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const removeMedia = (field: 'sections' | 'details', sectionIndex: number, mediaIndex: number) =>
     setDraft(current => ({
       ...current, [field]: current[field].map((section, index) => index !== sectionIndex ? section : ({
-        ...section, media: (section.media ?? []).filter((_, i) => i !== mediaIndex),
+        ...section,
+        media:(section.media??[]).filter((_, i) => i !== mediaIndex),
+        body:removeMediaFromBody(section.body,section.media?.[mediaIndex]?.id ?? ''),
       })),
     }))
-  const uploadMedia = async (field: 'sections' | 'details', sectionIndex: number, file: File) => {
-    if (!validIssueId(draft.id)) { setMessage('Enter a valid issue ID (YYYY-MM) before uploading.'); return }
+  const openMediaDialog = (field: 'sections' | 'details', sectionIndex: number, mediaIndex?: number) => {
+    const existing = mediaIndex == null ? undefined : draft[field][sectionIndex]?.media?.[mediaIndex]
+    setMediaTarget({ field, sectionIndex, mediaIndex })
+    setMediaMode(existing?.url ? (externalGoogleMapsVideoUrl(existing.url) ? 'google-maps' : 'embed') : 'upload')
+    setMediaFile(null)
+    setMediaUrl(existing?.url ?? '')
+    setMediaAlt(existing?.alt ?? '')
+    setMediaCaption(existing?.caption ?? '')
+    setMediaAlign(existing?.align === 'right' ? 'right' : 'left')
+    setMediaError('')
+  }
+  const closeMediaDialog = () => {
+    if (uploading) return
+    setMediaTarget(null)
+    setMediaFile(null)
+    setMediaError('')
+  }
+  const saveMediaDialog = async () => {
+    if (!mediaTarget || uploading) return
+    const { field, sectionIndex, mediaIndex } = mediaTarget
+    const existing = mediaIndex == null ? undefined : draft[field][sectionIndex]?.media?.[mediaIndex]
+    const saveItem = (item:NewsletterMedia) => {
+      if (existing && mediaIndex != null) replaceMedia(field,sectionIndex,mediaIndex,item)
+      else {
+        addMedia(field,sectionIndex,item)
+        if(field==='details')editorRefs.current[sectionIndex]?.insertMedia(item.id)
+      }
+    }
+    if (mediaMode === 'embed' || mediaMode === 'google-maps') {
+      const url = mediaUrl.trim()
+      if (mediaMode === 'embed' && !embeddedVideoUrl(url)) {
+        setMediaError('Enter a valid HTTPS YouTube or Vimeo video URL.')
+        return
+      }
+      if (mediaMode === 'google-maps' && !externalGoogleMapsVideoUrl(url)) {
+        setMediaError('Paste the Google Search video link containing the selected Maps clip.')
+        return
+      }
+      saveItem({
+        id:existing?.id ?? crypto.randomUUID(),type:'video',url,
+        alt:mediaAlt.trim()||'Newsletter video',caption:mediaCaption.trim(),align:mediaAlign,
+      })
+      setMessage(mediaMode === 'google-maps' ? 'Google Maps link preview saved. It opens on Google Maps.' : 'Video saved in the article.')
+      closeMediaDialog()
+      return
+    }
+    // When editing an existing upload, changing only title/caption should not
+    // force another upload. Selecting a file genuinely REPLACES that file.
+    if (!mediaFile && existing?.storagePath) {
+      saveItem({...existing,alt:mediaAlt.trim(),caption:mediaCaption.trim(),align:mediaAlign})
+      closeMediaDialog()
+      return
+    }
+    const file = mediaFile
+    if (!file) { setMediaError('Choose an image or video file to upload or replace the existing attachment.'); return }
+    if (!validIssueId(draft.id)) { setMediaError('Enter a valid issue ID (YYYY-MM) before uploading.'); return }
     const type = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : null
     const accepted = ['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm']
-    if (!type || !accepted.includes(file.type)) { setMessage('Use JPG, PNG, WebP, GIF, MP4 or WebM files.'); return }
+    if (!type || !accepted.includes(file.type)) {
+      setMediaError('Use a JPG, PNG, WebP, GIF, MP4, or WebM file.')
+      return
+    }
     if (file.size > (type === 'image' ? 8 : 30) * 1024 * 1024) {
-      setMessage(type === 'image' ? 'Images must be 8 MB or smaller.' : 'Videos must be 30 MB or smaller. For longer videos, paste a YouTube or Vimeo URL.')
+      setMediaError(type === 'image' ? 'Images must be 8 MB or smaller.' : 'Videos must be 30 MB or smaller.')
       return
     }
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-100) || 'upload'
     const storagePath = `${draft.id}/${crypto.randomUUID()}-${safeName}`
-    setUploading(true); setMessage('')
+    setUploading(true)
+    setMediaError('')
     try {
-      const { error } = await supabase.storage.from('newsletter-media')
-        .upload(storagePath, file, { contentType: file.type, upsert: false })
-      if (error) { setMessage(`Upload failed: ${error.message}`); return }
-      addMedia(field, sectionIndex, {
-        id: crypto.randomUUID(), type, storagePath,
-        alt: type === 'image' ? file.name.replace(/\.[^.]+$/, '') : 'Newsletter video',
-        caption: '',
+      const { error } = await supabase.storage.from('newsletter-media').upload(storagePath, file, {
+        contentType: file.type, upsert: false,
       })
-      setMessage('Media uploaded. Save the newsletter draft to keep the attachment.')
+      if (error) { setMediaError(`Upload failed: ${error.message}`); return }
+      saveItem({
+        id:existing?.id ?? crypto.randomUUID(),type,storagePath,
+        alt:mediaAlt.trim() || (type === 'image' ? file.name.replace(/\\.[^.]+$/, '') : 'Newsletter video'),
+        caption:mediaCaption.trim(),align:mediaAlign,
+      })
+      setMessage(existing ? 'File replaced. Save the draft to keep this change.' : 'Media inserted. Save the draft to keep this change.')
+      setMediaTarget(null)
+      setMediaFile(null)
     } catch {
-      setMessage('Upload failed. Please try again.')
+      setMediaError('Upload failed. Please try again.')
     } finally {
       setUploading(false)
     }
   }
-  const addVideoLink = (field: 'sections' | 'details', sectionIndex: number) => {
-    const key = `${field}-${sectionIndex}`
-    const url = videoInputs[key]?.trim() ?? ''
-    if (!embeddedVideoUrl(url)) { setMessage('Use a valid HTTPS YouTube or Vimeo video link.'); return }
-    addMedia(field, sectionIndex, { id: crypto.randomUUID(), type: 'video', url, alt: 'Newsletter video', caption: '' })
-    setVideoInputs(current => ({ ...current, [key]: '' }))
-    setMessage('Video added. Save the newsletter to keep it.')
-  }
+  const addArticleSection = () =>
+    setDraft(current => ({
+      ...current,
+      details: [...current.details, { heading: '', body: '', media: [], placement: 'main', style: 'default', colorTheme: 'default' }],
+    }))
   const chooseTemplate = (type: Template) => {
     const preset = presets[type]
-    if ((draft.sections.some(section => section.heading || section.body) || draft.details.some(section => section.heading || section.body)) &&
-        !window.confirm('Replace the current sections with this template?')) return
-    setDraft(current => ({ ...current, sections: preset.sections.map(section => ({ ...section })), details: preset.details.map(section => ({ ...section })) }))
+    if ((draft.sections.some(section => section.heading || section.body || section.media?.length) ||
+         draft.details.some(section => section.heading || section.body || section.media?.length)) &&
+        !window.confirm('Replace the current article and contents with this template? Any unsaved section text and attachments in the editor will be lost.')) return
+    setDraft(current => ({
+      ...current,
+      sections: [],
+      details: preset.headings.map(heading => ({ heading, body: '', media: [], placement: 'main', style: 'default', colorTheme: 'default' })),
+    }))
+    setMessage('Template applied to this draft. Add the article text before publishing.')
   }
   const save = async (status: NewsletterIssue['status']) => {
     const next = normalize({ ...draft, status, published_at: status === 'published' ? draft.published_at || new Date().toISOString() : null })
     if (!validIssueId(next.id)) { setMessage('Use a valid issue month in YYYY-MM format.'); return }
     if (!next.title || !next.month || !next.number) { setMessage('Issue month, number, and title are required.'); return }
-    if (status === 'published' && (!next.description || !next.sections.length || next.sections.some(section => !section.heading || !section.body))) {
-      setMessage('Complete the description and all story sections before publishing.'); return
+    const article = next.details.filter(section => section.placement !== 'sidebar')
+    if (status === 'published' && (!next.description || !article.length || article.some(section => !section.heading))) {
+      setMessage('Complete the introduction and main article section headings before publishing.'); return
+    }
+    if (status === 'published' && article.some(section => !section.heading || !section.body)) {
+      setMessage('Complete each main article heading and its content before publishing.'); return
+    }
+    if (status !== 'draft') {
+      const uncited = next.details.find(section =>
+        newsletterSectionStyle(section) === 'did-you-know' && !didYouKnowHasSources(section))
+      if (uncited) {
+        setMessage('Each fact in “' + (uncited.heading || 'Did You Know?') + '” needs a clickable source link before review or publishing.')
+        return
+      }
     }
     if (uploading) { setMessage('Finish uploading attachments before saving.'); return }
     if (status === 'published' && !window.confirm('Publish this issue to the public newsletter page?')) return
@@ -428,16 +636,34 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       <aside className="studio-panel studio-sidebar">
         <button className="studio-primary" type="button" onClick={() => { setDraft(emptyIssue()); setNewIssue(true); setPreview(false); setMessage('') }}>+ New issue</button>
         <p className="studio-kicker">ALL ISSUES · INCLUDING HIDDEN</p>
-        {list.map(issue => <button key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => { setDraft(issue); setNewIssue(false); setPreview(false); setMessage('') }}>
-          <strong>{issue.month}</strong><span>{issue.title}</span><small>{issue.status.replace('_', ' ')}</small>
+        {list.map(issue => <button key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => void selectSavedIssue(issue)} disabled={refreshingIssue}>
+          <span className="studio-issue-title">{issue.title || 'Untitled issue'}</span>
+          <span className="studio-issue-meta">
+            <span className="studio-issue-month">{issue.month}</span>
+            <span className={`studio-issue-state studio-issue-state-${issue.status}`}>
+              {issue.status === 'published' ? <CheckCircleOutlineIcon fontSize="inherit" aria-hidden="true" />
+                : issue.status === 'in_review' ? <ScheduleOutlinedIcon fontSize="inherit" aria-hidden="true" />
+                : <EditOutlinedIcon fontSize="inherit" aria-hidden="true" />}
+              <span>{issue.status === 'in_review' ? 'In review' : issue.status === 'published' ? 'Published' : 'Draft'}</span>
+            </span>
+          </span>
         </button>)}
       </aside>
       <div className="studio-main">
         <div className="studio-actions">
           <div className="studio-tabs"><button type="button" className={!preview ? 'active' : ''} onClick={() => setPreview(false)}>Edit</button><button type="button" className={preview ? 'active' : ''} onClick={() => setPreview(true)}>Preview</button></div>
-          <span className="studio-status">{draft.status.replace('_', ' ')}</span>
+          <div className="studio-actions-right">
+            {!newIssue && <UiButton size="small" variant="outlined" disabled={busy || uploading || refreshingIssue}
+              onClick={() => void reloadSavedIssue()}>
+              {refreshingIssue ? 'Reloading…' : 'Reload saved issue'}
+            </UiButton>}
+            <span className="studio-status">{draft.status.replace('_', ' ')}</span>
+          </div>
         </div>
-        {preview ? <div className="studio-preview"><IssueView issue={draft} /></div> : <div className="studio-panel studio-form">
+        {preview ? <div className="studio-preview-area">
+          <p className="studio-layout-description">Article preview: main content and side panel, with the same article styling as the published page. The issue index is hidden here. Nothing is published until you choose “Publish issue.”</p>
+          <UiBox className="studio-preview"><IssueView issue={draft} layout="article" editorPreview /></UiBox>
+        </div> : <div className="studio-panel studio-form">
           <h2>Issue details</h2>
           <div className="studio-fields-two">
             <label>Issue ID (YYYY-MM)<input value={draft.id} disabled={!newIssue} onChange={e => { const id = e.target.value; setDraft(current => ({ ...current, id, month: defaultMonth(id) || current.month })) }} /></label>
@@ -446,44 +672,90 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <label>Issue month<input value={draft.month} maxLength={40} onChange={e => updateField('month', e.target.value)} /></label>
           <label>Headline<input value={draft.title} maxLength={160} onChange={e => updateField('title', e.target.value)} placeholder="What happened this month?" /></label>
           <label>Introduction<textarea rows={3} maxLength={800} value={draft.description} onChange={e => updateField('description', e.target.value)} placeholder="A short overview of the issue…" /></label>
-          <div className="studio-template"><h2>Start from a template</h2><div className="studio-template-options">{(Object.keys(presets) as Template[]).map(type => <button key={type} type="button" onClick={() => chooseTemplate(type)}>{presets[type].name}</button>)}</div></div>
-          {(['sections', 'details'] as const).map(field => <div key={field} className="studio-section-group">
-            <div className="studio-group-head"><div><h2>{field === 'sections' ? 'The story' : 'Additional sections'}</h2><p>{field === 'sections' ? 'The main summary sections shown beside the headline.' : 'Longer details shown below the introduction.'}</p></div><button type="button" className="studio-secondary" onClick={() => addSection(field)}>+ Add</button></div>
-            {draft[field].map((section, index) => <div className="studio-section" key={index}>
-              <div className="studio-section-top"><strong>SECTION {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection(field, index)}>Remove</button></div>
-              <label>Section title<input value={section.heading} maxLength={160} onChange={e => updateSection(field, index, 'heading', e.target.value)} /></label>
-              <label>Content<textarea rows={5} value={section.body} maxLength={8000} onChange={e => updateSection(field, index, 'body', e.target.value)} /></label>
-              <div className="studio-media-editor">
-                <div className="studio-media-heading"><strong>PHOTOS & VIDEOS</strong><span>Attach media to this section</span></div>
-                {(section.media ?? []).map((item, mediaIndex) =>
-                  <div className="studio-media-item" key={item.id}>
-                    <div className="studio-media-item-preview"><NewsletterMediaView media={item} /></div>
-                    <div className="studio-media-item-controls">
-                      <label>{item.type === 'image' ? 'Image description (alt text)' : 'Video title'}<input maxLength={220} value={item.alt ?? ''} onChange={e => changeMedia(field,index,mediaIndex,{alt:e.target.value})} /></label>
-                      <label>Caption<input maxLength={500} value={item.caption ?? ''} onChange={e => changeMedia(field,index,mediaIndex,{caption:e.target.value})} placeholder="Optional caption or credit" /></label>
-                      <button type="button" className="studio-media-remove" onClick={() => removeMedia(field,index,mediaIndex)}>Remove from newsletter</button>
-                    </div>
-                  </div>
-                )}
-                <div className="studio-media-add">
-                  <label className="studio-file-upload">{uploading ? 'Uploading…' : '+ Upload photo or video'}
-                    <input type="file" disabled={uploading} accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" onChange={event => {
-                      const file = event.target.files?.[0]
-                      if (file) void uploadMedia(field, index, file)
-                      event.target.value = ''
-                    }} />
-                  </label>
-                  <small>JPG, PNG, WebP or GIF up to 8 MB · MP4 or WebM up to 30 MB</small>
-                </div>
-                <div className="studio-media-link">
-                  <label>Or embed a YouTube / Vimeo video
-                    <input type="url" placeholder="https://www.youtube.com/watch?v=…" value={videoInputs[`${field}-${index}`] ?? ''} onChange={e => setVideoInputs(current => ({ ...current, [`${field}-${index}`]: e.target.value }))} />
-                  </label>
-                  <button type="button" className="studio-secondary" onClick={() => addVideoLink(field,index)}>Add video</button>
-                </div>
+          <div className="studio-template">
+            <h2>Start with an outline <span className="studio-optional">(optional)</span></h2>
+            <p className="studio-template-help">Choose a starting outline for your article and its matching contents index. Choosing another outline replaces the sections currently in this draft.</p>
+            <div className="studio-template-options">{(Object.keys(presets) as Template[]).map(type =>
+              <button key={type} type="button" onClick={() => chooseTemplate(type)} aria-label={`Use ${presets[type].name} outline`}>
+                <strong>{presets[type].name}</strong><span>{presets[type].description}</span>
+              </button>)}</div>
+          </div>
+          <div className="studio-section-group">
+            <div className="studio-group-head"><div>
+              <h2>Newsletter content & side panel</h2>
+              <p>Each main-content section is automatically linked under “In This Issue.” Write your content and choose its location and appearance here.</p>
+            </div><div className="studio-group-buttons">
+              <button type="button" className="studio-secondary" onClick={addArticleSection}>+ Add article section</button>
+              <button type="button" className="studio-secondary" onClick={addSidebarStory}>+ Add side panel section</button>
+            </div></div>
+            {draft.details.map((section, index) => <div className="studio-section" key={index}>
+
+              <div className="studio-section-top"><strong>{newsletterSectionPlacement(section) === 'sidebar' ? 'SIDE PANEL SECTION' : 'CONTENT SECTION'} {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeSection('details', index)}>Remove</button></div>
+              <label>Section heading<input value={section.heading} maxLength={160} onChange={e => updateSection('details', index, 'heading', e.target.value)} /></label>
+              <div className="studio-section-options">
+                <UiSelect
+                  className="studio-placement-select"
+                  label="Location"
+                  value={newsletterSectionPlacement(section)}
+                  onValueChange={value => updateSection('details', index, 'placement', value)}
+                  options={[
+                    { value: 'main', label: 'Main content' },
+                    { value: 'sidebar', label: 'Side panel' },
+                  ]}
+                />
+                <UiSelect
+                  className="studio-section-style-select"
+                  label="Section style"
+                  value={newsletterSectionStyle(section)}
+                  onValueChange={value => updateSection('details', index, 'style', value)}
+                  options={[
+                    { value: 'default', label: 'Default' },
+                    { value: 'club-corner', label: 'Club Corner' },
+                    { value: 'did-you-know', label: 'Did You Know?' },
+                    { value: 'halloween', label: 'Halloween (animated)' },
+                    { value: 'thanksgiving', label: 'Thanksgiving (animated 3D horn)' },
+                  ]}
+                />
+                <UiSelect
+                  className="studio-color-theme-select"
+                  label="Color theme"
+                  value={newsletterColorTheme(section)}
+                  onValueChange={value => updateSection('details', index, 'colorTheme', value)}
+                  options={[
+                    { value: 'default', label: 'Default' },
+                    { value: 'sage', label: 'Sage green' },
+                    { value: 'blue', label: 'Soft blue' },
+                    { value: 'amber', label: 'Warm amber' },
+                    { value: 'lavender', label: 'Lavender' },
+                  ]}
+                />
+              </div>
+              {newsletterSectionPlacement(section) === 'main' && <label>Optional index summary (saved, currently hidden)<textarea rows={2} maxLength={800} value={section.summary ?? draft.sections.find(item => item.heading === section.heading)?.body ?? ''} onChange={e => updateSection('details', index, 'summary', e.target.value)} /></label>}
+              {newsletterSectionStyle(section) === 'did-you-know' &&
+                <p className="studio-template-help">Evidence required: add a direct source link for each factual paragraph using the link tool. Uncited facts cannot be sent for review or published.</p>}
+              <NewsletterRichEditor
+                key={draft.id + ':' + index}
+                ref={instance => {editorRefs.current[index]=instance}}
+                value={section.body}
+                onChange={value => updateSection('details',index,'body',value)}
+                onAddMedia={() => openMediaDialog('details',index)}
+                onEditMedia={id=>{
+                  const mediaIndex=(section.media??[]).findIndex(item=>item.id===id)
+                  if(mediaIndex>=0)openMediaDialog('details',index,mediaIndex)
+                }}
+              />
+              <div className="studio-inline-media">
+                {(section.media ?? []).length > 0 && <div className="studio-attachment-list" aria-label="Attached media">
+                  {(section.media ?? []).map((item, mediaIndex) => <div className="studio-attachment" key={item.id}>
+                    <span className="studio-attachment-name">{item.type === 'image' ? 'Photo' : 'Video'}{item.caption ? ` · ${item.caption}` : item.alt ? ` · ${item.alt}` : ''}</span>
+                    <button type="button" className="studio-attachment-action" onClick={() => openMediaDialog('details',index,mediaIndex)}>Edit / Replace</button>
+                    <button type="button" className="studio-attachment-action" title="First place the cursor in the article where this media should go" onClick={()=>editorRefs.current[index]?.moveMedia(item.id)}>Move to cursor</button>
+                    <button type="button" className="studio-attachment-action studio-attachment-remove" onClick={() => removeMedia('details',index,mediaIndex)}>Remove</button>
+                  </div>)}
+                </div>}
               </div>
             </div>)}
-          </div>)}
+          </div>
           <label>Footer or credits<textarea rows={2} value={draft.footer} maxLength={800} onChange={e => updateField('footer', e.target.value)} /></label>
         </div>}
         <div className="studio-savebar">
@@ -491,6 +763,51 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
           <button type="button" className="studio-secondary" disabled={busy || uploading} onClick={() => void save('in_review')}>Send for review</button>
           <button type="button" className="studio-primary" disabled={busy || uploading} onClick={() => void save('published')}>{busy ? 'Saving…' : 'Publish issue'}</button>
         </div>
+        <UiDialog open={mediaTarget !== null} onClose={closeMediaDialog} fullWidth maxWidth="sm" aria-labelledby="studio-media-dialog-title">
+          <UiDialogTitle id="studio-media-dialog-title">{mediaTarget?.mediaIndex == null ? 'Add photo or video' : 'Edit or replace photo or video'}</UiDialogTitle>
+          <UiDialogContent dividers>
+            <div className="studio-media-dialog-fields">
+              <UiSelect
+                label="Media source"
+                value={mediaMode}
+                onValueChange={value => {setMediaMode(value as 'upload' | 'embed' | 'google-maps');setMediaError('')}}
+                options={[{value:'upload',label:'Upload photo or video'},{value:'embed',label:'Embed YouTube or Vimeo video'},{value:'google-maps',label:'Link to Google Maps contributor video'}]}
+              />
+              {(mediaMode === 'upload'
+                ? <div className="studio-dialog-file">
+                    <MediaFilePicker file={mediaFile} disabled={uploading} onFileChange={file => {setMediaFile(file);setMediaError('')}} />
+                    <small>{mediaTarget?.mediaIndex == null ? 'Images: JPG, PNG, WebP, GIF up to 8 MB. Videos: MP4, WebM up to 30 MB.' : 'Choose a new file to replace this attachment, or leave it empty to edit the caption. Original aspect ratio will be preserved.'}</small>
+                  </div>
+                : <UiTextField fullWidth label="Video URL" type="url" size="small" value={mediaUrl}
+                    onChange={event => setMediaUrl(event.target.value)} placeholder={mediaMode === 'google-maps' ? 'https://www.google.com/search?q=...#lpg=...' : 'https://www.youtube.com/watch?v=…'} />)}
+              {mediaMode === 'google-maps' && <p className="studio-template-help">Google Maps does not provide an embeddable player for these clips. This adds a labeled video card linked to the original, not an uploaded copy.</p>}
+              <UiTextField fullWidth size="small" label={mediaMode === 'embed' || mediaMode === 'google-maps' || mediaFile?.type.startsWith('video/') ? 'Video title' : 'Image description (alt text)'}
+                helperText="Describe the media for accessibility." value={mediaAlt} onChange={event => setMediaAlt(event.target.value)} inputProps={{maxLength:220}} />
+              <UiSelect
+                label="Media alignment"
+                value={mediaAlign}
+                onValueChange={value=>setMediaAlign(value === 'right' ? 'right' : 'left')}
+                options={[{value:'left',label:'Left — text flows on the right'},{value:'right',label:'Right — text flows on the left'}]}
+              />
+              <p className="studio-template-help">The photo or video keeps its original proportions. To change its position, place the text cursor where it should appear and use Move to cursor beside the attachment.</p>
+              <UiTextField fullWidth size="small" label="Caption or credit (optional)" value={mediaCaption}
+                onChange={event => setMediaCaption(event.target.value)} inputProps={{maxLength:500}} multiline minRows={2} />
+              {mediaError && <p className="studio-media-dialog-error" role="alert">{mediaError}</p>}
+            </div>
+          </UiDialogContent>
+          <UiDialogActions>
+            {mediaTarget?.mediaIndex != null && <button type="button" className="studio-secondary studio-remove-media-dialog" disabled={uploading}
+              onClick={()=>{
+                removeMedia(mediaTarget.field,mediaTarget.sectionIndex,mediaTarget.mediaIndex!)
+                closeMediaDialog()
+                setMessage('Media removed from the article. Save draft to keep the change.')
+              }}>Remove media</button>}
+            <button type="button" className="studio-secondary" disabled={uploading} onClick={closeMediaDialog}>Cancel</button>
+            <button type="button" className="studio-primary" disabled={uploading} onClick={() => void saveMediaDialog()}>
+              {uploading ? 'Uploading…' : mediaTarget?.mediaIndex == null ? 'Add to section' : 'Save changes'}
+            </button>
+          </UiDialogActions>
+        </UiDialog>
         {message && <p className="studio-message" role="status">{message}</p>}
       </div>
     </div>

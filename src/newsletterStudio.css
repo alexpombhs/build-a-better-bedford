@@ -21,6 +21,9 @@
 .studio-issue.selected{background:#edf5ef;border-color:#639878}
 .studio-issue strong{font-size:13px}.studio-issue span{color:#506557;font-size:12px}.studio-issue small{text-transform:uppercase;color:#5c856b;font-size:10px;letter-spacing:.07em}
 .studio-main{min-width:0}.studio-actions{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.studio-actions-right{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px}
+@media(max-width:550px){.studio-actions{align-items:flex-start;gap:10px;flex-wrap:wrap}.studio-actions-right{justify-content:flex-start}}
+
 .studio-tabs{display:flex;gap:3px;background:#edf2ed;padding:4px;border-radius:10px}.studio-tabs button{padding:9px 20px;border:0;background:transparent;border-radius:7px;cursor:pointer;font-weight:750;color:#415e49}
 .studio-tabs button.active{background:white;box-shadow:0 1px 5px #153b2017}
 .studio-status{text-transform:uppercase;font-size:10px;letter-spacing:.12em;font-weight:800;color:#4a8060}
@@ -45,7 +48,8 @@
 .studio-message{padding:10px;color:#245a3c}
 .studio-login{max-width:510px;margin:8vh auto;box-shadow:0 5px 30px #123a1910;border:1px solid #dee9df;padding:32px;border-radius:16px}
 .studio-login form{display:grid;gap:14px;margin-top:20px}
-.studio-preview{border:1px solid #dbe5dc;border-radius:12px;padding:22px;overflow:hidden}
+/* Preview uses the same 8px spacing step as the site's MUI/atomic layout. */
+.studio-preview{--bbb-newsletter-preview-gutter:8px;border:1px solid #dbe5dc;border-radius:12px;padding:var(--bbb-newsletter-preview-gutter);overflow:hidden}
 .studio-preview .newsletter-clean{height:auto;min-height:350px;grid-template-columns:1fr 1fr;gap:25px}
 .studio-preview .newsletter-intro h1{font-size:clamp(26px,3vw,46px)!important}
 .studio-preview .newsletter-expand-panel{padding:0}
@@ -128,4 +132,366 @@
 .newsletter-page .newsletter-disclaimer p {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+/* Editorial studio: distinguish outlines, full article text, and navigation. */
+.studio-template {
+  padding:16px 18px;
+  background:#f7faf7;
+  border-color:#e1e9e2;
+}
+.studio-template h2 {
+  font-size:16px;
+  font-weight:600;
+  margin:0 0 6px;
+}
+.studio-optional {
+  font-size:12px;
+  font-weight:400;
+  color:#708475;
+}
+.studio-template-help {
+  margin:0 0 13px;
+  color:#63776a;
+  font-size:13px;
+  line-height:1.5;
+}
+.studio-template-options {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+.studio-template-options button {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  align-items:flex-start;
+  text-align:left;
+  padding:12px;
+  border-radius:9px;
+  min-width:0;
+  font-weight:400;
+  line-height:1.4;
+}
+.studio-template-options button strong {
+  color:#254a34;
+  font-size:13px;
+  font-weight:600;
+}
+.studio-template-options button span {
+  color:#6b7f71;
+  font-size:12px;
+}
+.studio-section-group .studio-group-head h2 {font-size:17px;font-weight:600;margin-bottom:5px}
+.studio-section-group .studio-group-head p {font-size:13px;line-height:1.5;max-width:58ch}
+.studio-section-group .studio-section {background:#fff}
+@media(max-width:800px){
+  .studio-template-options {grid-template-columns:1fr}
+}
+
+/* The editor separates a section's placement from its visual treatment. */
+.studio-section-options {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  padding:6px 0 2px;
+  align-items:start;
+}
+.studio-section-options .bbb-ui-select {
+  min-width:0;
+}
+.studio-section-options .MuiFormLabel-root {
+  font-weight:500;
+}
+.studio-section-options .MuiSelect-select {
+  font-size:14px;
+  font-weight:400;
+}
+@media(max-width:620px) {
+  .studio-section-options {grid-template-columns:minmax(0,1fr);}
+}
+
+/* Keep the issue browser fixed in the studio while previewing the article.
+   The article uses its normal published two-column structure inside the editor. */
+.studio-preview-area,
+.studio-preview,
+.studio-preview .newsletter-page,
+.studio-preview .newsletter-clean,
+.studio-preview .newsletter-editorial-grid {
+  width:100%;
+  min-width:0;
+}
+/* Keep the preview's article column aligned with the card edge.
+   Spacing belongs to the preview organism, not each story or paragraph. */
+.studio-preview .newsletter-editorial-main,
+.studio-preview .newsletter-expand-panel,
+.studio-preview .newsletter-expand-panel > .design-problem,
+.studio-preview .newsletter-editorial-main > .newsletter-intro {
+  margin-inline:0;
+  padding-inline:0;
+}
+.studio-preview .newsletter-expand-panel > .design-problem > .expand-grid {
+  margin-inline:0;
+  padding-inline:0;
+}
+/* No duplicate editor-only column sizing here. The shared newsletter
+   editorial organism owns layout in both preview and the published view. */
+/* The public archive supplies these title rules, so apply them to the
+   standalone editor preview too without adding the archive itself. */
+.studio-preview .newsletter-page .newsletter-intro h1 {
+  font-family:inherit!important;
+  font-size:clamp(36px,4vw,56px)!important;
+  font-weight:750!important;
+  line-height:1.12!important;
+  letter-spacing:-.035em!important;
+}
+/* The shared @container breakpoint in newsletterLayouts.css stacks the
+   sidebar in narrow previews, independent of browser viewport size. */
+
+/* Location, style, and color are independent controls. */
+.studio-section-options {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+@media(max-width:850px) {
+  .studio-section-options {grid-template-columns:minmax(0,1fr);}
+}
+
+/* Compact media tool; details are now handled in a focused dialog. */
+.studio-inline-media {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:10px;
+  margin-top:2px;
+}
+.studio-add-media-button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:8px 11px;
+  color:#365f49;
+  background:#fff;
+  border:1px solid #cddcd0;
+  border-radius:7px;
+  font-size:12px;
+  font-weight:500;
+  cursor:pointer;
+}
+.studio-add-media-button:hover {background:#f3f8f4;border-color:#8eb49b}
+.studio-add-media-button:focus-visible,
+.studio-attachment-action:focus-visible {outline:2px solid #397653;outline-offset:2px}
+.studio-add-media-button span {font-size:17px;line-height:1}
+.studio-attachment-list {display:grid;gap:6px;width:100%}
+.studio-attachment {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:9px;
+  padding:7px 10px;
+  border:1px solid #e2e9e3;
+  border-radius:7px;
+  background:#fbfcfb;
+}
+.studio-attachment-name {
+  flex:1 1 150px;
+  min-width:0;
+  overflow-wrap:anywhere;
+  color:#4e6355;
+  font-size:12px;
+}
+.studio-attachment-action {
+  padding:4px;
+  background:none;
+  border:0;
+  font-size:12px;
+  font-weight:500;
+  color:#326449;
+  cursor:pointer;
+}
+.studio-attachment-remove {color:#9b6251}
+.studio-media-dialog-fields {display:grid;gap:18px;padding:7px 0}
+.studio-dialog-file {display:grid;gap:8px}
+.studio-dialog-file label {font-size:13px;font-weight:500;color:#425e49}
+.studio-dialog-file input {max-width:100%;font:inherit;font-size:13px}
+.studio-dialog-file small {font-size:11px;color:#637a69;line-height:1.5}
+.studio-media-dialog-error {color:#a13c32;font-size:13px;margin:0}
+
+/* Compact editorial toolbar, separate from theme/layout selectors. */
+.studio-rich-editor {
+  border:1px solid #cbd9ce;
+  border-radius:9px;
+  background:#fff;
+  overflow:hidden;
+}
+.studio-rich-toolbar {
+  display:flex;
+  gap:3px;
+  flex-wrap:wrap;
+  align-items:center;
+  padding:5px 7px;
+  border-bottom:1px solid #dee7df;
+  background:#f7faf7;
+}
+.studio-rich-toolbar .MuiIconButton-root {
+  border-radius:6px;
+  color:#40624d;
+}
+.studio-rich-toolbar .MuiIconButton-root:hover {background:#e5f0e7}
+.studio-toolbar-separator {
+  width:1px;
+  height:20px;
+  margin:0 4px;
+  background:#d6e3d9;
+}
+.studio-rich-surface {
+  min-height:180px;
+  max-height:560px;
+  overflow:auto;
+  padding:13px 15px;
+  outline:0;
+  color:#244433;
+  font-size:15px;
+  line-height:1.6;
+  white-space:normal;
+}
+.studio-rich-surface:focus-visible {box-shadow:inset 0 0 0 2px #7aa78b}
+.studio-rich-surface:empty:before {content:attr(data-placeholder);color:#87998b}
+.studio-rich-surface p {margin:0 0 12px}
+.studio-rich-surface h3,.studio-rich-surface h4 {font-size:18px;font-weight:600;margin:12px 0 6px}
+.studio-rich-surface blockquote {
+  padding:5px 12px;
+  margin:12px 0;
+  border-left:3px solid #9ab9a2;
+  color:#4d6755;
+}
+.studio-rich-surface ul,.studio-rich-surface ol {padding-left:25px}
+.studio-rich-surface [data-media-id] {
+  display:inline-block;
+  margin:4px;
+  padding:6px 12px;
+  border:1px dashed #9bbb9f;
+  border-radius:6px;
+  background:#eff7f0;
+  color:#416e50;
+  font-size:12px;
+  user-select:all;
+}
+.newsletter-page .newsletter-rich-copy h3,.newsletter-page .newsletter-rich-copy h4 {
+  font-size:1.08rem;
+  font-weight:600;
+  line-height:1.35;
+  margin:3px 0 0;
+}
+.newsletter-page .newsletter-rich-copy ul,.newsletter-page .newsletter-rich-copy ol {
+  padding-left:24px;
+  margin:2px 0;
+}
+.newsletter-page .newsletter-rich-copy blockquote {
+  border-left:3px solid #b4cbb9;
+  padding:6px 12px;
+  color:#587261;
+  margin:0;
+  font-style:italic;
+}
+.newsletter-page .newsletter-rich-copy a {
+  color:#266b48;
+  text-decoration:underline;
+}
+.newsletter-page .newsletter-rich-copy > div {line-height:1.6}
+
+/* Shared file picker molecule: keep native input functional but invisible.
+   MUI button and selected-file status provide all visible interaction. */
+.studio-media-file-picker {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.studio-media-file-picker .MuiButton-root {
+  text-transform:none;
+  font-size:13px;
+  font-weight:600;
+  border-radius:8px;
+  border-color:#b5cfbd;
+  color:#24583a;
+  padding:9px 15px;
+}
+.studio-media-file-picker .MuiButton-root:hover {
+  border-color:#648f72;
+  background:#f1f7f2;
+}
+.studio-visually-hidden-file {
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+.studio-media-file-name {
+  min-width:0;
+  overflow-wrap:anywhere;
+  color:#5e7266;
+  font-size:13px;
+}
+
+/* Issue browser: headline first, publication metadata quiet and compact. */
+.studio-sidebar .studio-issue {
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:7px;
+  padding:13px 14px;
+  min-width:0;
+}
+.studio-sidebar .studio-issue .studio-issue-title {
+  display:block;
+  color:#1f3d2d;
+  font-size:14px;
+  line-height:1.4;
+  font-weight:600;
+  overflow-wrap:anywhere;
+}
+.studio-sidebar .studio-issue .studio-issue-meta {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  column-gap:10px;
+  row-gap:5px;
+  color:#718477;
+  font-size:11px;
+  line-height:1.4;
+  font-weight:400;
+}
+.studio-sidebar .studio-issue .studio-issue-month {
+  color:#687b6d;
+  font-size:11px;
+  font-weight:400;
+}
+.studio-sidebar .studio-issue .studio-issue-state {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  color:#718477;
+  font-size:10px;
+  line-height:1.4;
+  font-weight:500;
+  white-space:nowrap;
+}
+.studio-sidebar .studio-issue .studio-issue-state svg {
+  width:12px;
+  height:12px;
+  flex:none;
+}
+.studio-sidebar .studio-issue .studio-issue-state-published {
+  color:#4c8664;
+}
+.studio-sidebar .studio-issue.selected .studio-issue-title {
+  color:#183f2c;
 }

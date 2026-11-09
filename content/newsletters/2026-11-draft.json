@@ -1,0 +1,103 @@
+{
+  "id": "2026-11",
+  "month": "November 2026",
+  "number": "03",
+  "title": "Bridges: More Than a Way Across",
+  "description": "At our last meeting, club members voted to explore bridges first! Two bridges near Bedford have made me think about that choice in very different ways: one we sometimes drive over and worry about, and another where we go hiking with our dog. Here's why I'm excited to start learning about bridges together.",
+  "sections": [
+    {
+      "heading": "A Bridge We Still Need to Cross",
+      "body": "",
+      "media": [],
+      "placement": "main",
+      "style": "default",
+      "colorTheme": "default",
+      "summary": ""
+    },
+    {
+      "heading": "A Bridge We Love to Visit",
+      "body": "",
+      "media": [],
+      "placement": "main",
+      "style": "default",
+      "colorTheme": "default",
+      "summary": ""
+    },
+    {
+      "heading": "From Curiosity to Our First Project",
+      "body": "",
+      "media": [],
+      "placement": "main",
+      "style": "default",
+      "colorTheme": "default",
+      "summary": ""
+    }
+  ],
+  "details": [
+    {
+      "heading": "A Bridge We Still Need to Cross",
+      "body": "<!--bbb-rich--><p>At our last club meeting, we voted on what we wanted to explore first, and bridges won! I'm excited about that choice, partly because there's a bridge near Bedford that I've been thinking about a lot lately.</p><p><span contenteditable=\"false\" data-media-id=\"05815b18-ac2e-4a41-81e9-85d8152fe6f7\">▣ Media</span>My family occasionally drives across the Hart–Desiato Memorial Bridge on Route 225, between Bedford and Carlisle. Right now, we have to stop at a temporary traffic light and wait for cars coming from the other direction, because only one lane is open. We still cross it, but I can't help wondering what's going on underneath the road.</p><p>I looked into it, and it turns out some of the timber supports beneath the bridge have deteriorated. The deck has been repaired, but more work is still needed. Before this, I hadn't given much thought to what was holding up the bridges we drive over. Now I have a lot of questions. How do engineers decide when repairs are enough? What happens when people still need to use a bridge while it's being fixed?</p><p>There's another part of its story I didn't know at first. The bridge is named in honor of John Hart and Travis Desiato, two former Bedford High School students who served in the military. It's strange to think that a crossing we use every so often also carries a piece of our school's history. Whatever happens to the bridge, I hope that history continues to be remembered.</p><p>I don't know what the best engineering solution is. But I want to understand how engineers work through a problem like this, especially when it's happening so close to home.</p>",
+      "placement": "main",
+      "style": "default",
+      "colorTheme": "default",
+      "summary": "",
+      "media": [
+        {
+          "id": "05815b18-ac2e-4a41-81e9-85d8152fe6f7",
+          "alt": "Hart-Desiato Memorial Bridge",
+          "type": "video",
+          "caption": "",
+          "storagePath": "2026-11/74af3b09-dd03-4ae7-b6de-9961c653bb9a-Screen-Recording-2026-11-08-185027.mp4"
+        }
+      ]
+    },
+    {
+      "heading": "A Bridge We Love to Visit",
+      "body": "<!--bbb-rich--><p><span contenteditable=\"false\" data-media-id=\"0ff04221-05e1-43d2-80bf-8379e7a31c84\" role=\"button\" tabindex=\"0\" aria-label=\"Edit media\">▣ Media · Edit</span>There's another bridge I think about in a completely different way: the one at Wilson Mill. My family and I go hiking around Wilson Mill Park with our dog all the time. I love the trails, the water, and the views. Sometimes we stop just to look around instead of trying to get somewhere.</p><p>I remember one day when we saw so many tadpoles in the water, and little frogs too! It was such a small thing, but it's one of those memories that stayed with me. I still think about it when we walk there.</p><p>Wilson Mill has a history of its own. There used to be mills by Vine Brook, and you can still see traces of that past around the water. Usually, when we're out with our dog, I'm not thinking about civil engineering at all. I'm just enjoying being there.</p><p>That's something I like about this bridge. It doesn't have to be famous or enormous to matter to people. It helps make a place where families can walk, explore, and make memories.</p>",
+      "placement": "main",
+      "style": "default",
+      "colorTheme": "default",
+      "summary": "",
+      "media": [
+        {
+          "id": "0ff04221-05e1-43d2-80bf-8379e7a31c84",
+          "type": "image",
+          "storagePath": "2026-11/3a7c3529-eef5-4574-a191-0ac594bdc914-Old_Burlington_Road_Bridge_over_Vine_Brook-_Bedford_MA.jpg",
+          "alt": "Wilson Mill Bridge",
+          "caption": "",
+          "align": "right"
+        }
+      ]
+    },
+    {
+      "heading": "From Curiosity to Our First Project",
+      "body": "<!--bbb-rich--><p>These bridges are very different, but they're both reasons I'm glad our club members chose bridges as our first focus. One makes me think about safety, repairs, and responsibility. The other reminds me how much a simple crossing can add to a place we enjoy. I started noticing how many questions can come from something we usually don't think twice about.</p><p>For our first project, I'd like us to explore those questions together. We can research bridges around Bedford and Boston, look at why different designs were chosen, and learn how bridges carry weight. Then we can build and test our own models, change one thing at a time, and see what makes them stronger or weaker. I'm especially excited about finding out what happens when something we expect to work doesn't.</p><p>We're not bridge inspectors, and a model or a video can't tell us whether a real bridge is safe. But experimenting can help us understand the kinds of questions engineers ask, and why their decisions matter to the people using a bridge.</p><p>If there's a bridge you cross often, or one you think our club should research, bring it up at our next meeting! I'd love for members to help choose what we investigate, make slides, build models, and share what they discover. This is our first project, and I want it to be something we work on together.</p>",
+      "placement": "main",
+      "style": "default",
+      "colorTheme": "default",
+      "summary": "",
+      "media": []
+    },
+    {
+      "heading": "Happy Thanksgiving!",
+      "body": "<!--bbb-rich--><div class=\"newsletter-intro-block\"><p>Thanksgiving makes me think about engineering in everyday things, from the bridges we cross to visit family to the table that has to hold all that food! Since bridges are our club’s first focus, I thought these Thanksgiving engineering jokes would be fun to share.</p></div><p><strong>Why did the civil engineer bring a calculator to Thanksgiving dinner?</strong><br>To make sure the table could handle the load!</p><p><strong>Why did the turkey want to become a bridge engineer?</strong><br>It wanted to build something that would last longer than Thanksgiving leftovers!</p>",
+      "media": [],
+      "placement": "sidebar",
+      "style": "thanksgiving",
+      "colorTheme": "amber",
+      "summary": ""
+    },
+    {
+      "heading": "Did you know?",
+      "body": "<!--bbb-rich--><p><strong>A bridge with a history:</strong> The Hart–Desiato Bridge was named in 2017 in honor of Private First Class John Hart and Marine Lance Corporal Travis Desiato. Both graduated from Bedford High School, and the memorial was dedicated in 2018. Sources: <a href=\"https://malegislature.gov/Laws/SessionLaws/Acts/2017/Chapter160\">Massachusetts General Court</a> and <a href=\"https://thebedfordcitizen.org/2018/05/dedicating-the-hart-desiato-bridge-across-the-concord-river/\">The Bedford Citizen</a>.</p><p><strong>Why the one-lane traffic?</strong> As of the August 19, 2026 update, deck repairs were finished, but deteriorated timber support piles still needed repairs. The alternating one-lane traffic pattern keeps vehicles away from the affected portion. Source and photographs of the damaged supports: <a href=\"https://thebedfordcitizen.org/2026/08/hart-desiato-memorial-bridge-repairs-continue-as-one-way-traffic-pattern-remains/\">The Bedford Citizen, August 2026</a>.</p><p><strong>A bridge near centuries of history:</strong> A corn mill was recorded at the Wilson Mill site on Vine Brook in 1685. Today the area includes trails around Mill Pond. Sources: <a href=\"https://thebedfordcitizen.org/2017/04/tourist-town-wilson-mill-spillway/\">Wilson Mill history</a> and <a href=\"https://www.bedfordma.gov/DocumentCenter/View/3302/Wilson-Mill-Park-PDF\">Bedford trail map</a>.</p>",
+      "placement": "sidebar",
+      "style": "did-you-know",
+      "colorTheme": "sage",
+      "summary": "",
+      "media": []
+    }
+  ],
+  "footer": "Build a Better Bedford · Civil Engineering Club at Bedford High School",
+  "status": "draft",
+  "published_at": null
+}

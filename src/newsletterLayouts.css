@@ -1,0 +1,1117 @@
+/* Newsletter content experiments. The issue archive stays unchanged. */
+.newsletter-page.newsletter-layout-article,
+.newsletter-page.newsletter-layout-feature {
+  /* These are the editorial organism's shared spacing/layout tokens, reused
+     by the live issue and Newsletter Studio preview. */
+  --bbb-newsletter-rail-width:270px;
+  --bbb-newsletter-column-gap:24px;
+  --bbb-newsletter-rail-inset:16px;
+  min-width:0;
+  color:#263e31;
+}
+.newsletter-page.newsletter-layout-article .newsletter-clean,
+.newsletter-page.newsletter-layout-feature .newsletter-clean {
+  height:auto!important;
+  min-height:0!important;
+  padding:0 0 32px;
+  display:block!important;
+}
+.newsletter-page.newsletter-layout-article .newsletter-intro,
+.newsletter-page.newsletter-layout-feature .newsletter-intro {
+  padding:8px 0 20px;
+  max-width:850px;
+}
+.newsletter-page.newsletter-layout-article .bbb-page-heading-title,
+.newsletter-page.newsletter-layout-feature .bbb-page-heading-title {
+  font-size:clamp(1.75rem,2.6vw,2.375rem)!important;
+  line-height:1.2!important;
+  letter-spacing:-.035em!important;
+  font-weight:700!important;
+  margin-bottom:6px;
+}
+.newsletter-page.newsletter-layout-article .bbb-page-heading-description,
+.newsletter-page.newsletter-layout-feature .bbb-page-heading-description {
+  font-size:1rem;
+  line-height:1.5;
+  color:#516859;
+  max-width:68ch;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.newsletter-page.newsletter-layout-article .newsletter-notes,
+.newsletter-page.newsletter-layout-feature .newsletter-notes {
+  border-top:1px solid #d8e3da;
+  max-width:850px;
+}
+.newsletter-page.newsletter-layout-article .newsletter-notes-head,
+.newsletter-page.newsletter-layout-feature .newsletter-notes-head {
+  min-height:36px;
+  color:#718578;
+  letter-spacing:.08em;
+}
+.newsletter-page.newsletter-layout-article .newsletter-note,
+.newsletter-page.newsletter-layout-feature .newsletter-note {
+  display:grid;
+  grid-template-columns:24px minmax(0,1fr);
+  gap:8px;
+  padding:16px 0;
+  border-top:1px solid #e6ede8;
+  align-items:start;
+}
+.newsletter-page.newsletter-layout-article .newsletter-note h2,
+.newsletter-page.newsletter-layout-feature .newsletter-note h2 {
+  font-size:1.125rem;
+  font-weight:650;
+  line-height:1.35;
+  color:#1c3c2b;
+  letter-spacing:-.02em;
+  margin:0 0 6px;
+}
+.newsletter-page.newsletter-layout-article .newsletter-note p,
+.newsletter-page.newsletter-layout-feature .newsletter-note p,
+.newsletter-page.newsletter-layout-article .expand-grid p,
+.newsletter-page.newsletter-layout-feature .expand-grid p {
+  font-size:.9375rem;
+  line-height:1.55;
+  color:#435a4a;
+  max-width:70ch;
+  margin:0;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.newsletter-page.newsletter-layout-article .newsletter-expand-panel,
+.newsletter-page.newsletter-layout-feature .newsletter-expand-panel {
+  max-width:100%;
+  min-width:0;
+  padding:0;
+}
+.newsletter-page.newsletter-layout-article .newsletter-expand-panel section,
+.newsletter-page.newsletter-layout-feature .newsletter-expand-panel section {
+  padding:16px 0;
+  border-top:1px solid #e6ede8;
+}
+/* The former 70ch cap left a broad unused strip inside the main column.
+   Allow text and story media to share the available width instead. */
+.newsletter-page.newsletter-layout-article .expand-grid p,
+.newsletter-page.newsletter-layout-feature .expand-grid p {
+  max-width:100%;
+}
+.newsletter-page.newsletter-layout-article .expand-grid,
+.newsletter-page.newsletter-layout-feature .expand-grid {
+  display:block;
+}
+.newsletter-page.newsletter-layout-article .expand-grid h2,
+.newsletter-page.newsletter-layout-feature .expand-grid h2 {
+  font-family:inherit;
+  font-size:1.125rem;
+  font-weight:650;
+  line-height:1.35;
+  margin:0 0 6px;
+}
+.newsletter-page.newsletter-layout-article .newsletter-disclaimer,
+.newsletter-page.newsletter-layout-feature .newsletter-disclaimer {
+  margin-top:16px;
+  max-width:850px;
+  padding:12px 16px;
+  background:#f2f6f2;
+  border-top:1px solid #d8e5da;
+}
+.newsletter-page.newsletter-layout-article .newsletter-disclaimer p,
+.newsletter-page.newsletter-layout-feature .newsletter-disclaimer p {
+  color:#526a59;
+  font-size:13px;
+  line-height:1.5;
+  margin:0;
+  white-space:pre-wrap;
+}
+.newsletter-page.newsletter-layout-article .newsletter-media,
+.newsletter-page.newsletter-layout-feature .newsletter-media {
+  max-width:100%;
+  margin:12px 0 8px;
+}
+/* Feature experiment uses a more expressive title and an editorial card rhythm. */
+.newsletter-page.newsletter-layout-feature .newsletter-intro {
+  max-width:900px;
+  padding:20px clamp(16px,2vw,28px);
+  margin-bottom:20px;
+  border-radius:16px;
+  background:#edf4ed;
+}
+.newsletter-page.newsletter-layout-feature .bbb-page-heading-title {
+  font-size:clamp(1.875rem,3vw,2.625rem)!important;
+}
+.newsletter-page.newsletter-layout-feature .newsletter-notes {
+  border-top:0;
+  max-width:900px;
+}
+.newsletter-page.newsletter-layout-feature .newsletter-notes-head {
+  border-bottom:1px solid #d8e3da;
+}
+.newsletter-page.newsletter-layout-feature .newsletter-note {
+  display:block;
+  padding:16px clamp(16px,2vw,24px);
+  margin:8px 0;
+  border:1px solid #e0e9e1;
+  border-radius:14px;
+  background:#fff;
+}
+.newsletter-page.newsletter-layout-feature .newsletter-note>span {
+  display:block;
+  margin-bottom:6px;
+  font-size:11px;
+  color:#718578;
+}
+.newsletter-page.newsletter-layout-feature .newsletter-expand-panel {
+  max-width:900px;
+}
+.newsletter-page.newsletter-layout-feature .newsletter-expand-panel section {
+  padding:16px clamp(16px,2vw,24px);
+  border:1px solid #e0e9e1;
+  border-radius:14px;
+  margin:8px 0;
+}
+.studio-layout-picker{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.studio-layout-picker span{font-size:11px;color:#647d6b;letter-spacing:.08em;font-weight:750;margin-right:8px}
+.studio-layout-picker button{border:1px solid #c8d9cb;background:#fff;color:#23543a;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:650}
+.studio-layout-picker button.active{background:#e6f1e8;border-color:#4e8962}
+.studio-layout-description{font-size:12px;color:#667d6c;margin:0 0 14px}
+.studio-preview-area{min-width:0}
+.studio-preview .newsletter-page.newsletter-layout-article .newsletter-clean,
+.studio-preview .newsletter-page.newsletter-layout-feature .newsletter-clean{display:block!important;height:auto!important;min-height:0!important}
+@media(max-width:650px){
+  .newsletter-page.newsletter-layout-article .newsletter-note,
+  .newsletter-page.newsletter-layout-feature .newsletter-note{grid-template-columns:24px minmax(0,1fr);gap:8px}
+  .newsletter-page.newsletter-layout-article .newsletter-note p,
+  .newsletter-page.newsletter-layout-feature .newsletter-note p,
+  .newsletter-page.newsletter-layout-article .expand-grid p,
+  .newsletter-page.newsletter-layout-feature .expand-grid p{font-size:.9375rem}
+  .newsletter-page.newsletter-layout-feature .newsletter-intro{padding:18px 16px}
+}
+
+/* MUI-like compact reading rhythm: 8px grid, rem sizes and accessible scaling. */
+.newsletter-page .newsletter-note>span{font-size:.75rem;line-height:1.5;color:#77897d;padding-top:2px}
+.newsletter-page .newsletter-notes-head{font-size:.6875rem;line-height:1.4;letter-spacing:.06em}
+.newsletter-page .newsletter-note p,.newsletter-page .expand-grid p{hyphens:auto}
+@media(max-width:650px){
+  .newsletter-page.newsletter-layout-article .newsletter-intro{padding:4px 0 16px}
+  .newsletter-page.newsletter-layout-article .newsletter-note{padding:14px 0}
+  .newsletter-page.newsletter-layout-article .bbb-page-heading-title{font-size:1.75rem!important}
+}
+
+/* Optional side stories: the reading column always remains the priority. */
+.newsletter-page.newsletter-layout-article .newsletter-clean,
+.newsletter-page.newsletter-layout-feature .newsletter-clean { container-type:inline-size; }
+.newsletter-page .newsletter-editorial-grid { min-width:0; }
+.newsletter-page .newsletter-editorial-grid.has-sidebar {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,var(--bbb-newsletter-rail-width));
+  gap:var(--bbb-newsletter-column-gap);
+  align-items:start;
+}
+.newsletter-page .newsletter-editorial-main { min-width:0; }
+.newsletter-page .newsletter-editorial-aside {
+  min-width:0;
+  padding:0 0 0 var(--bbb-newsletter-rail-inset);
+  border-left:1px solid #dce7df;
+}
+.newsletter-page .newsletter-side-heading,
+.newsletter-page .newsletter-rail-heading {
+  display:block;
+  margin:0;
+  padding:11px 0 14px;
+  text-transform:uppercase;
+  color:#728578;
+  font-size:.6875rem;
+  font-weight:750;
+  line-height:1.4;
+  letter-spacing:.07em;
+}
+.newsletter-page .newsletter-side-story {
+  padding:12px 0 16px;
+  border-top:1px solid #e1e9e3;
+}
+.newsletter-page .newsletter-side-story h2 {
+  margin:0 0 8px;
+  color:#244631;
+  font-size:.9375rem;
+  font-weight:650;
+  line-height:1.4;
+}
+.newsletter-page .newsletter-side-story p {
+  margin:0;
+  color:#4e6757;
+  font-size:.875rem;
+  line-height:1.55;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.newsletter-page .newsletter-side-story .newsletter-media { margin:12px 0 0; }
+.newsletter-page.newsletter-layout-feature .newsletter-editorial-aside {
+  padding-left:18px;
+}
+.studio-form select {
+  font:inherit;
+  font-weight:400;
+  font-size:14px;
+  width:100%;
+  border:1px solid #cbd9ce;
+  border-radius:8px;
+  background:#fff;
+  padding:12px;
+  color:#183d2b;
+}
+.studio-form select:focus-visible { outline:2px solid #7aa78b; outline-offset:1px; }
+/* On narrow article widths—including the admin preview—side stories stack after
+   the main article. The left issue archive remains completely independent. */
+@container (max-width:760px) {
+  .newsletter-page .newsletter-editorial-grid.has-sidebar {
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+  }
+  .newsletter-page .newsletter-editorial-main,
+  .newsletter-page .newsletter-editorial-aside { width:100%; }
+  .newsletter-page .newsletter-editorial-aside {
+    border-left:0;
+    border-top:1px solid #dce7df;
+    padding:4px 0 0;
+  }
+  .newsletter-page .newsletter-side-story { max-width:65ch; }
+}
+
+.studio-group-buttons{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+@media(max-width:600px){.studio-group-buttons{justify-content:flex-start}}
+
+/* The right-hand editorial rail doubles as an in-issue table of contents. */
+.newsletter-page .newsletter-note[id] {
+  scroll-margin-top:calc(var(--bbb-header-height,76px) + 20px);
+}
+.newsletter-page .newsletter-issue-contents {
+  margin:0 0 22px;
+}
+.newsletter-page .newsletter-toc-list {
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+.newsletter-page .newsletter-toc-list li {
+  border-top:1px solid #e1e9e3;
+}
+.newsletter-page .newsletter-toc-list a {
+  display:grid;
+  grid-template-columns:24px minmax(0,1fr);
+  gap:8px;
+  padding:10px 2px;
+  color:#244631;
+  text-decoration:none;
+  font-size:.8125rem;
+  font-weight:550;
+  line-height:1.45;
+  overflow-wrap:anywhere;
+}
+.newsletter-page .newsletter-toc-number {
+  color:#75897b;
+  font-size:.75rem;
+  font-variant-numeric:tabular-nums;
+}
+.newsletter-page .newsletter-toc-list a:hover {
+  color:#1b6841;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.newsletter-page .newsletter-toc-list a:focus-visible {
+  outline:2px solid #427952;
+  outline-offset:2px;
+  border-radius:4px;
+}
+.newsletter-page .newsletter-side-stories {
+  margin-top:12px;
+}
+
+/* The content grid starts at the top of the issue, so the TOC aligns with the
+   issue heading rather than beginning beneath the introduction. */
+.newsletter-page.newsletter-layout-article .newsletter-editorial-main > .newsletter-intro,
+.newsletter-page.newsletter-layout-feature .newsletter-editorial-main > .newsletter-intro {
+  padding-top:0;
+  margin-top:0;
+  width:100%;
+}
+.newsletter-page .newsletter-editorial-main .bbb-page-heading {
+  align-items:flex-start;
+  justify-content:flex-start;
+}
+.newsletter-page .newsletter-editorial-main .bbb-page-heading-copy {
+  max-width:100%;
+  width:100%;
+}
+.newsletter-page .newsletter-editorial-main .bbb-page-heading-description {
+  max-width:68ch;
+  margin-top:8px!important;
+  font-size:1rem!important;
+  line-height:1.5!important;
+  color:#516859!important;
+}
+/* Section numbers exist only in the right-side table of contents. */
+.newsletter-page.newsletter-layout-article .newsletter-note,
+.newsletter-page.newsletter-layout-feature .newsletter-note {
+  display:block;
+}
+.newsletter-page .newsletter-editorial-aside .newsletter-side-heading:first-child {
+  padding-top:0;
+}
+/* Keep the heading and main story aligned with the same reading column. */
+.newsletter-page.newsletter-layout-article .newsletter-intro,
+.newsletter-page.newsletter-layout-feature .newsletter-intro {
+  max-width:100%;
+}
+
+/* Show the existing short summaries beneath each numbered contents heading. */
+.newsletter-page .newsletter-toc-list .newsletter-toc-unlinked {
+  display:grid;
+  grid-template-columns:24px minmax(0,1fr);
+  gap:8px;
+  padding:10px 2px;
+  color:#244631;
+  font-size:.8125rem;
+  line-height:1.45;
+}
+.newsletter-page .newsletter-toc-content {
+  display:block;
+  min-width:0;
+}
+.newsletter-page .newsletter-toc-title {
+  display:block;
+  font-weight:600;
+}
+.newsletter-page .newsletter-toc-description {
+  display:block;
+  margin-top:5px;
+  color:#64786a;
+  font-size:.75rem;
+  font-weight:400;
+  line-height:1.5;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+/* Keep section summaries in newsletter data without displaying them in the compact TOC. */
+.newsletter-page .newsletter-toc-description { display:none; }
+
+/* Seasonal editorial feature lives in the right-hand rail, not the main story. */
+.newsletter-page .newsletter-side-story.newsletter-halloween-feature {
+  margin:12px 0 20px;
+  padding:18px 16px 20px;
+  border:1px solid #ead9b7;
+  border-radius:14px;
+  background:linear-gradient(150deg,#fff8ed 0%,#fffbf5 72%,#f4f8f1 100%);
+  box-shadow:0 3px 12px rgba(71,54,19,.05);
+}
+.newsletter-page .newsletter-halloween-eyebrow {
+  display:block;
+  margin-bottom:10px;
+  color:#98632c;
+  font-size:.6875rem;
+  font-weight:750;
+  letter-spacing:.08em;
+  line-height:1.4;
+}
+.newsletter-page .newsletter-halloween-feature h2 {
+  margin:0 0 13px;
+  color:#593c22;
+  font-size:1.0625rem;
+  font-weight:700;
+  line-height:1.3;
+}
+.newsletter-page .newsletter-halloween-copy {
+  display:grid;
+  gap:13px;
+}
+.newsletter-page .newsletter-halloween-copy p {
+  margin:0;
+  color:#5b554a;
+  font-size:.8125rem;
+  line-height:1.6;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.newsletter-page .newsletter-halloween-copy .newsletter-halloween-joke {
+  padding:11px 12px;
+  border-left:3px solid #d89c54;
+  border-radius:0 8px 8px 0;
+  background:rgba(255,255,255,.78);
+  color:#513d2b;
+}
+
+/* Optional October fact notes appear after all other secondary stories. */
+.newsletter-page .newsletter-nerd-facts {
+  margin-top:28px;
+  padding-top:8px;
+  border-top:1px solid #dce7df;
+}
+.newsletter-page .newsletter-nerd-facts > .newsletter-side-heading {
+  padding:8px 0 12px;
+  color:#718475;
+}
+.newsletter-page .newsletter-nerd-fact {
+  padding:15px 13px 16px;
+  margin-bottom:12px;
+  background:#f4f7f3;
+  border:1px solid #e1e9e2;
+  border-radius:10px;
+}
+.newsletter-page .newsletter-nerd-fact-kicker {
+  display:block;
+  font-size:.625rem;
+  font-weight:700;
+  letter-spacing:.07em;
+  color:#4e8065;
+  margin-bottom:8px;
+}
+.newsletter-page .newsletter-nerd-fact h3 {
+  margin:0 0 9px;
+  color:#1e4230;
+  font-size:.875rem;
+  line-height:1.4;
+  font-weight:650;
+}
+.newsletter-page .newsletter-nerd-fact p {
+  margin:0 0 10px;
+  font-size:.75rem;
+  line-height:1.55;
+  color:#4c6152;
+}
+.newsletter-page .newsletter-nerd-fact .newsletter-nerd-equation {
+  padding:8px;
+  border-radius:6px;
+  background:white;
+  color:#31513c;
+  font-size:.75rem;
+  font-variant-numeric:tabular-nums;
+  text-align:center;
+  font-weight:650;
+}
+.newsletter-page .newsletter-nerd-fact .newsletter-nerd-footnote {
+  color:#6b7a70;
+  font-size:.6875rem;
+}
+.newsletter-page .newsletter-nerd-fact a {
+  display:inline-flex;
+  align-items:baseline;
+  gap:3px;
+  color:#286142;
+  font-size:.75rem;
+  font-weight:600;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  line-height:1.5;
+}
+.newsletter-page .newsletter-nerd-fact a:focus-visible {
+  outline:2px solid #427952;
+  outline-offset:3px;
+}
+.newsletter-page .newsletter-nerd-links {
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+/* One unified "Did you know?" sidebar section, with simple fact dividers. */
+.newsletter-page .newsletter-nerd-facts {
+  margin-top:28px;
+  padding:16px 15px 4px;
+  border:1px solid #e1e9e2;
+  border-radius:10px;
+  background:#f4f7f3;
+}
+.newsletter-page .newsletter-nerd-facts > .newsletter-side-heading {
+  padding:0 0 8px;
+  font-weight:750;
+  color:#397357;
+}
+.newsletter-page .newsletter-nerd-fact {
+  padding:12px 0 14px;
+  margin:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+.newsletter-page .newsletter-nerd-fact + .newsletter-nerd-fact {
+  border-top:1px solid #dce6dd;
+}
+.newsletter-page .newsletter-nerd-fact h3 {
+  margin-bottom:7px;
+}
+.newsletter-page .newsletter-nerd-fact p {
+  margin-bottom:7px;
+}
+
+/* A single numbered fact list; adding a <li> automatically numbers it. */
+.newsletter-page .newsletter-nerd-fact-list {
+  list-style:none;
+  counter-reset:bedford-fact;
+  padding:0;
+  margin:0;
+}
+.newsletter-page .newsletter-nerd-fact-list > .newsletter-nerd-fact {
+  counter-increment:bedford-fact;
+}
+.newsletter-page .newsletter-nerd-fact-list > .newsletter-nerd-fact::before {
+  content:counter(bedford-fact, decimal-leading-zero);
+  display:block;
+  margin-bottom:5px;
+  color:#628270;
+  font-size:.6875rem;
+  font-weight:750;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.05em;
+}
+
+/* Secondary information should read quieter than the article.
+   Use regular/medium/semibold weights, reserving strong display type for the main story. */
+.newsletter-page .newsletter-editorial-aside .newsletter-side-heading,
+.newsletter-page .newsletter-nerd-facts > .newsletter-side-heading {
+  font-weight:600;
+  color:#718475;
+}
+.newsletter-page .newsletter-nerd-fact h3 {
+  font-weight:550;
+  color:#395746;
+  font-size:.8125rem;
+  line-height:1.45;
+}
+.newsletter-page .newsletter-nerd-fact p,
+.newsletter-page .newsletter-nerd-fact p strong {
+  font-weight:400;
+}
+.newsletter-page .newsletter-nerd-fact p {
+  color:#607266;
+}
+.newsletter-page .newsletter-nerd-fact a {
+  font-weight:500;
+  color:#466f57;
+}
+.newsletter-page .newsletter-nerd-fact-list > .newsletter-nerd-fact::before {
+  font-weight:500;
+  color:#83978a;
+}
+.newsletter-page .newsletter-toc-title {
+  font-weight:550;
+}
+.newsletter-page .newsletter-side-story h2,
+.newsletter-page .newsletter-halloween-feature h2 {
+  font-weight:600;
+}
+.newsletter-page .newsletter-halloween-eyebrow {
+  font-weight:600;
+}
+
+/* Editorial rhythm: paragraph breaks are spacing, not preserved blank lines. */
+.newsletter-page.newsletter-layout-article .newsletter-article-copy,
+.newsletter-page.newsletter-layout-feature .newsletter-article-copy {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  max-width:100%;
+  min-width:0;
+}
+.newsletter-page.newsletter-layout-article .newsletter-article-copy > p,
+.newsletter-page.newsletter-layout-feature .newsletter-article-copy > p {
+  margin:0;
+  white-space:pre-line;
+  font-weight:400;
+  line-height:1.55;
+}
+/* Names form one compact, scannable team group rather than three paragraphs. */
+.newsletter-page .newsletter-leadership-team {
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  margin:3px 0;
+  padding:10px 13px;
+  border-left:2px solid #c5d8c9;
+  background:#f8faf8;
+}
+.newsletter-page .newsletter-leadership-person {
+  display:grid;
+  grid-template-columns:minmax(85px,115px) minmax(0,1fr);
+  column-gap:10px;
+  align-items:baseline;
+  font-size:.9375rem;
+  line-height:1.5;
+}
+.newsletter-page .newsletter-leadership-person dt {
+  color:#58705d;
+  font-weight:500;
+}
+.newsletter-page .newsletter-leadership-person dd {
+  margin:0;
+  color:#304a38;
+  font-weight:400;
+}
+@media(max-width:420px) {
+  .newsletter-page .newsletter-leadership-person {
+    grid-template-columns:1fr;
+    gap:1px;
+  }
+}
+
+/* Consistent editorial spacing even when saved text uses single newlines. */
+.newsletter-page.newsletter-layout-article .newsletter-article-copy,
+.newsletter-page.newsletter-layout-feature .newsletter-article-copy {
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.newsletter-page.newsletter-layout-article .newsletter-article-copy > p,
+.newsletter-page.newsletter-layout-feature .newsletter-article-copy > p {
+  margin:0!important;
+  line-height:1.6;
+}
+
+/* One restrained, cohesive leadership roster with compact aligned rows. */
+.newsletter-page .newsletter-article-copy > .newsletter-leadership-team {
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  margin:2px 0 4px;
+  padding:9px 14px;
+  border-left:2px solid #b8cebd;
+  border-radius:0 8px 8px 0;
+  background:#f6f9f6;
+}
+.newsletter-page .newsletter-leadership-team .newsletter-leadership-person {
+  display:grid;
+  grid-template-columns:20px 104px minmax(0,1fr);
+  gap:10px;
+  align-items:center;
+  min-width:0;
+  padding:7px 0;
+  font-size:.875rem;
+  line-height:1.4;
+}
+.newsletter-page .newsletter-leadership-icon {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#72917c;
+}
+.newsletter-page .newsletter-leadership-icon svg {
+  font-size:17px;
+}
+.newsletter-page .newsletter-leadership-role {
+  color:#5c7462;
+  font-size:.8125rem;
+  font-weight:500;
+  white-space:nowrap;
+}
+.newsletter-page .newsletter-leadership-name {
+  color:#294333;
+  font-weight:400;
+  min-width:0;
+}
+@media(max-width:510px) {
+  .newsletter-page .newsletter-leadership-team .newsletter-leadership-person {
+    grid-template-columns:20px minmax(0,1fr);
+    column-gap:10px;
+    row-gap:2px;
+  }
+  .newsletter-page .newsletter-leadership-role {grid-column:2;}
+  .newsletter-page .newsletter-leadership-name {grid-column:2;}
+  .newsletter-page .newsletter-leadership-icon {grid-row:1 / 3;align-self:center;}
+}
+
+/* The Halloween style is available independently of placement.
+   Main content gets a restrained feature treatment; the existing side-panel
+   Halloween card is unchanged. */
+.newsletter-page .newsletter-expand-panel .newsletter-main-halloween-feature {
+  padding:18px 20px;
+  margin:10px 0;
+  border:1px solid #ead9b7;
+  border-radius:12px;
+  background:#fffbf5;
+}
+.newsletter-page .newsletter-main-seasonal {
+  max-width:270px;
+  margin:0 0 14px;
+}
+.newsletter-page .newsletter-main-seasonal .newsletter-halloween-eyebrow {
+  display:block;
+  margin-bottom:8px;
+  font-size:11px;
+  letter-spacing:.055em;
+  color:#956b45;
+}
+.newsletter-page .newsletter-main-seasonal .halloween-truss-stage {
+  height:180px;
+}
+@media(max-width:620px) {
+  .newsletter-page .newsletter-expand-panel .newsletter-main-halloween-feature {
+    padding:16px 14px;
+  }
+}
+
+/* Reusable presentation styles and independent, editor-selectable palettes.
+   Existing Default and legacy Halloween appearances remain unchanged. */
+.newsletter-page .newsletter-color-sage {
+  --newsletter-feature-bg:#f1f7f0;
+  --newsletter-feature-line:#d4e6d5;
+  --newsletter-feature-ink:#2f6245;
+  --newsletter-feature-muted:#4c755b;
+}
+.newsletter-page .newsletter-color-blue {
+  --newsletter-feature-bg:#eff6fa;
+  --newsletter-feature-line:#d1e3ee;
+  --newsletter-feature-ink:#2a5a78;
+  --newsletter-feature-muted:#55768c;
+}
+.newsletter-page .newsletter-color-amber {
+  --newsletter-feature-bg:#fff6e9;
+  --newsletter-feature-line:#efdcbc;
+  --newsletter-feature-ink:#845b2a;
+  --newsletter-feature-muted:#946f43;
+}
+.newsletter-page .newsletter-color-lavender {
+  --newsletter-feature-bg:#f6f2fc;
+  --newsletter-feature-line:#e2d8f0;
+  --newsletter-feature-ink:#655083;
+  --newsletter-feature-muted:#79688f;
+}
+.newsletter-page .newsletter-section-style-club-corner,
+.newsletter-page .newsletter-section-style-did-you-know {
+  background:var(--newsletter-feature-bg,#f4f7f3);
+  border:1px solid var(--newsletter-feature-line,#dfe8e0);
+  border-radius:12px;
+}
+.newsletter-page .newsletter-side-story.newsletter-section-style-club-corner,
+.newsletter-page .newsletter-side-story.newsletter-section-style-did-you-know {
+  margin:10px 0 18px;
+  padding:16px;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-section-style-club-corner,
+.newsletter-page .newsletter-expand-panel .newsletter-section-style-did-you-know {
+  padding:18px 20px;
+  margin:12px 0;
+}
+.newsletter-page .newsletter-feature-kicker {
+  display:block;
+  margin:0 0 10px;
+  color:var(--newsletter-feature-ink,#4d8064);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.06em;
+  line-height:1.4;
+}
+.newsletter-page .newsletter-section-style-club-corner h2,
+.newsletter-page .newsletter-section-style-did-you-know h2 {
+  color:var(--newsletter-feature-ink,#2a5438);
+  font-weight:600;
+}
+/* Palette changes are opt-in and do not modify existing issue styles. */
+.newsletter-page .newsletter-side-story[class*="newsletter-color-"]:not(.newsletter-color-default),
+.newsletter-page .newsletter-expand-panel .newsletter-main-halloween-feature[class*="newsletter-color-"]:not(.newsletter-color-default) {
+  background:var(--newsletter-feature-bg);
+  border:1px solid var(--newsletter-feature-line);
+  border-radius:12px;
+}
+.newsletter-page [class*="newsletter-color-"]:not(.newsletter-color-default) .newsletter-halloween-eyebrow,
+.newsletter-page [class*="newsletter-color-"]:not(.newsletter-color-default) h2 {
+  color:var(--newsletter-feature-ink);
+}
+.newsletter-page [class*="newsletter-color-"]:not(.newsletter-color-default) .newsletter-halloween-copy p {
+  color:var(--newsletter-feature-muted);
+}
+
+/* An explicitly chosen palette also works with an otherwise Default main
+   article style, without changing any legacy/default article sections. */
+.newsletter-page .newsletter-expand-panel .design-problem.newsletter-section-style-default:not(.newsletter-color-default) {
+  padding:18px 20px;
+  margin:12px 0;
+  background:var(--newsletter-feature-bg);
+  border:1px solid var(--newsletter-feature-line);
+  border-radius:12px;
+}
+.newsletter-page .newsletter-expand-panel .design-problem.newsletter-section-style-default:not(.newsletter-color-default) h2 {
+  color:var(--newsletter-feature-ink);
+}
+
+
+/* A linked video from Google Maps is a real video reference, not an iframe.
+   Keep the original clip on its host; give readers a clear, accessible CTA. */
+.newsletter-page .newsletter-external-video {
+  display:block;
+  max-width:660px;
+  overflow:hidden;
+  margin:22px 0 10px;
+  border:1px solid #cfddd3;
+  border-radius:14px;
+  background:#fff;
+  color:#21432f;
+  text-decoration:none;
+  box-shadow:0 4px 16px rgba(26,63,44,.07);
+  transition:box-shadow .16s ease,border-color .16s ease,transform .16s ease;
+}
+.newsletter-page .newsletter-external-video:hover {
+  border-color:#8aa995;
+  box-shadow:0 8px 22px rgba(26,63,44,.13);
+}
+.newsletter-page .newsletter-external-video:focus-visible {
+  outline:3px solid #3f8158;
+  outline-offset:3px;
+}
+.newsletter-page .newsletter-external-video-poster {
+  min-height:244px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:flex-end;
+  gap:7px;
+  padding:20px 24px;
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  color:#fff;
+  background:
+    linear-gradient(0deg,rgba(15,34,29,.95) 0%,rgba(24,46,39,.32) 70%),
+    repeating-linear-gradient(113deg,transparent 0 48px,rgba(165,200,176,.13) 49px 52px,transparent 53px 100px),
+    linear-gradient(145deg,#315c4d,#1b3931 56%,#3f5c55);
+}
+.newsletter-page .newsletter-external-video-source {
+  position:absolute;
+  z-index:1;
+  top:16px;
+  left:20px;
+  border-radius:4px;
+  background:rgba(11,28,23,.75);
+  padding:6px 9px;
+  color:#e7f6e9;
+  font-size:.65rem;
+  font-weight:700;
+  letter-spacing:.055em;
+  line-height:1.35;
+}
+.newsletter-page .newsletter-external-video-icon {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:absolute;
+  top:44%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  width:76px;
+  height:76px;
+  color:#fff;
+  background:rgba(18,36,30,.64);
+  border:1px solid rgba(255,255,255,.6);
+  box-shadow:0 5px 22px rgba(0,0,0,.2);
+}
+.newsletter-page .newsletter-external-video-icon svg { font-size:52px; }
+.newsletter-page .newsletter-external-video-overlay {
+  position:relative;
+  z-index:1;
+  font-size:1.3rem;
+  font-weight:650;
+  line-height:1.2;
+}
+.newsletter-page .newsletter-external-video-subtitle {
+  position:relative;
+  z-index:1;
+  font-size:.88rem;
+  color:#e4efe7;
+  line-height:1.45;
+}
+.newsletter-page .newsletter-external-video-action {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:14px 20px 5px;
+  font-size:.9rem;
+  font-weight:650;
+  color:#235839;
+}
+.newsletter-page .newsletter-external-video-description {
+  display:block;
+  padding:0 20px 16px;
+  color:#657a6b;
+  font-size:.76rem;
+  line-height:1.45;
+}
+.newsletter-page .newsletter-external-video:hover .newsletter-external-video-action {
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+@media (max-width:540px){
+  .newsletter-page .newsletter-external-video-poster{min-height:215px;padding:18px;}
+  .newsletter-page .newsletter-external-video-source{top:12px;left:14px;}
+}
+
+/* Inline Instagram-style portrait/landscape media with text wrap.
+   The source file's natural aspect ratio is never cropped or stretched. */
+.newsletter-page.newsletter-layout-article .newsletter-expand-panel .newsletter-article-copy.newsletter-rich-media-layout,
+.newsletter-page.newsletter-layout-feature .newsletter-expand-panel .newsletter-article-copy.newsletter-rich-media-layout {
+  display:flow-root;
+  max-width:100%;
+  min-width:0;
+}
+.newsletter-page.newsletter-layout-article .newsletter-expand-panel .newsletter-rich-media-layout > p,
+.newsletter-page.newsletter-layout-feature .newsletter-expand-panel .newsletter-rich-media-layout > p,
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout > .newsletter-rich-media-paragraph {
+  display:block;
+  margin:0 0 15px!important;
+  line-height:1.6;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media {
+  float:left;
+  clear:left;
+  width:min(42%,280px);
+  min-width:0;
+  max-width:none;
+  margin:4px 20px 16px 0!important;
+  overflow:visible;
+  background:transparent;
+}
+/* Alignment is a property of the reusable media item, not of the article.
+   Text flows around the asset at the chosen insertion point. */
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media.newsletter-media-aligned-right {
+  float:right;
+  clear:right;
+  margin:4px 0 16px 20px!important;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media.newsletter-media-aligned-left {
+  float:left;
+  clear:left;
+  margin:4px 20px 16px 0!important;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media img,
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media video {
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:none;
+  object-fit:contain;
+  border-radius:10px;
+  background:#edf1ed;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media figcaption {
+  display:block;
+  margin:8px 2px 0;
+  font-size:.75rem;
+  line-height:1.5;
+  color:#62786a;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-video-frame,
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video {
+  width:100%;
+  max-width:100%;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-poster {
+  min-height:180px;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-source {
+  position:static;
+  font-size:.6rem;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-icon {
+  width:52px;
+  height:52px;
+}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-icon svg {font-size:36px}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-overlay {font-size:1rem}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-action {padding:10px 12px 4px;font-size:.8rem}
+.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-external-video-description {padding:0 12px 10px;font-size:.73rem}
+@media(max-width:540px) {
+  .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media {
+    float:none;
+    clear:both;
+    width:min(100%,320px);
+    max-width:100%;
+    margin:10px 0 18px!important;
+  }
+  .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media.newsletter-media-aligned-left,
+  .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media.newsletter-media-aligned-right {
+    float:none;
+    clear:both;
+    margin:10px 0 18px!important;
+  }
+  .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media img,
+  .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media video {
+    width:100%;
+    height:auto;
+  }
+}
+
+/* Shared MUI rail-heading atom. In This Issue, Club Corner and
+   Did You Know MUST retain exactly the same typography. More specific than
+   the story h2 and the holiday/theme h2 rules above, which would otherwise
+   enlarge only the Club Corner heading. Do not change the text hierarchy per
+   sidebar variant. */
+.newsletter-page .newsletter-editorial-aside h2.newsletter-rail-heading {
+  display:block;
+  margin:0;
+  padding:11px 0 14px;
+  font-family:inherit;
+  font-size:.6875rem;
+  font-weight:600;
+  line-height:1.4;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:#718475;
+}
+.newsletter-page .newsletter-editorial-aside .newsletter-side-story h2.newsletter-rail-heading {
+  padding:0 0 10px;
+  color:var(--newsletter-feature-ink,#718475);
+}
+.newsletter-page .newsletter-side-story .newsletter-sidebar-title {
+  margin:0 0 11px;
+  color:var(--newsletter-feature-ink,#244631);
+  font-size:1.0625rem;
+  line-height:1.4;
+  letter-spacing:-.012em;
+  font-weight:600;
+}
+.newsletter-page .newsletter-sidebar-variant-club-corner .thanksgiving-horn {
+  margin:2px 0 12px;
+}
+
+/* Thanksgiving deliberately reuses October's .newsletter-halloween-feature
+   seasonal card, eyebrow and joke styling. Only adapt RichEditor paragraphs
+   to the same compact joke cards; no separate Thanksgiving visual system. */
+.newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy {
+  display:grid;
+  gap:13px;
+  max-width:100%;
+}
+.newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy > p {
+  margin:0!important;
+  padding:11px 12px;
+  border-left:3px solid #d89c54;
+  border-radius:0 8px 8px 0;
+  background:rgba(255,255,255,.78);
+  color:#513d2b;
+  font-size:.8125rem;
+  line-height:1.6;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy strong {
+  color:#513d2b;
+  font-weight:650;
+}
+/* The introduction is an explicit, editable block rather than the first
+   paragraph. This keeps BOTH joke paragraphs styled as joke cards even if a
+   saved preview is stale or an editor reorders the text. */
+.newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy > .newsletter-intro-block {
+  padding:0 0 3px;
+  border:0;
+  background:transparent;
+  color:#5b554a;
+  font-size:.8125rem;
+  font-weight:400;
+  line-height:1.6;
+}
+.newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy > .newsletter-intro-block > p {
+  margin:0!important;
+  color:inherit;
+  font-size:inherit;
+  line-height:inherit;
+}
