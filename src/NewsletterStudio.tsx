@@ -8,7 +8,7 @@ import type { NewsletterEditorHandle } from './components/NewsletterRichEditor'
 import { UiBox, UiButton, UiDialog, UiDialogTitle, UiDialogContent, UiDialogActions, UiSelect, UiTextField } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
-import { emptyIssue, IssueView, embeddedVideoUrl, externalGoogleMapsVideoUrl, newsletterSectionStyle, newsletterSectionPlacement, newsletterColorTheme } from './Newsletter'
+import { emptyIssue, IssueView, embeddedVideoUrl, externalGoogleMapsVideoUrl, newsletterSectionStyle, newsletterSectionPlacement, newsletterColorTheme, orderNewsletterDetails } from './Newsletter'
 import type { NewsletterIssue, NewsletterSection, NewsletterMedia } from './Newsletter'
 
 type Template = 'club' | 'project' | 'announcement'
@@ -66,7 +66,7 @@ const normalize = (issue: NewsletterIssue): NewsletterIssue => ({
     body: section.summary ?? issue.sections.find(item => item.heading.trim().toLowerCase() === section.heading.trim().toLowerCase())?.body ?? '',
     media: [],
   }))),
-  details: cleanSections(issue.details),
+  details: orderNewsletterDetails(cleanSections(issue.details)),
 })
 
 // "Did You Know?" is a factual format, so each fact needs direct evidence.
