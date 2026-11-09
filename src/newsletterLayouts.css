@@ -1036,55 +1036,27 @@
   }
 }
 
-/* Thanksgiving corner uses the existing editorial organism and palette tokens.
-   It is an optional side-panel style, not a fourth main article chapter. */
-.newsletter-page .newsletter-side-story.newsletter-thanksgiving-feature,
-.newsletter-page .newsletter-expand-panel .newsletter-thanksgiving-feature {
-  margin:12px 0 18px;
-  padding:17px 16px 18px;
-  border:1px solid var(--newsletter-feature-line,#ebddc6);
-  border-radius:12px;
-  background:var(--newsletter-feature-bg,#fff7ec);
-}
-.newsletter-page .newsletter-thanksgiving-eyebrow {
-  display:block;
-  margin-bottom:9px;
-  font-size:.6875rem;
-  line-height:1.4;
-  letter-spacing:.075em;
-  font-weight:700;
-  color:var(--newsletter-feature-ink,#88592b);
-}
-.newsletter-page .newsletter-thanksgiving-feature h2 {
-  margin:0 0 11px;
-  font-size:1.02rem;
-  line-height:1.35;
-  color:var(--newsletter-feature-ink,#6c492d);
-  font-weight:650;
-}
-.newsletter-page .newsletter-thanksgiving-feature .newsletter-rich-copy {
+/* Thanksgiving deliberately reuses October's .newsletter-halloween-feature
+   seasonal card, eyebrow and joke styling. Only adapt RichEditor paragraphs
+   to the same compact joke cards; no separate Thanksgiving visual system. */
+.newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy {
   display:grid;
-  gap:0;
+  gap:13px;
   max-width:100%;
 }
-.newsletter-page .newsletter-thanksgiving-feature .newsletter-rich-copy > p {
+.newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy > p {
   margin:0!important;
-  padding:12px 0;
-  border-top:1px solid rgba(132,92,48,.16);
-  color:#624c3b;
-  line-height:1.65;
-  font-size:.84rem;
+  padding:11px 12px;
+  border-left:3px solid #d89c54;
+  border-radius:0 8px 8px 0;
+  background:rgba(255,255,255,.78);
+  color:#513d2b;
+  font-size:.8125rem;
+  line-height:1.6;
   white-space:normal;
   overflow-wrap:anywhere;
 }
-.newsletter-page .newsletter-thanksgiving-feature .newsletter-rich-copy > p:first-child {
-  border-top:0;
-}
-.newsletter-page .newsletter-thanksgiving-feature .newsletter-rich-copy strong {
-  display:inline;
-  color:#523e2c;
+.newsletter-page .newsletter-halloween-feature .newsletter-thanksgiving-copy .newsletter-rich-copy strong {
+  color:#513d2b;
   font-weight:650;
-}
-.newsletter-page .newsletter-expand-panel .newsletter-thanksgiving-feature .thanksgiving-horn {
-  max-width:360px;
 }
