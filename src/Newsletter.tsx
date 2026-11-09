@@ -1,7 +1,7 @@
 import { UiText } from './components/atoms/MuiPrimitives'
 import NewsletterSidebarSection from './components/molecules/NewsletterSidebarSection'
 import NewsletterRailHeading from './components/atoms/NewsletterRailHeading'
-import { createElement, useEffect, useState } from 'react'
+import { createElement, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { isNewsletterRichBody, newsletterBodyHtml, sanitizedNewsletterHtml } from './components/NewsletterRichEditor'
 import PageHeading from './components/PageHeading'
@@ -29,6 +29,10 @@ export type NewsletterMedia = {
   align?: 'left' | 'right'
   /** Percentage of the article column used by the photo (25–100). */
   widthPercent?: number
+  cropAspect?: 'natural' | 'square' | 'landscape' | 'portrait' | 'wide'
+  cropX?: number
+  cropY?: number
+  cropZoom?: number
 }
 export type NewsletterSectionStyle = 'default' | 'club-corner' | 'did-you-know' | 'halloween' | 'thanksgiving'
 export type NewsletterColorTheme = 'default' | 'sage' | 'blue' | 'amber' | 'lavender'
@@ -129,9 +133,13 @@ function externalGoogleMapsVideoUrl(value: string): string | null {
 }
 export { embeddedVideoUrl, externalGoogleMapsVideoUrl }
 
-export function NewsletterMediaView({ media, onResize }: { media: NewsletterMedia; onResize?: (id: string, width: number) => void }) {
+export function NewsletterMediaView({ media, onResize, onUpdate }: { media: NewsletterMedia; onResize?: (id: string, width: number) => void; onUpdate?: (id:string, patch:Partial<NewsletterMedia>)=>void }) {
   const [signedUrl, setSignedUrl] = useState('')
   const [loadingError, setLoadingError] = useState(false)
+  const [cropping,setCropping] = useState(false)
+  const resizeStart = useRef<{x:number;width:number;column:number}|null>(null)
+  const cropStart = useRef<{x:number;y:number;cropX:number;cropY:number}|null>(null)
+  const figureRef = useRef<HTMLElement>(null)
   useEffect(() => {
     let active = true
     setSignedUrl('')
@@ -151,8 +159,15 @@ export function NewsletterMediaView({ media, onResize }: { media: NewsletterMedi
   const embedded = media.type === 'video' && media.url ? embeddedVideoUrl(media.url) : null
   const googleMapsClip = media.type === 'video' && media.url ? externalGoogleMapsVideoUrl(media.url) : null
   const width = Math.min(100, Math.max(25, media.widthPercent ?? 42))
-  return <figure className={`newsletter-media newsletter-media-aligned-${media.align === 'right' ? 'right' : 'left'}${width === 100 ? ' newsletter-media-full-width' : ''}`} style={media.type === 'image' ? { width: `${width}%` } : undefined}>
-    {media.type === 'image' && imageUrl && <img loading="lazy" src={imageUrl} alt={media.alt || 'Newsletter illustration'} />}
+  const cropRatio = media.cropAspect === 'square' ? '1 / 1' : media.cropAspect === 'landscape' ? '4 / 3' : media.cropAspect === 'portrait' ? '3 / 4' : media.cropAspect === 'wide' ? '16 / 9' : undefined
+  const clamp = (n:number,min:number,max:number)=>Math.max(min,Math.min(max,n))
+  return <figure ref={figureRef} className={`newsletter-media newsletter-media-aligned-${media.align === 'right' ? 'right' : 'left'}${width === 100 ? ' newsletter-media-full-width' : ''}`} style={media.type === 'image' ? { width: `${width}%` } : undefined}>
+    {media.type === 'image' && imageUrl && <div className={'newsletter-photo-frame'+(cropping?' cropping':'')} style={cropRatio?{aspectRatio:cropRatio}:undefined}
+      onPointerDown={event=>{if(!cropping||!cropRatio||!onUpdate)return;event.currentTarget.setPointerCapture(event.pointerId);cropStart.current={x:event.clientX,y:event.clientY,cropX:media.cropX??50,cropY:media.cropY??50}}}
+      onPointerMove={event=>{if(!cropStart.current||!onUpdate)return;const rect=event.currentTarget.getBoundingClientRect();onUpdate(media.id,{cropX:clamp(cropStart.current.cropX-(event.clientX-cropStart.current.x)/rect.width*100,0,100),cropY:clamp(cropStart.current.cropY-(event.clientY-cropStart.current.y)/rect.height*100,0,100)})}}
+      onPointerUp={event=>{cropStart.current=null;if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId)}}
+      onPointerCancel={()=>{cropStart.current=null}}>
+      <img loading="lazy" draggable={false} src={imageUrl} alt={media.alt || 'Newsletter illustration'} style={cropRatio?{height:'100%',objectFit:'cover',objectPosition:`${media.cropX??50}% ${media.cropY??50}%`,transform:`scale(${media.cropZoom??1})`}:undefined}/></div>}
     {media.type === 'video' && media.storagePath && signedUrl &&
       <video src={signedUrl} controls playsInline preload="metadata" aria-label={media.alt || 'Newsletter video'} />}
     {media.type === 'video' && embedded &&
@@ -171,12 +186,28 @@ export function NewsletterMediaView({ media, onResize }: { media: NewsletterMedi
     {(!imageUrl && media.type === 'image' || media.type === 'video' && !signedUrl && !embedded && !googleMapsClip) &&
       <p className="newsletter-media-placeholder" role="status">{loadingError ? 'This attachment could not be loaded.' : 'Loading attachment…'}</p>}
     {media.caption && <figcaption>{media.caption}</figcaption>}
-    {onResize && media.type === 'image' && <div className="newsletter-photo-resize-controls" aria-label="Photo size in newsletter preview">
-      <button type="button" disabled={width <= 25} aria-label="Make photo smaller" onClick={() => onResize(media.id, Math.max(25, width - 10))}>−</button>
-      <span aria-live="polite">{width}%</span>
-      <button type="button" disabled={width >= 100} aria-label="Make photo larger" onClick={() => onResize(media.id, Math.min(100, width + 10))}>+</button>
-      <button type="button" onClick={() => onResize(media.id, 100)}>Full width</button>
-    </div>}
+    {onResize && media.type === 'image' && <>
+      <span className="newsletter-photo-grip" role="slider" tabIndex={0} aria-label="Drag to resize photo" aria-valuemin={25} aria-valuemax={100} aria-valuenow={width}
+        onKeyDown={event=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();onResize(media.id,clamp(width+(event.key==='ArrowRight'?5:-5),25,100))}}}
+        onPointerDown={event=>{event.preventDefault();event.currentTarget.setPointerCapture(event.pointerId);const column=figureRef.current?.closest('.newsletter-rich-media-layout')?.getBoundingClientRect().width??600;resizeStart.current={x:event.clientX,width,column}}}
+        onPointerMove={event=>{if(resizeStart.current)onResize(media.id,clamp(Math.round(resizeStart.current.width+(event.clientX-resizeStart.current.x)*100/resizeStart.current.column),25,100))}}
+        onPointerUp={event=>{resizeStart.current=null;event.currentTarget.releasePointerCapture(event.pointerId)}}>↘</span>
+      <div className="newsletter-photo-resize-controls">
+        <span>{width}%</span>
+        <span className="newsletter-photo-move" draggable title="Drag onto text or another photo to reposition" onDragStart={event=>{event.dataTransfer.setData('text/plain',media.id);event.dataTransfer.effectAllowed='move'}}>⠿ Move</span>
+        <button type="button" onClick={()=>onUpdate?.(media.id,{align:media.align==='right'?'left':'right'})}>{media.align==='right'?'Left':'Right'}</button>
+        <button type="button" onClick={()=>onResize(media.id,100)}>Full width</button>
+        <button type="button" onClick={()=>setCropping(!cropping)}>{cropping?'Done':'Crop'}</button>
+      </div>
+      {cropping && <div className="newsletter-photo-crop-controls">
+        <label>Shape <select value={media.cropAspect??'natural'} onChange={event=>onUpdate?.(media.id,{cropAspect:event.target.value as NewsletterMedia['cropAspect']})}>
+          <option value="natural">Original</option><option value="square">Square</option><option value="landscape">4:3</option><option value="portrait">3:4</option><option value="wide">16:9</option>
+        </select></label>
+        <label>Zoom <input type="range" min="1" max="2.5" step=".05" value={media.cropZoom??1} onChange={event=>onUpdate?.(media.id,{cropZoom:Number(event.target.value)})}/></label>
+        <span>Drag the image to adjust the crop.</span>
+        <button type="button" onClick={()=>onUpdate?.(media.id,{cropAspect:'natural',cropZoom:1,cropX:50,cropY:50})}>Reset</button>
+      </div>}
+    </>}
   </figure>
 }
 
@@ -184,7 +215,7 @@ export type NewsletterLayout = 'article' | 'feature'
 
 // Rich content uses a small safe markup subset. Media tokens resolve to the
 // issue's own uploaded assets and can appear between paragraphs.
-function NewsletterRichBody({body,media=[],onResizeMedia,editorPreview=false}:{body:string;media?:NewsletterMedia[];onResizeMedia?:(id:string,width:number)=>void;editorPreview?:boolean}){
+function NewsletterRichBody({body,media=[],onResizeMedia,onUpdateMedia,onMoveMedia,editorPreview=false}:{body:string;media?:NewsletterMedia[];onResizeMedia?:(id:string,width:number)=>void;onUpdateMedia?:(id:string,patch:Partial<NewsletterMedia>)=>void;onMoveMedia?:(id:string,target:number,after:boolean)=>void;editorPreview?:boolean}){
   const safe=sanitizedNewsletterHtml(newsletterBodyHtml(body))
   const dom=new DOMParser().parseFromString(safe,'text/html')
   let index=0
@@ -195,7 +226,7 @@ function NewsletterRichBody({body,media=[],onResizeMedia,editorPreview=false}:{b
     const mediaId=element.getAttribute('data-media-id')
     if(mediaId){
       const asset=media.find(item=>item.id===mediaId)
-      return asset ? <NewsletterMediaView key={index++} media={asset} onResize={onResizeMedia}/> : editorPreview ? <p key={index++} role="alert" className="newsletter-media-missing">This photo has no saved attachment. Reinsert it from Edit to display it.</p> : null
+      return asset ? <NewsletterMediaView key={index++} media={asset} onResize={onResizeMedia} onUpdate={onUpdateMedia}/> : editorPreview ? <p key={index++} role="alert" className="newsletter-media-missing">This photo has no saved attachment. Reinsert it from Edit to display it.</p> : null
     }
     const tag=element.tagName.toLowerCase()
     const tags=new Set(['p','div','h3','h4','strong','em','u','ul','ol','li','blockquote','br','a'])
@@ -214,7 +245,20 @@ function NewsletterRichBody({body,media=[],onResizeMedia,editorPreview=false}:{b
         ? 'newsletter-intro-block' : undefined,
     },...children)
   }
-  return <div className="newsletter-article-copy newsletter-rich-copy newsletter-rich-media-layout">{Array.from(dom.body.childNodes).map(convert)}</div>
+  const nodes=Array.from(dom.body.childNodes)
+  const renderNodes:ReactNode[]=[]
+  // Adjacent photo tokens become a two-column gallery without changing saved HTML.
+  for(let i=0;i<nodes.length;i++){
+    const getPhoto=(n:Node)=>{if(n.nodeType!==1)return undefined;const el=n as Element;const id=el.getAttribute('data-media-id')??el.querySelector('[data-media-id]')?.getAttribute('data-media-id');return media.find(m=>m.id===id&&m.type==='image')}
+    const first=getPhoto(nodes[i]),second=i+1<nodes.length?getPhoto(nodes[i+1]):undefined
+    if(first&&second){renderNodes.push(<div className="newsletter-photo-row" key={'photos-'+i}>{[first,second].map(m=><NewsletterMediaView key={m.id} media={m} onResize={onResizeMedia} onUpdate={onUpdateMedia}/>)}</div>);i++;continue}
+    renderNodes.push(<div className="newsletter-story-block" data-drop-index={i} key={'node-'+i}>{convert(nodes[i])}</div>)
+  }
+  return <div className="newsletter-article-copy newsletter-rich-copy newsletter-rich-media-layout"
+    onDragOver={event=>{if(onMoveMedia){event.preventDefault();event.dataTransfer.dropEffect='move'}}}
+    onDrop={event=>{if(!onMoveMedia)return;const id=event.dataTransfer.getData('text/plain');if(!media.some(m=>m.id===id))return;event.preventDefault();const block=(event.target as Element).closest('[data-drop-index]');const idx=block?Number(block.getAttribute('data-drop-index')):nodes.length;const rect=block?.getBoundingClientRect();onMoveMedia(id,idx,rect?event.clientY>rect.top+rect.height/2:true)}}>
+    {renderNodes}
+  </div>
 }
 function NewsletterArticleBody({ body }: { body: string }) {
   // The editor contains meaningful line breaks, but not necessarily blank
@@ -261,7 +305,7 @@ function NewsletterArticleBody({ body }: { body: string }) {
   </div>
 }
 
-export function IssueView({ issue, layout = 'article', editorPreview = false, onResizeMedia }: { issue: NewsletterIssue; layout?: NewsletterLayout; editorPreview?: boolean; onResizeMedia?: (id:string,width:number)=>void }) {
+export function IssueView({ issue, layout = 'article', editorPreview = false, onResizeMedia,onUpdateMedia,onMoveMedia }: { issue: NewsletterIssue; layout?: NewsletterLayout; editorPreview?: boolean; onResizeMedia?: (id:string,width:number)=>void; onUpdateMedia?:(id:string,patch:Partial<NewsletterMedia>)=>void; onMoveMedia?:(sectionIndex:number,id:string,target:number,after:boolean)=>void }) {
   const mainDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'main')
   const sideDetails = orderNewsletterDetails(issue.details).filter(section => newsletterSectionPlacement(section) === 'sidebar')
   const articleSections = mainDetails.length > 0 ? mainDetails : issue.sections
@@ -286,7 +330,7 @@ export function IssueView({ issue, layout = 'article', editorPreview = false, on
                 {newsletterSectionStyle(section) === 'did-you-know' && <span className="newsletter-feature-kicker">DID YOU KNOW?</span>}
                 {halloween && <div className="newsletter-main-seasonal"><span className="newsletter-feature-kicker">CLUB CORNER</span><HalloweenTruss /></div>}
                 {thanksgiving && <div className="newsletter-main-seasonal"><span className="newsletter-feature-kicker">CLUB CORNER</span><ThanksgivingHorn /></div>}
-                <div className="expand-grid"><div><UiText component="h2" variant="h6">{section.heading}</UiText>{isNewsletterRichBody(section.body) ? <NewsletterRichBody body={section.body} media={section.media} onResizeMedia={onResizeMedia} editorPreview={editorPreview}/> : <NewsletterArticleBody body={section.body} />}</div></div>
+                <div className="expand-grid"><div><UiText component="h2" variant="h6">{section.heading}</UiText>{isNewsletterRichBody(section.body) ? <NewsletterRichBody body={section.body} media={section.media} onResizeMedia={onResizeMedia} onUpdateMedia={onUpdateMedia} onMoveMedia={onMoveMedia?(id,target,after)=>onMoveMedia(index,id,target,after):undefined} editorPreview={editorPreview}/> : <NewsletterArticleBody body={section.body} />}</div></div>
                 {!isNewsletterRichBody(section.body) && (section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
               </section>
             })}

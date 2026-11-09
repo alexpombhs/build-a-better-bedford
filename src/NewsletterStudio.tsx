@@ -392,6 +392,33 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         ...section, media: (section.media ?? []).map((item, i) => i === mediaIndex ? { ...item, ...patch } : item),
       })),
     }))
+  const updatePreviewMedia = (id: string, patch: Partial<NewsletterMedia>) => {
+    setDraft(current=>({...current,details:current.details.map(section=>({
+      ...section,media:(section.media??[]).map(item=>item.id===id?{...item,...patch}:item),
+    }))}))
+  }
+  const movePreviewMedia = (sectionIndex:number,id:string,target:number,after:boolean) => {
+    setDraft(current=>({...current,details:current.details.map((section,i)=>{
+      if(i!==sectionIndex)return section
+      const dom=new DOMParser().parseFromString(newsletterBodyHtml(section.body),'text/html')
+      const tokens=Array.from(dom.body.querySelectorAll('[data-media-id]'))
+      const marker=tokens.find(node=>node.getAttribute('data-media-id')===id)
+      if(!marker)return section
+      // Insert at a block boundary. A photo moved next to another photo
+      // creates a side-by-side pair in preview and in the published article.
+      const topLevel=Array.from(dom.body.childNodes)
+      const destination=topLevel[target]
+      const container=marker.parentElement
+      if(container && container.childNodes.length===1 && ['P','DIV'].includes(container.tagName))container.remove()
+      else marker.remove()
+      const wrapper=dom.createElement('div');wrapper.appendChild(marker)
+      if(destination?.parentNode===dom.body){
+        if(after)destination.nextSibling?dom.body.insertBefore(wrapper,destination.nextSibling):dom.body.appendChild(wrapper)
+        else dom.body.insertBefore(wrapper,destination)
+      }else dom.body.appendChild(wrapper)
+      return {...section,body:'<!--bbb-rich-->'+sanitizedNewsletterHtml(dom.body.innerHTML)}
+    })}))
+  }
   const resizePreviewMedia = (id: string, widthPercent: number) => {
     setDraft(current => ({ ...current, details: current.details.map(section => ({
       ...section,
@@ -670,7 +697,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
         </div>
         {preview ? <div className="studio-preview-area">
           <p className="studio-layout-description">Article preview: use the − and + controls under a photo to resize it, or choose Full width. Your changes appear here immediately; save the draft to keep them. Nothing is published until you choose “Publish issue.”</p>
-          <UiBox className="studio-preview"><IssueView issue={draft} layout="article" editorPreview onResizeMedia={resizePreviewMedia} /></UiBox>
+          <UiBox className="studio-preview"><IssueView issue={draft} layout="article" editorPreview onResizeMedia={resizePreviewMedia} onUpdateMedia={updatePreviewMedia} onMoveMedia={movePreviewMedia} /></UiBox>
         </div> : <div className="studio-panel studio-form">
           <h2>Issue details</h2>
           <div className="studio-fields-two">
