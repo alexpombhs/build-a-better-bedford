@@ -175,10 +175,15 @@ function NewsletterRichBody({body,media=[]}:{body:string;media?:NewsletterMedia[
     const tags=new Set(['p','div','h3','h4','strong','em','u','ul','ol','li','blockquote','br','a'])
     if(!tags.has(tag))return null
     const children=Array.from(element.childNodes).map(convert)
+    // A media token can be inserted inside a paragraph by contentEditable.
+    // Never nest a <figure> inside <p>: it is invalid HTML, and the browser
+    // relocates the figure, often placing it above the text unexpectedly.
+    if(tag==='p' && Array.from(element.children).some(child=>child.hasAttribute('data-media-id')))
+      return createElement('div',{key:index++,className:'newsletter-rich-media-paragraph'},...children)
     if(tag==='a')return createElement('a',{key:index++,href:element.getAttribute('href') ?? undefined,target:'_blank',rel:'noopener noreferrer'},...children)
     return createElement(tag,{key:index++},...children)
   }
-  return <div className="newsletter-article-copy newsletter-rich-copy">{Array.from(dom.body.childNodes).map(convert)}</div>
+  return <div className="newsletter-article-copy newsletter-rich-copy newsletter-rich-media-layout">{Array.from(dom.body.childNodes).map(convert)}</div>
 }
 function NewsletterArticleBody({ body }: { body: string }) {
   // The editor contains meaningful line breaks, but not necessarily blank
@@ -249,7 +254,7 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
                 {newsletterSectionStyle(section) === 'did-you-know' && <span className="newsletter-feature-kicker">DID YOU KNOW?</span>}
                 {halloween && <div className="newsletter-main-seasonal"><span className="newsletter-halloween-eyebrow">🎃 SEASONAL FEATURE</span><HalloweenTruss /></div>}
                 <div className="expand-grid"><div><Typography component="h2" variant="h6">{section.heading}</Typography>{isNewsletterRichBody(section.body) ? <NewsletterRichBody body={section.body} media={section.media}/> : <NewsletterArticleBody body={section.body} />}</div></div>
-                {(section.media ?? []).filter(item => !isNewsletterRichBody(section.body) || !section.body.includes(`data-media-id="${item.id}"`)).map(item => <NewsletterMediaView key={item.id} media={item} />)}
+                {!isNewsletterRichBody(section.body) && (section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
               </section>
             })}
           </div>
@@ -296,7 +301,7 @@ export function IssueView({ issue, layout = 'article', editorPreview = false }: 
                       <p className={/^(Why |Because )/i.test(paragraph.trim()) ? 'newsletter-halloween-joke' : undefined} key={paragraphIndex}>{paragraph}</p>
                     )}</div>
                   : <Typography component="p" variant="body2">{section.body}</Typography>}
-                {(section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
+                {!isNewsletterRichBody(section.body) && (section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
               </section>
             })}
           </div>}
