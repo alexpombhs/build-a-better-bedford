@@ -123,6 +123,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [mediaUrl, setMediaUrl] = useState('')
   const [mediaAlt, setMediaAlt] = useState('')
   const [mediaCaption, setMediaCaption] = useState('')
+  const [mediaAlign, setMediaAlign] = useState<'left' | 'right'>('left')
   const [mediaError, setMediaError] = useState('')
   const [newIssue, setNewIssue] = useState(true)
 
@@ -373,6 +374,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setMediaUrl(existing?.url ?? '')
     setMediaAlt(existing?.alt ?? '')
     setMediaCaption(existing?.caption ?? '')
+    setMediaAlign(existing?.align === 'right' ? 'right' : 'left')
     setMediaError('')
   }
   const closeMediaDialog = () => {
@@ -404,7 +406,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       }
       saveItem({
         id:existing?.id ?? crypto.randomUUID(),type:'video',url,
-        alt:mediaAlt.trim()||'Newsletter video',caption:mediaCaption.trim(),
+        alt:mediaAlt.trim()||'Newsletter video',caption:mediaCaption.trim(),align:mediaAlign,
       })
       setMessage(mediaMode === 'google-maps' ? 'Google Maps link preview saved. It opens on Google Maps.' : 'Video saved in the article.')
       closeMediaDialog()
@@ -413,7 +415,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     // When editing an existing upload, changing only title/caption should not
     // force another upload. Selecting a file genuinely REPLACES that file.
     if (!mediaFile && existing?.storagePath) {
-      saveItem({...existing,alt:mediaAlt.trim(),caption:mediaCaption.trim()})
+      saveItem({...existing,alt:mediaAlt.trim(),caption:mediaCaption.trim(),align:mediaAlign})
       closeMediaDialog()
       return
     }
@@ -442,7 +444,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       saveItem({
         id:existing?.id ?? crypto.randomUUID(),type,storagePath,
         alt:mediaAlt.trim() || (type === 'image' ? file.name.replace(/\\.[^.]+$/, '') : 'Newsletter video'),
-        caption:mediaCaption.trim(),
+        caption:mediaCaption.trim(),align:mediaAlign,
       })
       setMessage(existing ? 'File replaced. Save the draft to keep this change.' : 'Media inserted. Save the draft to keep this change.')
       setMediaTarget(null)
@@ -728,6 +730,13 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
               {mediaMode === 'google-maps' && <p className="studio-template-help">Google Maps does not provide an embeddable player for these clips. This adds a labeled video card linked to the original, not an uploaded copy.</p>}
               <UiTextField fullWidth size="small" label={mediaMode === 'embed' || mediaMode === 'google-maps' || mediaFile?.type.startsWith('video/') ? 'Video title' : 'Image description (alt text)'}
                 helperText="Describe the media for accessibility." value={mediaAlt} onChange={event => setMediaAlt(event.target.value)} inputProps={{maxLength:220}} />
+              <UiSelect
+                label="Media alignment"
+                value={mediaAlign}
+                onValueChange={value=>setMediaAlign(value === 'right' ? 'right' : 'left')}
+                options={[{value:'left',label:'Left — text flows on the right'},{value:'right',label:'Right — text flows on the left'}]}
+              />
+              <p className="studio-template-help">The photo or video keeps its original proportions. To change its position, place the text cursor where it should appear and use Move to cursor beside the attachment.</p>
               <UiTextField fullWidth size="small" label="Caption or credit (optional)" value={mediaCaption}
                 onChange={event => setMediaCaption(event.target.value)} inputProps={{maxLength:500}} multiline minRows={2} />
               {mediaError && <p className="studio-media-dialog-error" role="alert">{mediaError}</p>}
