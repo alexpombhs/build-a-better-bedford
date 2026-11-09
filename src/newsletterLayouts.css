@@ -1061,7 +1061,7 @@
   .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media {
     float:none;
     clear:both;
-    width:min(100%,320px);
+    width:100%!important;
     max-width:100%;
     margin:10px 0 18px!important;
   }
