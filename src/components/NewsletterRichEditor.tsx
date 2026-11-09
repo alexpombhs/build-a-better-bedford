@@ -1,4 +1,7 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { NewsletterMediaView } from '../Newsletter'
+import type { NewsletterMedia } from '../Newsletter'
 import type { ReactNode } from 'react'
 import { UiIconButton } from './atoms/MuiPrimitives'
 import FormatBoldIcon from '@mui/icons-material/FormatBold'
@@ -65,11 +68,17 @@ export function referencedMediaIds(body:string):Set<string>{
   return new Set(Array.from(body.matchAll(/data-media-id=["']([0-9a-f-]{20,50})["']/gi),m=>m[1]))
 }
 
-export type NewsletterEditorHandle={ insertMedia:(id:string)=>void; moveMedia:(id:string)=>void }
-type Props={value:string;onChange:(body:string)=>void;onAddMedia:()=>void;onEditMedia?:(id:string)=>void;label?:string;children?:ReactNode}
-export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(function NewsletterRichEditor({value,onChange,onAddMedia,onEditMedia,label='Article text'},ref){
+export type NewsletterEditorHandle={ insertMedia:(id:string)=>void; moveMedia:(id:string)=>void; moveMediaToPoint:(id:string,x:number,y:number)=>void }
+type Props={value:string;onChange:(body:string)=>void;onAddMedia:()=>void;onEditMedia?:(id:string)=>void;media?:NewsletterMedia[];onResizeMedia?:(id:string,width:number)=>void;onUpdateMedia?:(id:string,patch:Partial<NewsletterMedia>)=>void;onMoveMedia?:(id:string,x:number,y:number)=>void;label?:string;children?:ReactNode}
+export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(function NewsletterRichEditor({value,onChange,onAddMedia,onEditMedia,media=[],onResizeMedia,onUpdateMedia,onMoveMedia,label='Article text'},ref){
   const editor=useRef<HTMLDivElement>(null)
   const selection=useRef<Range|null>(null)
+  const [mediaTargets,setMediaTargets]=useState<Array<{id:string;element:Element}>>([])
+  const syncMediaTargets=()=>{
+    if(!editor.current)return
+    const next=Array.from(editor.current.querySelectorAll('[data-media-id]')).map(element=>({id:element.getAttribute('data-media-id')??'',element}))
+    setMediaTargets(previous=>previous.length===next.length && previous.every((item,i)=>item.id===next[i].id&&item.element===next[i].element)?previous:next)
+  }
   const current=useRef(value)
   const changed=useRef(onChange)
   changed.current=onChange
@@ -77,9 +86,11 @@ export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(funct
     if(!editor.current || current.current===value)return
     current.current=value
     editor.current.innerHTML=sanitizedNewsletterHtml(newsletterBodyHtml(value))
+    syncMediaTargets()
   },[value])
   useEffect(()=>{
     if(editor.current)editor.current.innerHTML=sanitizedNewsletterHtml(newsletterBodyHtml(value))
+    syncMediaTargets()
     // Initial contents only: later text edits are owned by the editable element.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[])
@@ -93,6 +104,7 @@ export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(funct
     const result=storeNewsletterHtml(editor.current.innerHTML)
     current.current=result
     changed.current(result)
+    syncMediaTargets()
   }
   const restore=()=>{
     editor.current?.focus()
@@ -132,8 +144,42 @@ export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(funct
     capture()
     emit()
   }
+  const moveAtPoint=(id:string,x:number,y:number)=>{
+    if(!editor.current)return
+    const marker=Array.from(editor.current.querySelectorAll('[data-media-id]'))
+      .find(element=>element.getAttribute('data-media-id')===id)
+    if(!marker)return
+    const at=document.elementFromPoint(x,y)
+    if(!at||!editor.current.contains(at))return
+    let range:Range|null=null
+    const target=at.closest('[data-media-id]')
+    if(target){
+      if(target===marker)return
+      range=document.createRange()
+      const bounds=target.getBoundingClientRect()
+      if(x>bounds.left+bounds.width/2)range.setStartAfter(target)
+      else range.setStartBefore(target)
+      range.collapse(true)
+    }else {
+      const doc=document as Document&{caretRangeFromPoint?:(x:number,y:number)=>Range|null;caretPositionFromPoint?:(x:number,y:number)=>CaretPosition|null}
+      range=doc.caretRangeFromPoint?.(x,y)??null
+      if(!range){
+        const pos=doc.caretPositionFromPoint?.(x,y)
+        if(pos){range=document.createRange();range.setStart(pos.offsetNode,pos.offset)}
+      }
+    }
+    if(!range||!editor.current.contains(range.startContainer))return
+    if(marker.contains(range.startContainer))return
+    const parent=marker.parentElement
+    if(parent&&['P','DIV'].includes(parent.tagName)&&parent.childNodes.length===1)parent.remove()
+    else marker.remove()
+    range.insertNode(marker)
+    selection.current=range.cloneRange()
+    emit()
+  }
   useImperativeHandle(ref,()=>({
     insertMedia:insertAtCaret,
+    moveMediaToPoint:moveAtPoint,
     moveMedia:(id:string)=>{
       if(!editor.current)return
       // The reader chooses the destination by positioning the cursor first.
@@ -180,14 +226,20 @@ export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(funct
       onClick={event=>{
         const element=(event.target as Element).closest?.('[data-media-id]')
         const mediaId=element?.getAttribute('data-media-id')
-        if(mediaId){event.preventDefault();onEditMedia?.(mediaId)}
+        if(mediaId && media.find(item=>item.id===mediaId)?.type !== 'image'){event.preventDefault();onEditMedia?.(mediaId)}
       }}
       onKeyDown={event=>{
         if(event.key==='Enter' && event.target instanceof Element && event.target.matches('[data-media-id]')){
           event.preventDefault()
           const id=event.target.getAttribute('data-media-id')
-          if(id)onEditMedia?.(id)
+          if(id && media.find(item=>item.id===id)?.type !== 'image')onEditMedia?.(id)
         }
       }}/>
+    {mediaTargets.map(target=>{
+      const item=media.find(entry=>entry.id===target.id)
+      if(!item)return null
+      return createPortal(<NewsletterMediaView media={item} onResize={item.type==='image'?onResizeMedia:undefined}
+        onUpdate={onUpdateMedia} onMove={onMoveMedia}/>,target.element,target.id)
+    })}
   </div>
 })
