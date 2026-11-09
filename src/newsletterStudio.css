@@ -217,8 +217,13 @@
   width:100%;
   min-width:0;
 }
+/* The preview card already has its own border and sits inside the studio.
+   Avoid a second oversized gutter around the reading column. */
 .studio-preview {
-  padding:clamp(16px,2vw,24px);
+  padding:12px;
+}
+@media(max-width:600px) {
+  .studio-preview { padding:10px; }
 }
 .studio-preview .newsletter-page .newsletter-editorial-grid.has-sidebar {
   display:grid;
