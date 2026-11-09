@@ -429,7 +429,6 @@ function App() {
     {(page === 'projects' || page === 'lab') && <section className="projects-page">
       <div className="projects-heading projects-toolbar">
         <EngineeringTabs active={projectTab} onChange={tab => { setProjectTab(tab); go('projects') }} />
-        <img className="projects-brand-mark" src={`${import.meta.env.BASE_URL}projects-logo.svg`} alt="BBB civil engineering bridge mark" width="78" height="69" />
       </div>
       <EngineeringSectionIntro tab={projectTab} actions={projectTab === 'ideas' ? (
 <div className="ideas-toolbar"><div className="project-pagination" aria-label="Project pages">
