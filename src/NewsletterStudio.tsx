@@ -407,7 +407,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     const after=y>rect.top+rect.height/2
     setDraft(current=>({...current,details:current.details.map((section,i)=>{
       if(i!==sectionIndex)return section
-      const dom=new DOMParser().parseFromString(newsletterBodyHtml(section.body),'text/html')
+      const dom=new DOMParser().parseFromString(sanitizedNewsletterHtml(newsletterBodyHtml(section.body)),'text/html')
       const original=Array.from(dom.body.childNodes)
       const marker=Array.from(dom.body.querySelectorAll('[data-media-id]')).find(node=>node.getAttribute('data-media-id')===id)
       if(!marker)return section
@@ -793,9 +793,9 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                 }}
               />
               <div className="studio-inline-media">
-                {(section.media ?? []).length > 0 && <div className="studio-attachment-list" aria-label="Attached media">
-                  {(section.media ?? []).map((item, mediaIndex) => <div className="studio-attachment" key={item.id}>
-                    <span className="studio-attachment-name">{item.type === 'image' ? 'Photo' : 'Video'}{item.caption ? ` · ${item.caption}` : item.alt ? ` · ${item.alt}` : ''}</span>
+                {(section.media ?? []).some(item=>item.type!=='image') && <div className="studio-attachment-list" aria-label="Attached media">
+                  {(section.media ?? []).map((item, mediaIndex) => item.type==='image' ? null : <div className="studio-attachment" key={item.id}>
+                    <span className="studio-attachment-name">{'Video'}{item.caption ? ` · ${item.caption}` : item.alt ? ` · ${item.alt}` : ''}</span>
                     <button type="button" className="studio-attachment-action" onClick={() => openMediaDialog('details',index,mediaIndex)}>Edit / Replace</button>
                     <button type="button" className="studio-attachment-action" title="First place the cursor in the article where this media should go" onClick={()=>editorRefs.current[index]?.moveMedia(item.id)}>Move to cursor</button>
                     <button type="button" className="studio-attachment-action studio-attachment-remove" onClick={() => removeMedia('details',index,mediaIndex)}>Remove</button>

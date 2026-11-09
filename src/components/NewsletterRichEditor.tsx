@@ -39,13 +39,64 @@ function sanitize(node:Node):string {
   // arbitrary HTML classes or attributes from rich-text input.
   if(tag==='div' && e.classList.contains('newsletter-intro-block'))
     attributes=' class="newsletter-intro-block"'
+  else if(tag==='div' && e.classList.contains('newsletter-photo-row'))
+    attributes=' class="newsletter-photo-row"'
   if(tag==='a'){
     try {const u=new URL(e.getAttribute('href') ?? '');if(['https:','http:'].includes(u.protocol))attributes=' href="'+escapeHtml(u.href)+'" target="_blank" rel="noopener noreferrer"'}catch { /* ignore invalid href */ }
   }
   return '<'+tag+attributes+'>'+inner+'</'+tag+'>'
 }
+// A media token is a block in the article, even if the editor inserted it
+// inside an ordinary paragraph. Split at each token without losing any text.
+// This normalisation is shared by Edit, Preview and the published reader.
+function splitInlineMediaParagraphs(dom: Document) {
+  // Normalize an existing photo row back into individual media blocks before
+  // regrouping, so a moved/deleted photo never leaves a broken row behind.
+  for(const row of Array.from(dom.body.querySelectorAll('.newsletter-photo-row'))){
+    const children=Array.from(row.childNodes)
+    for(const child of children)row.before(child)
+    row.remove()
+  }
+  for(const paragraph of Array.from(dom.body.querySelectorAll('p'))){
+    const parts=Array.from(paragraph.childNodes)
+    if(!parts.some(node=>node.nodeType===1&&(node as Element).hasAttribute('data-media-id')))continue
+    const fragment=dom.createDocumentFragment()
+    let textParagraph=dom.createElement('p')
+    const flush=()=>{
+      if(textParagraph.textContent?.trim()||textParagraph.querySelector('br,a,strong,em,u'))fragment.appendChild(textParagraph)
+      textParagraph=dom.createElement('p')
+    }
+    for(const part of parts){
+      if(part.nodeType===1&&(part as Element).hasAttribute('data-media-id')){
+        flush()
+        const mediaBlock=dom.createElement('div')
+        mediaBlock.appendChild(part)
+        fragment.appendChild(mediaBlock)
+      }else textParagraph.appendChild(part)
+    }
+    flush()
+    paragraph.replaceWith(fragment)
+  }
+  // Adjacent block photos belong to one explicit row, not separate floats.
+  // Pairing is stable in the editor, studio preview, and published renderer.
+  const mediaBlock=(node:Node):node is Element => node.nodeType===1
+    && (node as Element).tagName==='DIV'
+    && (node as Element).children.length===1
+    && (node as Element).firstElementChild?.hasAttribute('data-media-id')===true
+    && !(node as Element).textContent?.replace('▣ Media · Edit','').trim()
+  for(const node of Array.from(dom.body.childNodes)){
+    if(!mediaBlock(node)||!node.isConnected)continue
+    const sibling=node.nextSibling
+    if(!sibling||!mediaBlock(sibling))continue
+    const row=dom.createElement('div')
+    row.className='newsletter-photo-row'
+    node.before(row)
+    row.append(node,sibling)
+  }
+}
 export function sanitizedNewsletterHtml(html:string){
   const dom=new DOMParser().parseFromString(html,'text/html')
+  splitInlineMediaParagraphs(dom)
   return Array.from(dom.body.childNodes).map(sanitize).join('')
 }
 export const storeNewsletterHtml=(html:string)=>prefix+sanitizedNewsletterHtml(html)
@@ -239,7 +290,7 @@ export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(funct
       const item=media.find(entry=>entry.id===target.id)
       if(!item)return null
       return createPortal(<NewsletterMediaView media={item} onResize={item.type==='image'?onResizeMedia:undefined}
-        onUpdate={onUpdateMedia} onMove={onMoveMedia}/>,target.element,target.id)
+        onUpdate={onUpdateMedia} onMove={onMoveMedia} onEdit={item.type==='image'?onEditMedia:undefined}/>,target.element,target.id)
     })}
   </div>
 })
