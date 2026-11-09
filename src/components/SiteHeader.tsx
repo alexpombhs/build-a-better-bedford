@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './SiteHeader.css'
 
-type Section = 'home' | 'projects' | 'lab' | 'newsletter' | 'about'
+type Section = 'home' | 'projects' | 'newsletter' | 'about'
 
 type Props = {
   active: Section
@@ -23,7 +23,6 @@ export default function SiteHeader({ active, onNavigate, onJoin }: Props) {
   }
   const items: { section: Section; label: string }[] = [
     { section: 'projects', label: 'Projects' },
-    { section: 'lab', label: 'Lab' },
     { section: 'newsletter', label: 'Newsletter' },
     { section: 'about', label: 'About' },
   ]

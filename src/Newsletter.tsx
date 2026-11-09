@@ -246,7 +246,7 @@ export function NewsletterMediaView({
   }
   return <figure ref={figureRef}
     className={'newsletter-media newsletter-media-aligned-'+(media.align==='right'?'right':'left')+(width===100?' newsletter-media-full-width':'')+(editable&&selected?' newsletter-photo-selected':'')+(moving?' newsletter-photo-moving':'')}
-    style={media.type==='image'?{width:width+'%', '--bbb-photo-width':width+'%'} as CSSProperties:undefined}
+    style={{width:width+'%', '--bbb-photo-width':width+'%'} as CSSProperties}
     onPointerDown={event=>{if(event.target===figureRef.current)setSelected(true)}}
     onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setSelected(false)}}>
     {media.type==='image'&&imageUrl&&<div

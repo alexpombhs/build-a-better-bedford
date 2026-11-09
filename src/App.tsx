@@ -6,7 +6,8 @@ import AboutPage from './AboutPage'
 import SiteHeader from './components/SiteHeader'
 import PageHeading from './components/PageHeading'
 import ProjectCard from './components/ProjectCard'
-import { UiIconButton } from './components/atoms/MuiPrimitives'
+import { UiActionButton, UiBox, UiIconButton } from './components/atoms/MuiPrimitives'
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
 import './components/IdeaFlip.css'
 import { EngineeringTabs, EngineeringWorkspace, EngineeringSectionIntro } from './EngineeringLab'
 import heroLogo from './assets/logo.png'
@@ -43,6 +44,24 @@ const pageFromLocation = (): Page => {
   const relative = pathname.startsWith(basePath + '/') ? pathname.slice(basePath.length) : pathname
   const normalized = relative.replace(/\/+$/, '') || '/'
   return (Object.keys(pagePaths) as Page[]).find(page => pagePaths[page] === normalized) ?? 'home'
+}
+
+// Calculate the next Monday club meeting in Bedford's local time, not the viewer's timezone.
+// On Mondays, keep today's date until the 3:30 PM meeting ends.
+const upcomingMondayLabel = (now = new Date()): string => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', year: 'numeric', month: 'numeric', day: 'numeric',
+    hour: 'numeric', minute: 'numeric', hourCycle: 'h23',
+  }).formatToParts(now)
+  const part = (type: string) => Number(parts.find(p => p.type === type)?.value)
+  const date = new Date(Date.UTC(part('year'), part('month') - 1, part('day')))
+  const daysToMonday = (8 - date.getUTCDay()) % 7
+  const mondayMeetingEnded = daysToMonday === 0 &&
+    (part('hour') > 15 || (part('hour') === 15 && part('minute') >= 30))
+  date.setUTCDate(date.getUTCDate() + (mondayMeetingEnded ? 7 : daysToMonday))
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC',
+  }).format(date)
 }
 
 type SubmittedIdea = { id:number; title:string; subtitle:string; description:string; submitter_name:string|null; photo_url:string|null }
@@ -140,6 +159,16 @@ const labels: Record<Page, string> = {
 
 function App() {
   const [page, setPage] = useState<Page>(pageFromLocation)
+  const [nextMeetingDate, setNextMeetingDate] = useState(upcomingMondayLabel)
+  useEffect(() => {
+    const refreshMeetingDate = () => setNextMeetingDate(upcomingMondayLabel())
+    const intervalId = window.setInterval(refreshMeetingDate, 60_000)
+    document.addEventListener('visibilitychange', refreshMeetingDate)
+    return () => {
+      window.clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', refreshMeetingDate)
+    }
+  }, [])
   const [projectPage, setProjectPage] = useState(0)
   const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>(() => pageFromLocation() === 'lab' ? 'simulators' : 'ideas')
 
@@ -341,45 +370,44 @@ function App() {
 
   return <main className="site-shell">
     <SiteHeader
-      active={page === 'projects' || page === 'lab' ? (projectTab === 'ideas' ? 'projects' : 'lab') : page === 'newsletter' ? 'newsletter' : page === 'about' ? 'about' : 'home'}
+      active={page === 'projects' || page === 'lab' ? 'projects' : page === 'newsletter' ? 'newsletter' : page === 'about' ? 'about' : 'home'}
       onNavigate={section => {
-        if (section === 'lab') { setProjectTab('simulators'); go('lab') }
-        else if (section === 'projects') { setProjectTab('ideas'); go('projects') }
+        if (section === 'projects') { setProjectTab('ideas'); go('projects') }
         else go(section)
       }}
       onJoin={joinClub}
     />
 
-    {page === 'home' && <section className="portfolio-home">
-      <div className="portfolio-hero">
+    {page === 'home' && <UiBox component="section" className="portfolio-home">
+      <UiBox className="portfolio-hero">
         <PageHeading className="portfolio-hero-copy" title="Build a Better Bedford" description="A student-led civil engineering club exploring structural engineering, design, and local infrastructure through research, modeling, and hands-on projects." />
         {homepageImage("bridge_sketch_64.png") ? <img className="portfolio-hero-sketch" src={homepageImage("bridge_sketch_64.png")} alt="Conceptual pen sketch of a truss bridge" /> : <div className="portfolio-missing-sketch" role="status">Bridge sketch unavailable</div>}
-      </div>
-      <div className="portfolio-projects">
-        <button className="portfolio-project portfolio-bridge" onClick={() => {go('projects');setProjectTab('hands-on')}}>
+      </UiBox>
+      <UiBox className="portfolio-projects">
+        <UiActionButton className="portfolio-project portfolio-bridge" onClick={() => {go('projects');setProjectTab('hands-on')}}>
           {homepageImage("bridge_photo_64.png") ? <img src={homepageImage("bridge_photo_64.png")} alt="Steel truss bridge photographed from below" /> : <span className="portfolio-missing-image">Bridge photo not found</span>}
           <span className="portfolio-project-copy"><strong>01 / Bridge Project</strong><small>STRUCTURAL MECHANICS · CURRENT PROJECT</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
-        </button>
-        <button className="portfolio-project portfolio-lab" onClick={() => {setProjectTab('simulators');go('lab')}}>
+        </UiActionButton>
+        <UiActionButton className="portfolio-project portfolio-lab" onClick={() => {setProjectTab('simulators');go('projects')}}>
           {homepageImage("bridge_blueprint_64.png") ? <img src={homepageImage("bridge_blueprint_64.png")} alt="Technical line drawing showing truss bridge elevations and details" /> : <span className="portfolio-missing-image">Bridge blueprint not found</span>}
           <span className="portfolio-project-copy"><strong>02 / Engineering Lab</strong><small>SIMULATIONS · EXPERIMENTS · DESIGN TOOLS</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
-        </button>
-      </div>
-      <div className="portfolio-details">
-        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true">▣</span><div><small>NEXT MEETING</small><strong>Monday, November 2</strong><p>2:30–3:30 PM · Guidance Office</p></div></div>
-        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true">▤</span><div><small>CURRENT FOCUS</small><strong>Bridge Design &amp; Testing</strong><p>Structural systems, materials, loads, and real-world examples.</p></div></div>
-        <div className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true">♧</span><div><strong>Everyone’s welcome</strong><p>No engineering experience needed. Just curiosity.</p></div></div>
-      </div>
-    </section>}
+        </UiActionButton>
+      </UiBox>
+      <UiBox className="portfolio-details">
+        <UiBox className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><CalendarMonthOutlinedIcon fontSize="inherit" /></span><UiBox><small>NEXT MEETING</small><strong>{nextMeetingDate}</strong><p>2:30–3:30 PM · Guidance Office</p></UiBox></UiBox>
+        <UiBox className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 8h20M2 17h20M2 20h20"/><path d="M3 8v9m18-9v9M9 8v9m6-9v9"/><path d="m3 8 6 9 6-9 6 9"/></svg></span><UiBox><small>CURRENT FOCUS</small><strong>Bridge Design &amp; Testing</strong><p>Structural systems, materials, loads, and real-world examples.</p></UiBox></UiBox>
+        <UiBox className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14.5c1 1.5 2.4 2.3 4 2.3s3-.8 4-2.3"/><path d="M8.5 9.5h.01M15.5 9.5h.01" strokeWidth="2.6"/></svg></span><UiBox><strong>Everyone’s welcome</strong><p>No engineering experience needed. Just curiosity.</p></UiBox></UiBox>
+      </UiBox>
+    </UiBox>}
 
     {page === 'newsletter' && <Newsletter />}
     {page === 'admin' && <NewsletterStudio onPublished={() => go('newsletter')} />}
 
     {(page === 'projects' || page === 'lab') && <section className="projects-page">
       <div className="projects-heading projects-toolbar">
-        <EngineeringTabs active={projectTab} onChange={tab => { setProjectTab(tab); go(tab === 'ideas' ? 'projects' : 'lab') }} />
+        <EngineeringTabs active={projectTab} onChange={tab => { setProjectTab(tab); go('projects') }} />
       </div>
       <EngineeringSectionIntro tab={projectTab} actions={projectTab === 'ideas' ? (
 <div className="ideas-toolbar"><div className="project-pagination" aria-label="Project pages">

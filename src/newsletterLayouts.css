@@ -1061,7 +1061,7 @@
   .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-media {
     float:none;
     clear:both;
-    width:min(100%,320px);
+    width:100%!important;
     max-width:100%;
     margin:10px 0 18px!important;
   }
@@ -1170,8 +1170,9 @@
 .newsletter-photo-crop-controls select{max-width:90px}
 .newsletter-photo-row{display:flex;align-items:flex-start;gap:12px;clear:both;margin:12px 0 20px}
 .newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-row .newsletter-media{float:none!important;clear:none!important;flex:1 1 0;min-width:0;max-width:calc(50% - 6px);width:calc(50% - 6px)!important;margin:0!important}
-.newsletter-story-block{display:flow-root}
-.newsletter-story-block:has(> p),.newsletter-story-block:has(> div.newsletter-rich-media-paragraph){display:contents}
+/* Story wrappers preserve edit/preview drop targets, but must not establish
+   separate formatting contexts: floats need to wrap the following paragraphs. */
+.newsletter-rich-media-layout > .newsletter-story-block{display:contents}
 @media(max-width:540px){.newsletter-photo-row{flex-direction:column}.newsletter-page .newsletter-expand-panel .newsletter-rich-media-layout .newsletter-photo-row .newsletter-media{max-width:100%;width:100%!important}}
 
 /* Rich-text paragraphs, including those wrapped for drag targets, use the
