@@ -5,7 +5,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined'
 import type { NewsletterEditorHandle } from './components/NewsletterRichEditor'
-import { UiBox, UiDialog, UiDialogTitle, UiDialogContent, UiDialogActions, UiSelect, UiTextField } from './components/atoms/MuiPrimitives'
+import { UiBox, UiButton, UiDialog, UiDialogTitle, UiDialogContent, UiDialogActions, UiSelect, UiTextField } from './components/atoms/MuiPrimitives'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { emptyIssue, IssueView, embeddedVideoUrl, externalGoogleMapsVideoUrl, newsletterSectionStyle, newsletterSectionPlacement, newsletterColorTheme } from './Newsletter'
@@ -116,6 +116,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [preview, setPreview] = useState(false)
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [refreshingIssue, setRefreshingIssue] = useState(false)
   const editorRefs = useRef<Record<number,NewsletterEditorHandle|null>>({})
   const [mediaTarget, setMediaTarget] = useState<{ field: 'sections' | 'details'; sectionIndex: number; mediaIndex?: number } | null>(null)
   const [mediaMode, setMediaMode] = useState<'upload' | 'embed' | 'google-maps'>('upload')
@@ -168,6 +169,51 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setMessage('')
   }
   useEffect(() => { if (authorized && !needsPasswordChange) void loadIssues() }, [authorized, needsPasswordChange])
+
+  // The issue list is a snapshot. Content can be edited from other sessions
+  // or directly in Supabase, so a preview must be able to retrieve the current
+  // saved version rather than continue showing its stale in-memory copy.
+  const readSavedIssue = async (id: string) => {
+    const { data, error } = await supabase.from('newsletters')
+      .select('id,month,number,title,description,sections,details,footer,status,published_at')
+      .eq('id', id).single()
+    if (error || !data) {
+      setMessage(error?.message || 'Could not reload the saved newsletter.')
+      return null
+    }
+    const fresh = data as NewsletterIssue
+    setList(current => current.map(issue => issue.id === fresh.id ? fresh : issue))
+    return fresh
+  }
+
+  const reloadSavedIssue = async () => {
+    if (newIssue || busy || uploading || refreshingIssue) return
+    if (!window.confirm('Reload the latest saved newsletter from Supabase? Any unsaved edits in this editor will be discarded.')) return
+    setRefreshingIssue(true)
+    try {
+      const fresh = await readSavedIssue(draft.id)
+      if (!fresh) return
+      setDraft(forEditing(fresh))
+      setMessage('Latest saved newsletter loaded from Supabase.')
+    } finally {
+      setRefreshingIssue(false)
+    }
+  }
+
+  const selectSavedIssue = async (issue: NewsletterIssue) => {
+    if (refreshingIssue || busy || uploading) return
+    setRefreshingIssue(true)
+    try {
+      const fresh = await readSavedIssue(issue.id)
+      if (!fresh) return
+      setDraft(forEditing(fresh))
+      setNewIssue(false)
+      setPreview(false)
+      setMessage('')
+    } finally {
+      setRefreshingIssue(false)
+    }
+  }
 
   const signIn = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -590,7 +636,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       <aside className="studio-panel studio-sidebar">
         <button className="studio-primary" type="button" onClick={() => { setDraft(emptyIssue()); setNewIssue(true); setPreview(false); setMessage('') }}>+ New issue</button>
         <p className="studio-kicker">ALL ISSUES · INCLUDING HIDDEN</p>
-        {list.map(issue => <button key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => { setDraft(forEditing(issue)); setNewIssue(false); setPreview(false); setMessage('') }}>
+        {list.map(issue => <button key={issue.id} type="button" className={draft.id === issue.id && !newIssue ? 'studio-issue selected' : 'studio-issue'} onClick={() => void selectSavedIssue(issue)} disabled={refreshingIssue}>
           <span className="studio-issue-title">{issue.title || 'Untitled issue'}</span>
           <span className="studio-issue-meta">
             <span className="studio-issue-month">{issue.month}</span>
@@ -606,7 +652,13 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       <div className="studio-main">
         <div className="studio-actions">
           <div className="studio-tabs"><button type="button" className={!preview ? 'active' : ''} onClick={() => setPreview(false)}>Edit</button><button type="button" className={preview ? 'active' : ''} onClick={() => setPreview(true)}>Preview</button></div>
-          <span className="studio-status">{draft.status.replace('_', ' ')}</span>
+          <div className="studio-actions-right">
+            {!newIssue && <UiButton size="small" variant="outlined" disabled={busy || uploading || refreshingIssue}
+              onClick={() => void reloadSavedIssue()}>
+              {refreshingIssue ? 'Reloading…' : 'Reload saved issue'}
+            </UiButton>}
+            <span className="studio-status">{draft.status.replace('_', ' ')}</span>
+          </div>
         </div>
         {preview ? <div className="studio-preview-area">
           <p className="studio-layout-description">Article preview: main content and side panel, with the same article styling as the published page. The issue index is hidden here. Nothing is published until you choose “Publish issue.”</p>
