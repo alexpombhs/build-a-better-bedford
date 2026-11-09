@@ -133,80 +133,127 @@ function externalGoogleMapsVideoUrl(value: string): string | null {
 }
 export { embeddedVideoUrl, externalGoogleMapsVideoUrl }
 
-export function NewsletterMediaView({ media, onResize, onUpdate }: { media: NewsletterMedia; onResize?: (id: string, width: number) => void; onUpdate?: (id:string, patch:Partial<NewsletterMedia>)=>void }) {
-  const [signedUrl, setSignedUrl] = useState('')
-  const [loadingError, setLoadingError] = useState(false)
-  const [cropping,setCropping] = useState(false)
-  const resizeStart = useRef<{x:number;width:number;column:number}|null>(null)
-  const cropStart = useRef<{x:number;y:number;cropX:number;cropY:number}|null>(null)
-  const figureRef = useRef<HTMLElement>(null)
-  useEffect(() => {
-    let active = true
+
+export type MediaDragDestination = { id: string; x: number; y: number }
+/** Shared visual photo in both the article editor and the editorial preview.
+ *  No resize toolbar: drag a corner, drag the image, or double-click to crop. */
+export function NewsletterMediaView({
+  media,onResize,onUpdate,onMove,
+}: {
+  media:NewsletterMedia
+  onResize?:(id:string,width:number)=>void
+  onUpdate?:(id:string,patch:Partial<NewsletterMedia>)=>void
+  onMove?:(id:string,x:number,y:number)=>void
+}) {
+  const [signedUrl,setSignedUrl]=useState('')
+  const [loadingError,setLoadingError]=useState(false)
+  const [selected,setSelected]=useState(false)
+  const [cropping,setCropping]=useState(false)
+  const [moving,setMoving]=useState(false)
+  const figureRef=useRef<HTMLElement>(null)
+  const gesture=useRef<{kind:'resize'|'move'|'crop'|'crop-size';x:number;y:number;width:number;column:number;cropX:number;cropY:number;zoom:number;side:number}|null>(null)
+  useEffect(()=>{
+    let active=true
     setSignedUrl('')
     setLoadingError(false)
-    if (media.storagePath) {
-      void supabase.storage.from('newsletter-media').createSignedUrl(media.storagePath, 3600)
-        .then(({ data, error }) => {
-          if (!active) return
-          setSignedUrl(data?.signedUrl ?? '')
-          setLoadingError(Boolean(error))
-        })
+    if(media.storagePath){
+      void supabase.storage.from('newsletter-media').createSignedUrl(media.storagePath,3600).then(({data,error})=>{
+        if(!active)return
+        setSignedUrl(data?.signedUrl??'')
+        setLoadingError(Boolean(error))
+      })
     }
-    return () => { active = false }
-  }, [media.storagePath])
-
-  const imageUrl = media.asset === 'road-solution' ? roadSolution : signedUrl
-  const embedded = media.type === 'video' && media.url ? embeddedVideoUrl(media.url) : null
-  const googleMapsClip = media.type === 'video' && media.url ? externalGoogleMapsVideoUrl(media.url) : null
-  const width = Math.min(100, Math.max(25, media.widthPercent ?? 42))
-  const cropRatio = media.cropAspect === 'square' ? '1 / 1' : media.cropAspect === 'landscape' ? '4 / 3' : media.cropAspect === 'portrait' ? '3 / 4' : media.cropAspect === 'wide' ? '16 / 9' : undefined
-  const clamp = (n:number,min:number,max:number)=>Math.max(min,Math.min(max,n))
-  return <figure ref={figureRef} className={`newsletter-media newsletter-media-aligned-${media.align === 'right' ? 'right' : 'left'}${width === 100 ? ' newsletter-media-full-width' : ''}`} style={media.type === 'image' ? { width: `${width}%` } : undefined}>
-    {media.type === 'image' && imageUrl && <div className={'newsletter-photo-frame'+(cropping?' cropping':'')} style={cropRatio?{aspectRatio:cropRatio}:undefined}
-      onPointerDown={event=>{if(!cropping||!cropRatio||!onUpdate)return;event.currentTarget.setPointerCapture(event.pointerId);cropStart.current={x:event.clientX,y:event.clientY,cropX:media.cropX??50,cropY:media.cropY??50}}}
-      onPointerMove={event=>{if(!cropStart.current||!onUpdate)return;const rect=event.currentTarget.getBoundingClientRect();onUpdate(media.id,{cropX:clamp(cropStart.current.cropX-(event.clientX-cropStart.current.x)/rect.width*100,0,100),cropY:clamp(cropStart.current.cropY-(event.clientY-cropStart.current.y)/rect.height*100,0,100)})}}
-      onPointerUp={event=>{cropStart.current=null;if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId)}}
-      onPointerCancel={()=>{cropStart.current=null}}>
-      <img loading="lazy" draggable={false} src={imageUrl} alt={media.alt || 'Newsletter illustration'} style={cropRatio?{height:'100%',objectFit:'cover',objectPosition:`${media.cropX??50}% ${media.cropY??50}%`,transform:`scale(${media.cropZoom??1})`}:undefined}/></div>}
-    {media.type === 'video' && media.storagePath && signedUrl &&
-      <video src={signedUrl} controls playsInline preload="metadata" aria-label={media.alt || 'Newsletter video'} />}
-    {media.type === 'video' && embedded &&
-      <div className="newsletter-video-frame"><iframe src={embedded} title={media.alt || 'Newsletter video'} loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div>}
-    {googleMapsClip && <a className="newsletter-external-video" href={googleMapsClip} target="_blank" rel="noopener noreferrer"
-      aria-label={(media.alt || 'Bridge video') + ' — watch the original clip on Google Maps (opens in new tab)'}>
+    return ()=>{active=false}
+  },[media.storagePath])
+  const imageUrl=media.asset==='road-solution'?roadSolution:signedUrl
+  const embedded=media.type==='video'&&media.url?embeddedVideoUrl(media.url):null
+  const googleMapsClip=media.type==='video'&&media.url?externalGoogleMapsVideoUrl(media.url):null
+  const clamp=(n:number,min:number,max:number)=>Math.max(min,Math.min(max,n))
+  const width=clamp(media.widthPercent??42,25,100)
+  const ratio=media.cropAspect==='square'?'1 / 1':media.cropAspect==='landscape'?'4 / 3':media.cropAspect==='portrait'?'3 / 4':media.cropAspect==='wide'?'16 / 9':undefined
+  const editable=Boolean(onResize || onUpdate || onMove)
+  const grab=(event:React.PointerEvent<HTMLElement>,kind:'resize'|'move'|'crop'|'crop-size',side=1)=>{
+    if(!editable)return
+    event.preventDefault()
+    event.stopPropagation()
+    setSelected(true)
+    const column=figureRef.current?.closest('.newsletter-rich-media-layout, .studio-rich-surface')?.getBoundingClientRect().width??600
+    gesture.current={kind,x:event.clientX,y:event.clientY,width,column,cropX:media.cropX??50,cropY:media.cropY??50,zoom:media.cropZoom??1,side}
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+  const gestureMove=(event:React.PointerEvent<HTMLElement>)=>{
+    const g=gesture.current
+    if(!g)return
+    const dx=event.clientX-g.x,dy=event.clientY-g.y
+    if(g.kind==='resize'){
+      onResize?.(media.id,clamp(Math.round(g.width+(dx*g.side*100)/g.column),25,100))
+    }else if(g.kind==='move'){
+      if(Math.hypot(dx,dy)>5)setMoving(true)
+    }else if(g.kind==='crop'){
+      const rect=figureRef.current?.querySelector('.newsletter-photo-frame')?.getBoundingClientRect()
+      if(!rect)return
+      onUpdate?.(media.id,{cropX:clamp(g.cropX-dx/rect.width*100,0,100),cropY:clamp(g.cropY-dy/rect.height*100,0,100)})
+    }else if(g.kind==='crop-size'){
+      onUpdate?.(media.id,{cropZoom:clamp(Math.round((g.zoom+(dx+dy)/260)*100)/100,1,3)})
+    }
+  }
+  const release=(event:React.PointerEvent<HTMLElement>)=>{
+    const g=gesture.current
+    if(!g)return
+    gesture.current=null
+    if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId)
+    if(g.kind==='move'&&Math.hypot(event.clientX-g.x,event.clientY-g.y)>8){
+      onMove?.(media.id,event.clientX,event.clientY)
+    }
+    setMoving(false)
+  }
+  return <figure ref={figureRef}
+    className={'newsletter-media newsletter-media-aligned-'+(media.align==='right'?'right':'left')+(width===100?' newsletter-media-full-width':'')+(editable&&selected?' newsletter-photo-selected':'')+(moving?' newsletter-photo-moving':'')}
+    style={media.type==='image'?{width:width+'%'}:undefined}
+    onPointerDown={event=>{if(event.target===figureRef.current)setSelected(true)}}
+    onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setSelected(false)}}>
+    {media.type==='image'&&imageUrl&&<div
+      className={'newsletter-photo-frame'+(cropping?' is-cropping':'')}
+      style={ratio?{aspectRatio:ratio}:undefined}
+      onDoubleClick={event=>{if(!editable)return;event.preventDefault();event.stopPropagation();setSelected(true);setCropping(!cropping);if(!cropping&&media.cropAspect===undefined)onUpdate?.(media.id,{cropAspect:'landscape'})}}
+      onPointerDown={event=>grab(event,cropping?'crop':'move')}
+      onPointerMove={gestureMove}
+      onPointerUp={release}
+      onPointerCancel={release}>
+      <img loading="lazy" draggable={false} src={imageUrl} alt={media.alt||'Newsletter illustration'}
+        style={ratio?{height:'100%',objectFit:'cover',objectPosition:(media.cropX??50)+'% '+(media.cropY??50)+'%',transform:'scale('+(media.cropZoom??1)+')'}:undefined}/>
+      {editable&&cropping&&<div className="newsletter-crop-overlay" aria-label="Drag inside to move crop, drag corner to zoom">
+        <span className="newsletter-crop-corner" onPointerDown={event=>grab(event,'crop-size')}
+          onPointerMove={gestureMove} onPointerUp={release} onPointerCancel={release}/>
+      </div>}
+    </div>}
+    {media.type==='video'&&media.storagePath&&signedUrl&&<video src={signedUrl} controls playsInline preload="metadata" aria-label={media.alt||'Newsletter video'}/>}
+    {media.type==='video'&&embedded&&<div className="newsletter-video-frame"><iframe src={embedded} title={media.alt||'Newsletter video'} loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin"/></div>}
+    {googleMapsClip&&<a className="newsletter-external-video" href={googleMapsClip} target="_blank" rel="noopener noreferrer" aria-label={(media.alt||'Bridge video')+' — watch the original clip on Google Maps'}>
       <span className="newsletter-external-video-poster">
         <span className="newsletter-external-video-source">CONTRIBUTOR VIDEO · GOOGLE MAPS · 0:12</span>
-        <span className="newsletter-external-video-icon"><PlayCircleOutlineIcon aria-hidden="true" /></span>
+        <span className="newsletter-external-video-icon"><PlayCircleOutlineIcon aria-hidden="true"/></span>
         <span className="newsletter-external-video-overlay">Hart–Desiato Bridge</span>
         <span className="newsletter-external-video-subtitle">A look at the timber supports beneath the bridge</span>
       </span>
-      <span className="newsletter-external-video-action">Watch the original video on Google Maps <OpenInNewIcon aria-hidden="true" fontSize="inherit" /></span>
+      <span className="newsletter-external-video-action">Watch the original video on Google Maps <OpenInNewIcon aria-hidden="true" fontSize="inherit"/></span>
       <span className="newsletter-external-video-description">Video opens on Google Maps; it cannot play directly on this site.</span>
     </a>}
-    {(!imageUrl && media.type === 'image' || media.type === 'video' && !signedUrl && !embedded && !googleMapsClip) &&
-      <p className="newsletter-media-placeholder" role="status">{loadingError ? 'This attachment could not be loaded.' : 'Loading attachment…'}</p>}
-    {media.caption && <figcaption>{media.caption}</figcaption>}
-    {onResize && media.type === 'image' && <>
-      <span className="newsletter-photo-grip" role="slider" tabIndex={0} aria-label="Drag to resize photo" aria-valuemin={25} aria-valuemax={100} aria-valuenow={width}
-        onKeyDown={event=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();onResize(media.id,clamp(width+(event.key==='ArrowRight'?5:-5),25,100))}}}
-        onPointerDown={event=>{event.preventDefault();event.currentTarget.setPointerCapture(event.pointerId);const column=figureRef.current?.closest('.newsletter-rich-media-layout')?.getBoundingClientRect().width??600;resizeStart.current={x:event.clientX,width,column}}}
-        onPointerMove={event=>{if(resizeStart.current)onResize(media.id,clamp(Math.round(resizeStart.current.width+(event.clientX-resizeStart.current.x)*100/resizeStart.current.column),25,100))}}
-        onPointerUp={event=>{resizeStart.current=null;event.currentTarget.releasePointerCapture(event.pointerId)}}>↘</span>
-      <div className="newsletter-photo-resize-controls">
-        <span>{width}%</span>
-        <span className="newsletter-photo-move" draggable title="Drag onto text or another photo to reposition" onDragStart={event=>{event.dataTransfer.setData('text/plain',media.id);event.dataTransfer.effectAllowed='move'}}>⠿ Move</span>
-        <button type="button" onClick={()=>onUpdate?.(media.id,{align:media.align==='right'?'left':'right'})}>{media.align==='right'?'Left':'Right'}</button>
-        <button type="button" onClick={()=>onResize(media.id,100)}>Full width</button>
-        <button type="button" onClick={()=>setCropping(!cropping)}>{cropping?'Done':'Crop'}</button>
-      </div>
-      {cropping && <div className="newsletter-photo-crop-controls">
-        <label>Shape <select value={media.cropAspect??'natural'} onChange={event=>onUpdate?.(media.id,{cropAspect:event.target.value as NewsletterMedia['cropAspect']})}>
-          <option value="natural">Original</option><option value="square">Square</option><option value="landscape">4:3</option><option value="portrait">3:4</option><option value="wide">16:9</option>
-        </select></label>
-        <label>Zoom <input type="range" min="1" max="2.5" step=".05" value={media.cropZoom??1} onChange={event=>onUpdate?.(media.id,{cropZoom:Number(event.target.value)})}/></label>
-        <span>Drag the image to adjust the crop.</span>
-        <button type="button" onClick={()=>onUpdate?.(media.id,{cropAspect:'natural',cropZoom:1,cropX:50,cropY:50})}>Reset</button>
-      </div>}
+    {((!imageUrl&&media.type==='image')||(media.type==='video'&&!signedUrl&&!embedded&&!googleMapsClip))&&
+      <p className="newsletter-media-placeholder" role="status">{loadingError?'This attachment could not be loaded.':'Loading attachment…'}</p>}
+    {media.caption&&<figcaption>{media.caption}</figcaption>}
+    {editable&&media.type==='image'&&<>
+      <span className="newsletter-photo-grip newsletter-photo-grip-se" role="slider" tabIndex={0}
+        aria-label="Drag the lower right corner to resize photo" aria-valuemin={25} aria-valuemax={100} aria-valuenow={width}
+        onKeyDown={event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();onResize?.(media.id,clamp(width+(event.key==='ArrowRight'?5:-5),25,100))}}}
+        onPointerDown={event=>grab(event,'resize',1)} onPointerMove={gestureMove} onPointerUp={release} onPointerCancel={release}/>
+      <span className="newsletter-photo-grip newsletter-photo-grip-sw" role="slider" tabIndex={0}
+        aria-label="Drag the lower left corner to resize photo" aria-valuemin={25} aria-valuemax={100} aria-valuenow={width}
+        onKeyDown={event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();onResize?.(media.id,clamp(width+(event.key==='ArrowRight'?5:-5),25,100))}}}
+        onPointerDown={event=>grab(event,'resize',-1)} onPointerMove={gestureMove} onPointerUp={release} onPointerCancel={release}/>
+      {cropping&&<button type="button" className="newsletter-crop-done"
+        onClick={()=>{setCropping(false);setSelected(false)}}>Done cropping</button>}
+      {selected&&!cropping&&<span className="newsletter-photo-hint">Drag photo to move · corners to resize · double-click to crop</span>}
     </>}
   </figure>
 }
@@ -215,7 +262,7 @@ export type NewsletterLayout = 'article' | 'feature'
 
 // Rich content uses a small safe markup subset. Media tokens resolve to the
 // issue's own uploaded assets and can appear between paragraphs.
-function NewsletterRichBody({body,media=[],onResizeMedia,onUpdateMedia,onMoveMedia,editorPreview=false}:{body:string;media?:NewsletterMedia[];onResizeMedia?:(id:string,width:number)=>void;onUpdateMedia?:(id:string,patch:Partial<NewsletterMedia>)=>void;onMoveMedia?:(id:string,target:number,after:boolean)=>void;editorPreview?:boolean}){
+function NewsletterRichBody({body,media=[],onResizeMedia,onUpdateMedia,onMoveMedia,editorPreview=false}:{body:string;media?:NewsletterMedia[];onResizeMedia?:(id:string,width:number)=>void;onUpdateMedia?:(id:string,patch:Partial<NewsletterMedia>)=>void;onMoveMedia?:(id:string,x:number,y:number)=>void;editorPreview?:boolean}){
   const safe=sanitizedNewsletterHtml(newsletterBodyHtml(body))
   const dom=new DOMParser().parseFromString(safe,'text/html')
   let index=0
@@ -226,7 +273,7 @@ function NewsletterRichBody({body,media=[],onResizeMedia,onUpdateMedia,onMoveMed
     const mediaId=element.getAttribute('data-media-id')
     if(mediaId){
       const asset=media.find(item=>item.id===mediaId)
-      return asset ? <NewsletterMediaView key={index++} media={asset} onResize={onResizeMedia} onUpdate={onUpdateMedia}/> : editorPreview ? <p key={index++} role="alert" className="newsletter-media-missing">This photo has no saved attachment. Reinsert it from Edit to display it.</p> : null
+      return asset ? <NewsletterMediaView key={index++} media={asset} onResize={onResizeMedia} onUpdate={onUpdateMedia} onMove={onMoveMedia?(id,x,y)=>onMoveMedia(id,x,y):undefined}/> : editorPreview ? <p key={index++} role="alert" className="newsletter-media-missing">This photo has no saved attachment. Reinsert it from Edit to display it.</p> : null
     }
     const tag=element.tagName.toLowerCase()
     const tags=new Set(['p','div','h3','h4','strong','em','u','ul','ol','li','blockquote','br','a'])
@@ -251,7 +298,7 @@ function NewsletterRichBody({body,media=[],onResizeMedia,onUpdateMedia,onMoveMed
   for(let i=0;i<nodes.length;i++){
     const getPhoto=(n:Node)=>{if(n.nodeType!==1)return undefined;const el=n as Element;const id=el.getAttribute('data-media-id')??el.querySelector('[data-media-id]')?.getAttribute('data-media-id');return media.find(m=>m.id===id&&m.type==='image')}
     const first=getPhoto(nodes[i]),second=i+1<nodes.length?getPhoto(nodes[i+1]):undefined
-    if(first&&second){renderNodes.push(<div className="newsletter-photo-row" key={'photos-'+i}>{[first,second].map(m=><NewsletterMediaView key={m.id} media={m} onResize={onResizeMedia} onUpdate={onUpdateMedia}/>)}</div>);i++;continue}
+    if(first&&second){renderNodes.push(<div className="newsletter-photo-row" key={'photos-'+i}>{[first,second].map(m=><NewsletterMediaView key={m.id} media={m} onResize={onResizeMedia} onUpdate={onUpdateMedia} onMove={onMoveMedia?(id,x,y)=>onMoveMedia(id,x,y):undefined}/>)}</div>);i++;continue}
     renderNodes.push(<div className="newsletter-story-block" data-drop-index={i} key={'node-'+i}>{convert(nodes[i])}</div>)
   }
   return <div className="newsletter-article-copy newsletter-rich-copy newsletter-rich-media-layout"
@@ -305,7 +352,7 @@ function NewsletterArticleBody({ body }: { body: string }) {
   </div>
 }
 
-export function IssueView({ issue, layout = 'article', editorPreview = false, onResizeMedia,onUpdateMedia,onMoveMedia }: { issue: NewsletterIssue; layout?: NewsletterLayout; editorPreview?: boolean; onResizeMedia?: (id:string,width:number)=>void; onUpdateMedia?:(id:string,patch:Partial<NewsletterMedia>)=>void; onMoveMedia?:(sectionIndex:number,id:string,target:number,after:boolean)=>void }) {
+export function IssueView({ issue, layout = 'article', editorPreview = false, onResizeMedia,onUpdateMedia,onMoveMedia }: { issue: NewsletterIssue; layout?: NewsletterLayout; editorPreview?: boolean; onResizeMedia?: (id:string,width:number)=>void; onUpdateMedia?:(id:string,patch:Partial<NewsletterMedia>)=>void; onMoveMedia?:(sectionIndex:number,id:string,x:number,y:number)=>void }) {
   const mainDetails = issue.details.filter(section => newsletterSectionPlacement(section) === 'main')
   const sideDetails = orderNewsletterDetails(issue.details).filter(section => newsletterSectionPlacement(section) === 'sidebar')
   const articleSections = mainDetails.length > 0 ? mainDetails : issue.sections
@@ -330,7 +377,7 @@ export function IssueView({ issue, layout = 'article', editorPreview = false, on
                 {newsletterSectionStyle(section) === 'did-you-know' && <span className="newsletter-feature-kicker">DID YOU KNOW?</span>}
                 {halloween && <div className="newsletter-main-seasonal"><span className="newsletter-feature-kicker">CLUB CORNER</span><HalloweenTruss /></div>}
                 {thanksgiving && <div className="newsletter-main-seasonal"><span className="newsletter-feature-kicker">CLUB CORNER</span><ThanksgivingHorn /></div>}
-                <div className="expand-grid"><div><UiText component="h2" variant="h6">{section.heading}</UiText>{isNewsletterRichBody(section.body) ? <NewsletterRichBody body={section.body} media={section.media} onResizeMedia={onResizeMedia} onUpdateMedia={onUpdateMedia} onMoveMedia={onMoveMedia?(id,target,after)=>onMoveMedia(index,id,target,after):undefined} editorPreview={editorPreview}/> : <NewsletterArticleBody body={section.body} />}</div></div>
+                <div className="expand-grid"><div><UiText component="h2" variant="h6">{section.heading}</UiText>{isNewsletterRichBody(section.body) ? <NewsletterRichBody body={section.body} media={section.media} onResizeMedia={onResizeMedia} onUpdateMedia={onUpdateMedia} onMoveMedia={onMoveMedia?(id,x,y)=>onMoveMedia(index,id,x,y):undefined} editorPreview={editorPreview}/> : <NewsletterArticleBody body={section.body} />}</div></div>
                 {!isNewsletterRichBody(section.body) && (section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
               </section>
             })}
