@@ -290,7 +290,7 @@ export const NewsletterRichEditor=forwardRef<NewsletterEditorHandle,Props>(funct
       const item=media.find(entry=>entry.id===target.id)
       if(!item)return null
       return createPortal(<NewsletterMediaView media={item} onResize={item.type==='image'?onResizeMedia:undefined}
-        onUpdate={onUpdateMedia} onMove={onMoveMedia}/>,target.element,target.id)
+        onUpdate={onUpdateMedia} onMove={onMoveMedia} onEdit={item.type==='image'?onEditMedia:undefined}/>,target.element,target.id)
     })}
   </div>
 })
