@@ -178,7 +178,7 @@ export function NewsletterMediaView({
   const embedded=media.type==='video'&&media.url?embeddedVideoUrl(media.url):null
   const googleMapsClip=media.type==='video'&&media.url?externalGoogleMapsVideoUrl(media.url):null
   const clamp=(n:number,min:number,max:number)=>Math.max(min,Math.min(max,n))
-  const width=clamp(media.widthPercent??42,25,100)
+  const width=clamp(media.widthPercent??42,15,100)
   const displayedWidth=dragWidth??width
   const cropLeft=clamp(media.cropLeft??0,0,95)
   const cropTop=clamp(media.cropTop??0,0,95)
@@ -226,7 +226,7 @@ export function NewsletterMediaView({
     const onMovePointer=(move:PointerEvent)=>{
       const dx=move.clientX-originX,dy=move.clientY-originY
       if(kind==='resize'){
-        nextWidth=clamp(Math.round(baseWidth+(side*dx*100)/Math.max(1,column)),25,100)
+        nextWidth=clamp(Math.round(baseWidth+(side*dx*100)/Math.max(1,column)),15,100)
         setDragWidth(nextWidth)
       }else if(kind==='move'){
         if(Math.hypot(dx,dy)>6)setMoving(true)
@@ -295,8 +295,8 @@ export function NewsletterMediaView({
     {media.caption&&<figcaption>{media.caption}</figcaption>}
     {editable&&media.type==='image'&&<>
       <span className="newsletter-photo-grip newsletter-photo-grip-se" role="slider" tabIndex={0}
-        aria-label="Drag the lower right corner to resize photo" aria-valuemin={25} aria-valuemax={100} aria-valuenow={displayedWidth}
-        onKeyDown={event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();onResize?.(media.id,clamp(width+(event.key==='ArrowRight'?5:-5),25,100))}}}
+        aria-label="Drag the lower right corner to resize photo" aria-valuemin={15} aria-valuemax={100} aria-valuenow={displayedWidth}
+        onKeyDown={event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();onResize?.(media.id,clamp(width+(event.key==='ArrowRight'?5:-5),15,100))}}}
         onPointerDown={event=>grab(event,'resize',1)}/>
       <span className="newsletter-photo-grip newsletter-photo-grip-sw" role="slider" tabIndex={0}
         aria-label="Drag the lower left corner to resize photo" aria-valuemin={25} aria-valuemax={100} aria-valuenow={width}
@@ -320,7 +320,7 @@ export function NewsletterMediaView({
           <button type="button" onClick={()=>{onUpdate?.(media.id,{cropLeft:cropDraft.left,cropTop:cropDraft.top,cropWidth:cropDraft.width,cropHeight:cropDraft.height});setCropping(false)}}>Apply crop</button>
         </div>
       </div>}
-      {selected&&!cropping&&<><span className="newsletter-photo-hint">Drag to move · drag corners to resize · double-click to crop</span>{onEdit&&<button type="button" className="newsletter-photo-context-edit" onClick={()=>onEdit(media.id)}>Replace photo</button>}</>}
+      {selected&&!cropping&&<><span className="newsletter-photo-hint">Drag to move · drag corner to resize · double-click to crop</span>{onEdit&&<button type="button" className="newsletter-photo-context-edit" onClick={()=>onEdit(media.id)}>Replace photo</button>}</>}
     </>}
   </figure>
 }
