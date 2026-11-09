@@ -222,7 +222,7 @@ export function NewsletterMediaView({
   }
   return <figure ref={figureRef}
     className={'newsletter-media newsletter-media-aligned-'+(media.align==='right'?'right':'left')+(width===100?' newsletter-media-full-width':'')+(editable&&selected?' newsletter-photo-selected':'')+(moving?' newsletter-photo-moving':'')}
-    style={media.type==='image'?{width:width+'%'}:undefined}
+    style={media.type==='image'?{width:width+'%',flexGrow:width}:undefined}
     onPointerDown={event=>{if(event.target===figureRef.current)setSelected(true)}}
     onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setSelected(false)}}>
     {media.type==='image'&&imageUrl&&<div
@@ -302,14 +302,14 @@ function NewsletterRichBody({body,media=[],onResizeMedia,onUpdateMedia,onMoveMed
       key:index++,
       // One safe, semantic newsletter introduction style survives sanitization.
       className:tag==='div' && element.classList.contains('newsletter-intro-block')
-        ? 'newsletter-intro-block' : undefined,
+        ? 'newsletter-intro-block' : tag==='div' && element.classList.contains('newsletter-photo-row') ? 'newsletter-photo-row' : undefined,
     },...children)
   }
   const nodes=Array.from(dom.body.childNodes)
   const renderNodes:ReactNode[]=[]
   // Adjacent photo tokens become a two-column gallery without changing saved HTML.
   for(let i=0;i<nodes.length;i++){
-    const getPhoto=(n:Node)=>{if(n.nodeType!==1)return undefined;const el=n as Element;const id=el.getAttribute('data-media-id')??el.querySelector('[data-media-id]')?.getAttribute('data-media-id');return media.find(m=>m.id===id&&m.type==='image')}
+    const getPhoto=(n:Node)=>{if(n.nodeType!==1)return undefined;const el=n as Element;if(el.classList.contains('newsletter-photo-row'))return undefined;const id=el.getAttribute('data-media-id')??el.querySelector('[data-media-id]')?.getAttribute('data-media-id');return media.find(m=>m.id===id&&m.type==='image')}
     const first=getPhoto(nodes[i]),second=i+1<nodes.length?getPhoto(nodes[i+1]):undefined
     if(first&&second){renderNodes.push(<div className="newsletter-photo-row" key={'photos-'+i} data-drop-index={i}>{[first,second].map(m=><NewsletterMediaView key={m.id} media={m} onResize={onResizeMedia} onUpdate={onUpdateMedia} onMove={onMoveMedia?(id,x,y)=>onMoveMedia(id,x,y):undefined}/>)}</div>);i++;continue}
     renderNodes.push(<div className="newsletter-story-block" data-drop-index={i} key={'node-'+i}>{convert(nodes[i])}</div>)
