@@ -551,7 +551,7 @@ function App() {
       </div>}
     </section>}
 
-    {page === 'about' && <AboutPage onJoin={joinClub} />}
+    {page === 'about' && <AboutPage onJoin={joinClub} nextMeetingDate={nextMeetingDate} />}
 
     {page !== 'home' && page !== 'newsletter' && page !== 'projects' && page !== 'lab' && page !== 'admin' && page !== 'about' && <section className="coming-page">
       <p className="eyebrow">{labels[page]}</p>
