@@ -153,6 +153,28 @@ function App() {
       document.removeEventListener('visibilitychange', refreshMeetingDate)
     }
   }, [])
+  // Edit controls are only an affordance. Supabase RLS enforces the same
+  // authorization server-side, even when requests bypass this interface.
+  const [canEditIdeas, setCanEditIdeas] = useState(false)
+  useEffect(() => {
+    let active = true
+    const checkEditorAccess = async () => {
+      if (active) setCanEditIdeas(false)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!active || !user?.email) return
+      const { data, error } = await supabase.from('newsletter_staff')
+        .select('email,must_change_password')
+        .eq('email', user.email.toLowerCase())
+        .maybeSingle()
+      if (active) setCanEditIdeas(!error && Boolean(data) && !data?.must_change_password)
+    }
+    void checkEditorAccess()
+    const { data: subscription } = supabase.auth.onAuthStateChange(() => {
+      // Let Supabase finish updating its session before querying staff RLS.
+      window.setTimeout(() => { if (active) void checkEditorAccess() }, 0)
+    })
+    return () => { active = false; subscription.subscription.unsubscribe() }
+  }, [])
   const [projectPage, setProjectPage] = useState(0)
   const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>(() => pageFromLocation() === 'lab' ? 'simulators' : 'ideas')
 
@@ -311,6 +333,7 @@ function App() {
   }
 
   const openEditIdea = (idea: SubmittedIdea) => {
+    if (!canEditIdeas) return
     setEditingIdeaId(idea.id)
     setExistingPhotoUrl(idea.photo_url)
     setIdeaForm({
@@ -342,6 +365,7 @@ function App() {
   const submitIdea = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!ideaForm.title.trim() || !ideaForm.subtitle.trim() || !ideaForm.description.trim()) return
+    if (editingIdeaId !== null && !canEditIdeas) { setIdeaMessage('Editor access is required to change an existing idea.'); return }
     setSubmittingIdea(true); setIdeaMessage('')
     let photoUrl: string | null = editingIdeaId ? existingPhotoUrl : null
     if (ideaPhoto) {
@@ -476,7 +500,7 @@ function App() {
                 </div>
               </div>
             </div>
-            {problem.isSubmitted && problem.id != null && <button className="idea-edit bbb-flip-edit" onClick={() => {
+            {canEditIdeas && problem.isSubmitted && problem.id != null && <button className="idea-edit bbb-flip-edit" onClick={() => {
               const idea = submittedIdeas.find(item => item.id === problem.id)
               if (idea) openEditIdea(idea)
             }} aria-label={`Edit ${problem.title}`} title="Edit idea">✎</button>}
