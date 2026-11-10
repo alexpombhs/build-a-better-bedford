@@ -534,7 +534,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       saveItem({
         id:existing?.id ?? crypto.randomUUID(),type,storagePath,
         alt:mediaAlt.trim() || (type === 'image' ? file.name.replace(/\\.[^.]+$/, '') : 'Newsletter video'),
-        caption:mediaCaption.trim(),align:mediaAlign,
+        title:mediaTitle.trim(),credit:mediaCredit.trim(),caption:mediaCaption.trim(),align:mediaAlign,
       })
       setMessage(existing ? 'File replaced. Save the draft to keep this change.' : 'Media inserted. Save the draft to keep this change.')
       setMediaTarget(null)
