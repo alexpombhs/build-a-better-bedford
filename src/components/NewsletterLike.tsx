@@ -3,6 +3,7 @@ import Button from '@mui/material/Button'
 import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined'
 import ThumbUpIcon from '@mui/icons-material/ThumbUp'
 import { supabase } from '../supabase'
+import './newsletterLike.css'
 
 /** Shared counts are public; each signed-in reader may like an issue once. */
 export default function NewsletterLike({ issueId }: { issueId: string }) {
