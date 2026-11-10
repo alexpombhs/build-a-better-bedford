@@ -84,57 +84,57 @@ const projectProblems: ProjectCard[] = [
   {
     number: '01',
     icon: crosswalkIcon,
-    title: "Crosswalk Safety"
-    fact: "Three pedestrian deaths were documented in Bedford during 2022–2024."
+    title: "Crosswalk Safety",
+    fact: "Three pedestrian deaths were documented in Bedford during 2022–2024.",
     question: "Have you ever stood at a crosswalk wondering whether a driver would actually stop? Speed limits, signs, and painted lines are supposed to help. But are they always enough? What makes one crossing safer than another, and how could we identify places that need attention before another accident happens?"
   },
   {
     number: '02',
     icon: dogparkIcon,
-    title: "Where’s the Dog Park?"
-    fact: "Bedford has over 1,100 registered dogs."
+    title: "Where’s the Dog Park?",
+    fact: "Bedford has over 1,100 registered dogs.",
     question: "Over 1,100 registered dogs in Bedford, but no dedicated dog park? Where do they all go to play? Could we design a place where dogs have room to run, owners can meet, and everyone else can enjoy walking trails too? What would make a location suitable?"
   },
   {
     number: '03',
     icon: electricityIcon,
-    title: "Why Do Power Outages Happen?"
-    fact: "Storms can disrupt Bedford's electricity supply."
+    title: "Why Do Power Outages Happen?",
+    fact: "Storms can disrupt Bedford's electricity supply.",
     question: "A storm arrives, the lights go out, and suddenly we realize how much we depend on electricity. But why do some neighborhoods lose power while others don't? Could better infrastructure, tree management, or alternative power systems make our community more resilient?"
   },
   {
     number: '04',
     icon: roadworkIcon,
-    title: "Why Is This Road Closed Again?"
-    fact: "Road repairs and utility projects repeatedly affect local streets."
+    title: "Why Is This Road Closed Again?",
+    fact: "Road repairs and utility projects repeatedly affect local streets.",
     question: "Have you ever seen a road repaired, only to find it dug up again a few months later? Why does that happen? Roads aren't just pavement—there are pipes, cables, and drainage systems underneath. Could better coordination reduce repeated construction, costs, and inconvenience?"
   },
   {
     number: '05',
     icon: bathroomIcon,
-    title: "The Public Bathroom Problem"
-    fact: "Public bathrooms must balance privacy, access, and space."
+    title: "The Public Bathroom Problem",
+    fact: "Public bathrooms must balance privacy, access, and space.",
     question: "Why are public bathrooms designed the way they are? At home, one bathroom works for everyone, but public buildings often have separate spaces and more complicated layouts. Could we rethink the design to improve privacy, accessibility, and efficiency while making everyone feel comfortable?"
   },
   {
     number: '06',
     icon: bikepathIcon,
-    title: "Why Does the Sidewalk End?"
-    fact: "Some Bedford walking and cycling connections are incomplete."
+    title: "Why Does the Sidewalk End?",
+    fact: "Some Bedford walking and cycling connections are incomplete.",
     question: "Imagine walking somewhere when the sidewalk suddenly ends. What are you supposed to do next? Cross the road? Walk along the shoulder? Turn around? Why are some sidewalks disconnected, and how could we improve these missing links to make walking around Bedford easier and less risky?"
   },
   {
     number: '07',
     icon: trailsIcon,
-    title: "Where Are the Trails?"
-    fact: "Local trails and historic sites can be hard to find."
+    title: "Where Are the Trails?",
+    fact: "Local trails and historic sites can be hard to find.",
     question: "Bedford has so many interesting trails and historic places, but how many of them do we actually know about? Some seem almost hidden in plain sight! Could better signs, maps, and connected routes make them easier to discover? Could engineering and technology help us explore our own town?"
   },
   {
     number: '08',
     icon: floodIcon,
-    title: "Why Does This Spot Flood?"
-    fact: "Heavy rain can overwhelm local drainage systems."
+    title: "Why Does This Spot Flood?",
+    fact: "Heavy rain can overwhelm local drainage systems.",
     question: "Have you noticed how some places turn into puddles every time it rains, while others stay almost completely dry? Where does the water go, and why can't some drainage systems handle it? Could rain gardens, permeable pavement, or better drainage design make a difference?"
   },
   {
