@@ -8,6 +8,7 @@ import { isNewsletterRichBody, newsletterBodyHtml, sanitizedNewsletterHtml } fro
 import PageHeading from './components/PageHeading'
 import HalloweenTruss from './components/HalloweenTruss'
 import ThanksgivingHorn from './components/ThanksgivingHorn'
+import WinterSnowman from './components/WinterSnowman'
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined'
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined'
@@ -39,7 +40,7 @@ export type NewsletterMedia = {
   cropWidth?: number
   cropHeight?: number
 }
-export type NewsletterSectionStyle = 'default' | 'club-corner' | 'did-you-know' | 'halloween' | 'thanksgiving'
+export type NewsletterSectionStyle = 'default' | 'club-corner' | 'did-you-know' | 'halloween' | 'thanksgiving' | 'winter'
 export type NewsletterColorTheme = 'default' | 'sage' | 'blue' | 'amber' | 'lavender'
 export type NewsletterSection = {
   heading: string
@@ -173,14 +174,7 @@ export function NewsletterMediaView({
     }
     return ()=>{active=false}
   },[media.storagePath])
-  // Display these two externally hosted educational sources without copying them
-  // into BBB storage. Exact URL matching avoids unrestricted image tracking URLs.
-  const citedCrosswalkImages = new Set([
-    'https://uocnoe.stripocdn.email/content/guids/CABINET_710c83410bf334c332ec2ab81c3cda7511964f24a0106f8396e94bd0e9a482f1/images/screen_shot_20240716_at_24551_am_Uys.png',
-    'https://media.licdn.com/dms/image/v2/D4E10AQGbx5enjf4xGw/image-shrink_800/B4EZnJpeWdGYAc-/0/1760024717935?e=2147483647&t=DtVl0VUhBC5eI5BuJpcFDeW4wMxR7rA_LG6uvITXDQ0&v=beta',
-  ])
-  const citedImageUrl = media.type==='image' && media.url && citedCrosswalkImages.has(media.url) ? media.url : ''
-  const imageUrl=media.asset==='road-solution'?roadSolution:media.storagePath?signedUrl:citedImageUrl
+  const imageUrl=media.asset==='road-solution'?roadSolution:signedUrl
   const embedded=media.type==='video'&&media.url?embeddedVideoUrl(media.url):null
   const googleMapsClip=media.type==='video'&&media.url?externalGoogleMapsVideoUrl(media.url):null
   const clamp=(n:number,min:number,max:number)=>Math.max(min,Math.min(max,n))
@@ -431,11 +425,13 @@ export function IssueView({ issue, layout = 'article', editorPreview = false, on
             {articleSections.map((section, index) => {
               const halloween = newsletterSectionStyle(section) === 'halloween'
               const thanksgiving = newsletterSectionStyle(section) === 'thanksgiving'
-              return <section className={`design-problem ${newsletterSectionClass(section)}${halloween || thanksgiving ? ' newsletter-main-halloween-feature' : ''}`} key={index} id={sectionId(index)}>
+              const winter = newsletterSectionStyle(section) === 'winter'
+              return <section className={`design-problem ${newsletterSectionClass(section)}${halloween || thanksgiving || winter ? ' newsletter-main-halloween-feature' : ''}`} key={index} id={sectionId(index)}>
                 {newsletterSectionStyle(section) === 'club-corner' && <span className="newsletter-feature-kicker">CLUB CORNER</span>}
                 {newsletterSectionStyle(section) === 'did-you-know' && <span className="newsletter-feature-kicker">DID YOU KNOW?</span>}
                 {halloween && <div className="newsletter-main-seasonal"><span className="newsletter-feature-kicker">CLUB CORNER</span><HalloweenTruss /></div>}
                 {thanksgiving && <div className="newsletter-main-seasonal"><span className="newsletter-feature-kicker">CLUB CORNER</span><ThanksgivingHorn /></div>}
+                {winter && <div className="newsletter-main-seasonal"><span className="newsletter-feature-kicker">CLUB CORNER</span><WinterSnowman /></div>}
                 <div className="expand-grid"><div><UiText component="h2" variant="h6">{section.heading}</UiText>{isNewsletterRichBody(section.body) ? <NewsletterRichBody body={section.body} media={section.media} onResizeMedia={onResizeMedia} onUpdateMedia={onUpdateMedia} onMoveMedia={onMoveMedia?(id,x,y)=>onMoveMedia(index,id,x,y):undefined} editorPreview={editorPreview}/> : <NewsletterArticleBody body={section.body} />}</div></div>
                 {!isNewsletterRichBody(section.body) && (section.media ?? []).map(item => <NewsletterMediaView key={item.id} media={item} />)}
               </section>
@@ -473,16 +469,17 @@ export function IssueView({ issue, layout = 'article', editorPreview = false, on
               const style = newsletterSectionStyle(section)
               const halloween = style === 'halloween'
               const thanksgiving = style === 'thanksgiving'
+              const winter = style === 'winter'
               const variant = style === 'did-you-know' ? 'did-you-know'
-                : (style === 'club-corner' || halloween || thanksgiving) ? 'club-corner' : 'default'
+                : (style === 'club-corner' || halloween || thanksgiving || winter) ? 'club-corner' : 'default'
               return <NewsletterSidebarSection
                 key={index}
                 variant={variant}
                 title={section.heading}
-                className={`${newsletterSectionClass(section)}${halloween || thanksgiving ? ' newsletter-halloween-feature' : ''}`}
-                ornament={halloween ? <HalloweenTruss /> : thanksgiving ? <ThanksgivingHorn /> : undefined}>
+                className={`${newsletterSectionClass(section)}${halloween || thanksgiving || winter ? ' newsletter-halloween-feature' : ''}`}
+                ornament={halloween ? <HalloweenTruss /> : thanksgiving ? <ThanksgivingHorn /> : winter ? <WinterSnowman /> : undefined}>
                 {isNewsletterRichBody(section.body)
-                  ? thanksgiving
+                  ? thanksgiving || winter
                     ? <div className="newsletter-halloween-copy newsletter-thanksgiving-copy"><NewsletterRichBody body={section.body} media={section.media} onResizeMedia={onResizeMedia} editorPreview={editorPreview} /></div>
                     : <NewsletterRichBody body={section.body} media={section.media} onResizeMedia={onResizeMedia} editorPreview={editorPreview} />
                   : halloween
