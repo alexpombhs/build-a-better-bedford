@@ -1,3 +1,4 @@
+import CircularProgress from '@mui/material/CircularProgress'
 import { UiText } from './components/atoms/MuiPrimitives'
 import NewsletterSidebarSection from './components/molecules/NewsletterSidebarSection'
 import NewsletterRailHeading from './components/atoms/NewsletterRailHeading'
@@ -517,6 +518,7 @@ export default function Newsletter() {
   const [selected, setSelected] = useState('')
   const [mobileIssuesOpen, setMobileIssuesOpen] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
   const refresh = async () => {
     // The public route always fetches published issues, regardless of login state.
     // Editing and hidden content belong exclusively to /admin.
@@ -526,6 +528,7 @@ export default function Newsletter() {
     const { data, error: loadError } = await query.order('id', { ascending: false })
     if (loadError) {
       setError('Newsletters could not be refreshed. Please try again.')
+      setLoading(false)
       return
     }
     setError('')
@@ -535,6 +538,7 @@ export default function Newsletter() {
     try { remembered = window.sessionStorage.getItem('bbb-newsletter-selected-issue') ?? '' } catch { /* optional */ }
     setSelected(previous => visible.some(issue => issue.id === previous)
       ? previous : visible.some(issue => issue.id === remembered) ? remembered : (visible[0]?.id ?? ''))
+    setLoading(false)
   }
   useEffect(() => { void refresh() }, [])
   const chosen = issues.find(issue => issue.id === selected)
@@ -602,7 +606,7 @@ export default function Newsletter() {
       </aside>
       <div className="newsletter-reading-area">
         {error && <p role="status" className="newsletter-load-message">{error}</p>}
-        {chosen ? <IssueView issue={chosen} /> : <div className="newsletter-empty"><PageHeading title="No published issues yet" description="Check back for updates from Build a Better Bedford." /></div>}
+        {chosen ? <IssueView issue={chosen} /> : loading ? <div className="newsletter-empty" role="status" aria-live="polite" aria-label="Loading newsletters"><CircularProgress size={40} color="inherit" /><p>Loading newsletters…</p></div> : !error ? <div className="newsletter-empty"><PageHeading title="No published issues yet" description="Check back for updates from Build a Better Bedford." /></div> : null}
       </div>
     </div>
   </div>
