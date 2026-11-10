@@ -28,7 +28,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       # npm can omit Rollup's platform-native optional package on Linux.
       # Install the binary matching the resolved Rollup version explicitly.
