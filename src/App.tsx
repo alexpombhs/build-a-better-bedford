@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
+import { upcomingMondayLabel } from './meetingSchedule'
 import Newsletter from './Newsletter'
 import NewsletterStudio from './NewsletterStudio'
 import AboutPage from './AboutPage'
@@ -46,23 +47,6 @@ const pageFromLocation = (): Page => {
   return (Object.keys(pagePaths) as Page[]).find(page => pagePaths[page] === normalized) ?? 'home'
 }
 
-// Calculate the next Monday club meeting in Bedford's local time, not the viewer's timezone.
-// On Mondays, keep today's date until the 3:30 PM meeting ends.
-const upcomingMondayLabel = (now = new Date()): string => {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York', year: 'numeric', month: 'numeric', day: 'numeric',
-    hour: 'numeric', minute: 'numeric', hourCycle: 'h23',
-  }).formatToParts(now)
-  const part = (type: string) => Number(parts.find(p => p.type === type)?.value)
-  const date = new Date(Date.UTC(part('year'), part('month') - 1, part('day')))
-  const daysToMonday = (8 - date.getUTCDay()) % 7
-  const mondayMeetingEnded = daysToMonday === 0 &&
-    (part('hour') > 15 || (part('hour') === 15 && part('minute') >= 30))
-  date.setUTCDate(date.getUTCDate() + (mondayMeetingEnded ? 7 : daysToMonday))
-  return new Intl.DateTimeFormat('en-US', {
-    weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC',
-  }).format(date)
-}
 
 type SubmittedIdea = { id:number; title:string; subtitle:string; description:string; submitter_name:string|null; photo_url:string|null }
 type ProjectCard = {
@@ -168,6 +152,28 @@ function App() {
       window.clearInterval(intervalId)
       document.removeEventListener('visibilitychange', refreshMeetingDate)
     }
+  }, [])
+  // Edit controls are only an affordance. Supabase RLS enforces the same
+  // authorization server-side, even when requests bypass this interface.
+  const [canEditIdeas, setCanEditIdeas] = useState(false)
+  useEffect(() => {
+    let active = true
+    const checkEditorAccess = async () => {
+      if (active) setCanEditIdeas(false)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!active || !user?.email) return
+      const { data, error } = await supabase.from('newsletter_staff')
+        .select('email,must_change_password')
+        .eq('email', user.email.toLowerCase())
+        .maybeSingle()
+      if (active) setCanEditIdeas(!error && Boolean(data) && !data?.must_change_password)
+    }
+    void checkEditorAccess()
+    const { data: subscription } = supabase.auth.onAuthStateChange(() => {
+      // Let Supabase finish updating its session before querying staff RLS.
+      window.setTimeout(() => { if (active) void checkEditorAccess() }, 0)
+    })
+    return () => { active = false; subscription.subscription.unsubscribe() }
   }, [])
   const [projectPage, setProjectPage] = useState(0)
   const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>(() => pageFromLocation() === 'lab' ? 'simulators' : 'ideas')
@@ -327,6 +333,7 @@ function App() {
   }
 
   const openEditIdea = (idea: SubmittedIdea) => {
+    if (!canEditIdeas) return
     setEditingIdeaId(idea.id)
     setExistingPhotoUrl(idea.photo_url)
     setIdeaForm({
@@ -358,6 +365,7 @@ function App() {
   const submitIdea = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!ideaForm.title.trim() || !ideaForm.subtitle.trim() || !ideaForm.description.trim()) return
+    if (editingIdeaId !== null && !canEditIdeas) { setIdeaMessage('Editor access is required to change an existing idea.'); return }
     setSubmittingIdea(true); setIdeaMessage('')
     let photoUrl: string | null = editingIdeaId ? existingPhotoUrl : null
     if (ideaPhoto) {
@@ -492,7 +500,7 @@ function App() {
                 </div>
               </div>
             </div>
-            {problem.isSubmitted && problem.id != null && <button className="idea-edit bbb-flip-edit" onClick={() => {
+            {canEditIdeas && problem.isSubmitted && problem.id != null && <button className="idea-edit bbb-flip-edit" onClick={() => {
               const idea = submittedIdeas.find(item => item.id === problem.id)
               if (idea) openEditIdea(idea)
             }} aria-label={`Edit ${problem.title}`} title="Edit idea">✎</button>}
@@ -543,7 +551,7 @@ function App() {
       </div>}
     </section>}
 
-    {page === 'about' && <AboutPage onJoin={joinClub} />}
+    {page === 'about' && <AboutPage onJoin={joinClub} nextMeetingDate={nextMeetingDate} />}
 
     {page !== 'home' && page !== 'newsletter' && page !== 'projects' && page !== 'lab' && page !== 'admin' && page !== 'about' && <section className="coming-page">
       <p className="eyebrow">{labels[page]}</p>

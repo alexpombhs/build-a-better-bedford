@@ -9,10 +9,10 @@ const team: Detail[] = [
   {label:'Co-leader',value:'Farah Semy',note:'11th grade'},
   {label:'Club advisor',value:'Julia Richards'},
 ]
-const schedule: Detail[] = [
+const meetingDetails = (nextMeetingDate: string): Detail[] => [
   {label:'When',value:'Mondays, 2:30–3:30 PM'},
   {label:'Where',value:'Guidance Office'},
-  {label:'Next meeting',value:'Monday, November 2, 2026'},
+  {label:'Next meeting',value:nextMeetingDate},
 ]
 
 function DetailRows({items}:{items:Detail[]}) {
@@ -36,12 +36,12 @@ function InfoPanel({title,items}:{title:string;items:Detail[]}) {
   </ProjectCard>
 }
 
-export default function AboutPage({onJoin}:{onJoin:()=>void}) {
+export default function AboutPage({onJoin,nextMeetingDate}:{onJoin:()=>void;nextMeetingDate:string}) {
   return <UiBox className="bbb-about-page">
     <PageHeading className="bbb-about-intro" title="The club" description="Build a Better Bedford is a student-led civil engineering club. We study real structures and infrastructure, build models, run tests, and learn from people working in the field." />
     <UiBox className="bbb-about-grid">
       <InfoPanel title="Club leadership" items={team}/>
-      <InfoPanel title="Meetings" items={schedule}/>
+      <InfoPanel title="Meetings" items={meetingDetails(nextMeetingDate)}/>
     </UiBox>
     <UiBox className="bbb-about-cta">
       <UiText variant="body1">Want to join?</UiText>
