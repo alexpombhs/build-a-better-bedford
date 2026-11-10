@@ -214,3 +214,78 @@
     transform:none;
   }
 }
+
+/* Responsive engineering cards: allow the grid to fit its container and the
+   Projects page to grow instead of clipping the second row on short screens. */
+.site-shell:has(.projects-page:has(.bbb-flip-card)){
+  height:auto!important;
+  min-height:100svh!important;
+  overflow:visible!important;
+  grid-template-rows:auto 1fr auto!important;
+}
+.projects-page:has(.bbb-flip-card){
+  height:auto!important;
+  min-width:0;
+  overflow:visible!important;
+}
+.projects-page .problem-grid:has(.bbb-flip-card){
+  width:100%;
+  min-width:0;
+  height:auto!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-template-rows:none!important;
+  grid-auto-rows:auto!important;
+  align-content:start;
+  gap:clamp(12px,1.5vw,20px)!important;
+}
+.projects-page .problem-grid .bbb-flip-card.bbb-ui-card{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  height:clamp(254px,30vh,280px)!important;
+  min-height:254px!important;
+  max-width:100%;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-project-card-content,
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-inner,
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-front,
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back{
+  height:100%!important;
+  min-height:0!important;
+  min-width:0;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back-copy{
+  max-height:100%!important;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature,
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature.has-photo{
+  height:82px!important;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-copy{
+  padding:15px 18px 15px!important;
+  min-width:0;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature-text{
+  padding:12px 18px!important;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back-copy{
+  padding:16px 18px!important;
+}
+@media(max-width:1050px){
+  .projects-page .problem-grid:has(.bbb-flip-card){
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .projects-page .problem-grid .bbb-flip-card.bbb-ui-card{
+    height:280px!important;
+    min-height:280px!important;
+  }
+}
+@media(max-width:620px){
+  .projects-page .problem-grid:has(.bbb-flip-card){
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  .projects-page .problem-grid .bbb-flip-card.bbb-ui-card{
+    height:286px!important;
+    min-height:286px!important;
+  }
+}
