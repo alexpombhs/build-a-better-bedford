@@ -269,16 +269,37 @@ function App() {
     recordVisit()
   }, [page])
   const projectsPerPage = 6
-  const submittedProjectCards: ProjectCard[] = submittedIdeas.map((idea) => ({
+  // Editorial previews for the two existing submissions. These changes are
+  // presentation-only on this experiment branch; the submitted text remains
+  // unchanged in the database and in the edit form.
+  const submittedIdeaEditorial: Record<number, { originalTitle: string; title: string; fact: string; question: string }> = {
+    5: {
+      originalTitle: 'Sturdy Bridge',
+      title: 'Can We Build a Bridge That Lasts Longer?',
+      fact: 'What makes some bridges last longer than others?',
+      question: 'We rely on bridges every day, but how often do we think about what keeps them standing? Why do some bridges last for decades while others need repairs much sooner? Could different materials, shapes, or structural designs help a bridge withstand heavy loads and changing weather for longer?'
+    },
+    4: {
+      originalTitle: 'Turning electronics into safety guards',
+      title: 'Can Headphones Help Us Cross More Safely?',
+      fact: 'Could headphones remind us to pay attention at crosswalks?',
+      question: 'Have you ever crossed the road while listening to music and wondered whether you might miss something around you? Noise-cancelling headphones can make traffic harder to hear. What if a phone or headphones could offer an optional reminder to pause audio near a crossing? Would that actually help pedestrians notice their surroundings, and how could we test the idea without creating another distraction?'
+    }
+  }
+  const submittedProjectCards: ProjectCard[] = submittedIdeas.map((idea) => { 
+    const draft = submittedIdeaEditorial[idea.id]
+    const editorial = draft?.originalTitle === idea.title ? draft : null
+    return {
     id: idea.id,
     number: 'NEW',
     isSubmitted: true,
-    title: idea.title,
-    fact: idea.subtitle,
-    question: idea.description,
+    title: editorial?.title ?? idea.title,
+    fact: editorial?.fact ?? idea.subtitle,
+    question: editorial?.question ?? idea.description,
     photoUrl: idea.title.trim().toLowerCase() === 'turning electronics into safety guards' ? null : idea.photo_url,
     submitterName: idea.submitter_name,
-  }))
+    }
+  })
   const regularProjects = [...submittedProjectCards, ...projectProblems.filter(problem => !problem.cta)]
   const projectPageCount = Math.max(1, Math.ceil(regularProjects.length / projectsPerPage))
   const visibleProjects = regularProjects.slice(projectPage * projectsPerPage, (projectPage + 1) * projectsPerPage)
