@@ -26,6 +26,8 @@ export type NewsletterMedia = {
   storagePath?: string
   url?: string
   alt?: string
+  title?: string
+  credit?: string
   caption?: string
   /** Inline media floats within the story; undefined is left for older issues. */
   align?: 'left' | 'right'
@@ -278,7 +280,11 @@ export function NewsletterMediaView({
     </a>}
     {((!imageUrl&&media.type==='image')||(media.type==='video'&&!signedUrl&&!embedded&&!googleMapsClip))&&
       <p className="newsletter-media-placeholder" role="status">{loadingError?'This attachment could not be loaded.':'Loading attachment…'}</p>}
-    {media.caption&&<figcaption>{media.caption}</figcaption>}
+    {(media.title || media.caption || media.credit) && <figcaption className="newsletter-media-caption">
+      {media.title && <strong className="newsletter-media-title">{media.title}</strong>}
+      {media.caption && <span className="newsletter-media-caption-text">{media.caption}</span>}
+      {media.credit && <span className="newsletter-media-credit">Credit: {media.credit}</span>}
+    </figcaption>}
     {editable&&media.type==='image'&&<>
       <span className="newsletter-photo-grip newsletter-photo-grip-se" role="slider" tabIndex={0}
         aria-label="Drag the lower right corner to resize photo" aria-valuemin={25} aria-valuemax={100} aria-valuenow={width}
