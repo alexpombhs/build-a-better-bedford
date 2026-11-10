@@ -173,7 +173,14 @@ export function NewsletterMediaView({
     }
     return ()=>{active=false}
   },[media.storagePath])
-  const imageUrl=media.asset==='road-solution'?roadSolution:signedUrl
+  // Display these two externally hosted educational sources without copying them
+  // into BBB storage. Exact URL matching avoids unrestricted image tracking URLs.
+  const citedCrosswalkImages = new Set([
+    'https://uocnoe.stripocdn.email/content/guids/CABINET_710c83410bf334c332ec2ab81c3cda7511964f24a0106f8396e94bd0e9a482f1/images/screen_shot_20240716_at_24551_am_Uys.png',
+    'https://media.licdn.com/dms/image/v2/D4E10AQGbx5enjf4xGw/image-shrink_800/B4EZnJpeWdGYAc-/0/1760024717935?e=2147483647&t=DtVl0VUhBC5eI5BuJpcFDeW4wMxR7rA_LG6uvITXDQ0&v=beta',
+  ])
+  const citedImageUrl = media.type==='image' && media.url && citedCrosswalkImages.has(media.url) ? media.url : ''
+  const imageUrl=media.asset==='road-solution'?roadSolution:media.storagePath?signedUrl:citedImageUrl
   const embedded=media.type==='video'&&media.url?embeddedVideoUrl(media.url):null
   const googleMapsClip=media.type==='video'&&media.url?externalGoogleMapsVideoUrl(media.url):null
   const clamp=(n:number,min:number,max:number)=>Math.max(min,Math.min(max,n))
