@@ -69,3 +69,303 @@
 .ideas-toolbar .project-pagination .bbb-ui-icon-button.Mui-disabled{opacity:.38!important}
 .ideas-toolbar .project-pagination .bbb-ui-icon-button:hover:not(.Mui-disabled):not(.active),
 .ideas-toolbar .idea-add-toolbar.bbb-ui-icon-button:hover{background:#e9eff2!important}
+
+
+/* Experimental architectural field-note design — Ideas cards only.
+   The flip interaction and the shared MUI card component remain intact. */
+.projects-page .problem-grid:has(.bbb-flip-card){
+  gap:20px!important;
+  padding:6px 0 28px!important;
+}
+.projects-page .problem-grid .bbb-flip-card.bbb-ui-card{
+  height:304px!important;
+  min-height:304px!important;
+  border:1px solid #cbd7dc!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  box-shadow:0 1px 2px rgba(15,38,48,.03)!important;
+  transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;
+}
+.projects-page .problem-grid .bbb-flip-card.bbb-ui-card:hover{
+  border-color:#7f9da6!important;
+  box-shadow:0 10px 28px rgba(15,38,48,.09)!important;
+  transform:translateY(-2px);
+}
+.projects-page .problem-grid .bbb-flip-card:focus-within{
+  outline:2px solid #517e87;
+  outline-offset:3px;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-project-card-content{
+  height:304px!important;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-inner,
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-front,
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back{
+  min-height:0!important;
+  height:304px!important;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature,
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature.has-photo{
+  height:105px!important;
+  border-bottom:1px solid #cddbdc!important;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature:not(.has-photo){
+  background-color:#ecf3f2!important;
+  background-image:
+    linear-gradient(rgba(53,94,98,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(53,94,98,.07) 1px,transparent 1px),
+    linear-gradient(120deg,transparent 42%,rgba(43,92,94,.12) 42.2%,rgba(43,92,94,.12) 42.6%,transparent 42.8%),
+    linear-gradient(60deg,transparent 64%,rgba(43,92,94,.12) 64.2%,rgba(43,92,94,.12) 64.6%,transparent 64.8%);
+  background-size:18px 18px,18px 18px,100% 100%,100% 100%;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature-text{
+  padding:17px 20px!important;
+  align-items:flex-start;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature-text span{
+  font:600 10px/1.5 'Space Grotesk',Arial,sans-serif;
+  letter-spacing:.14em;
+  color:#345c62;
+  background:rgba(255,255,255,.83);
+  border:1px solid rgba(52,92,98,.16);
+  padding:4px 7px;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature-text strong{
+  font:500 34px/1 'Space Grotesk',Arial,sans-serif!important;
+  letter-spacing:-.07em;
+  color:#6e9298;
+  opacity:.8;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-copy{
+  padding:20px 21px 18px!important;
+}
+.projects-page .problem-grid .bbb-flip-card h2{
+  font:600 19px/1.27 'Space Grotesk',Arial,sans-serif!important;
+  letter-spacing:-.025em;
+  color:#142a32!important;
+}
+.projects-page .problem-grid .bbb-flip-card .problem-fact{
+  margin-top:11px!important;
+  font-size:13.5px!important;
+  line-height:1.48!important;
+  color:#4b6065!important;
+  font-weight:400!important;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-action{
+  font:600 12px/1.4 'Space Grotesk',Arial,sans-serif!important;
+  text-decoration:none!important;
+  border-top:1px solid #e0e9e9;
+  width:100%;
+  justify-content:space-between;
+  padding-top:12px!important;
+  color:#22555c;
+  letter-spacing:.015em;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-action:hover{
+  color:#0b383f;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back{
+  background:#f6f9f8;
+  background-image:linear-gradient(90deg,#d5e4e2 1px,transparent 1px);
+  background-size:26px 100%;
+  background-position:13px 0;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back-copy{
+  padding:20px 21px!important;
+  max-height:304px!important;
+  overflow-y:auto;
+  background:rgba(246,249,248,.94);
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-kicker{
+  color:#50747a;
+  margin-bottom:10px;
+  font:600 10px/1.4 'Space Grotesk',Arial,sans-serif;
+  letter-spacing:.15em;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back .problem-question{
+  font-size:13px!important;
+  line-height:1.55!important;
+  color:#334f57!important;
+  margin:11px 0 15px!important;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-edit{
+  background:rgba(255,255,255,.94);
+  border:1px solid #dce4e5;
+  border-radius:6px;
+}
+@media(max-width:620px){
+  .projects-page .problem-grid .bbb-flip-card.bbb-ui-card,
+  .projects-page .problem-grid .bbb-flip-card .bbb-project-card-content,
+  .projects-page .problem-grid .bbb-flip-card .bbb-flip-inner,
+  .projects-page .problem-grid .bbb-flip-card .bbb-flip-front,
+  .projects-page .problem-grid .bbb-flip-card .bbb-flip-back{
+    height:310px!important;
+    min-height:310px!important;
+  }
+  .projects-page .problem-grid .bbb-flip-card .bbb-flip-back-copy{
+    max-height:310px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .projects-page .problem-grid .bbb-flip-card.bbb-ui-card{
+    transition:none;
+  }
+  .projects-page .problem-grid .bbb-flip-card.bbb-ui-card:hover{
+    transform:none;
+  }
+}
+
+/* Responsive engineering cards: allow the grid to fit its container and the
+   Projects page to grow instead of clipping the second row on short screens. */
+.site-shell:has(.projects-page:has(.bbb-flip-card)){
+  height:auto!important;
+  min-height:100svh!important;
+  overflow:visible!important;
+  grid-template-rows:auto 1fr auto!important;
+}
+.projects-page:has(.bbb-flip-card){
+  height:auto!important;
+  min-width:0;
+  overflow:visible!important;
+}
+.projects-page .problem-grid:has(.bbb-flip-card){
+  width:100%;
+  min-width:0;
+  height:auto!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-template-rows:none!important;
+  grid-auto-rows:auto!important;
+  align-content:start;
+  gap:clamp(12px,1.5vw,20px)!important;
+}
+.projects-page .problem-grid .bbb-flip-card.bbb-ui-card{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  height:clamp(254px,30vh,280px)!important;
+  min-height:254px!important;
+  max-width:100%;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-project-card-content,
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-inner,
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-front,
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back{
+  height:100%!important;
+  min-height:0!important;
+  min-width:0;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back-copy{
+  max-height:100%!important;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature,
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature.has-photo{
+  height:82px!important;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-copy{
+  padding:15px 18px 15px!important;
+  min-width:0;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-idea-feature-text{
+  padding:12px 18px!important;
+}
+.projects-page .problem-grid .bbb-flip-card .bbb-flip-back-copy{
+  padding:16px 18px!important;
+}
+@media(max-width:1050px){
+  .projects-page .problem-grid:has(.bbb-flip-card){
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .projects-page .problem-grid .bbb-flip-card.bbb-ui-card{
+    height:280px!important;
+    min-height:280px!important;
+  }
+}
+@media(max-width:620px){
+  .projects-page .problem-grid:has(.bbb-flip-card){
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  .projects-page .problem-grid .bbb-flip-card.bbb-ui-card{
+    height:286px!important;
+    min-height:286px!important;
+  }
+}
+
+/* Desktop Ideas viewport: the six-card page occupies two equal rows.
+   Earlier responsive rules intentionally remain for tablets and phones. */
+@media (min-width:1051px){
+  html:has(.projects-page:has(.bbb-flip-card)),
+  body:has(.projects-page:has(.bbb-flip-card)),
+  #root:has(.projects-page:has(.bbb-flip-card)){
+    height:100%;
+    overflow:hidden!important;
+  }
+  .site-shell:has(.projects-page:has(.bbb-flip-card)){
+    height:100dvh!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    grid-template-rows:auto minmax(0,1fr) auto!important;
+  }
+  .projects-page:has(.bbb-flip-card){
+    height:100%!important;
+    min-height:0!important;
+    display:grid!important;
+    grid-template-rows:auto auto minmax(0,1fr)!important;
+    align-content:stretch;
+    gap:clamp(8px,1.2vh,14px)!important;
+    padding:clamp(8px,1.5vh,14px) 0 clamp(7px,1.2vh,12px)!important;
+    overflow:hidden!important;
+  }
+  .projects-page .problem-grid:has(.bbb-flip-card){
+    display:grid!important;
+    min-height:0!important;
+    height:100%!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    grid-template-rows:repeat(2,minmax(0,1fr))!important;
+    grid-auto-rows:minmax(0,1fr)!important;
+    gap:clamp(9px,1.3vh,14px)!important;
+    align-content:stretch!important;
+    overflow:hidden;
+  }
+  .projects-page .problem-grid .bbb-flip-card.bbb-ui-card{
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    transform:none;
+  }
+  .projects-page .problem-grid .bbb-flip-card.bbb-ui-card:hover{
+    transform:none;
+  }
+  .projects-page .problem-grid .bbb-flip-card .bbb-project-card-content,
+  .projects-page .problem-grid .bbb-flip-card .bbb-flip-inner,
+  .projects-page .problem-grid .bbb-flip-card .bbb-flip-front,
+  .projects-page .problem-grid .bbb-flip-card .bbb-flip-back{
+    height:100%!important;
+    min-height:0!important;
+  }
+  .projects-page .problem-grid .bbb-flip-card .bbb-idea-feature,
+  .projects-page .problem-grid .bbb-flip-card .bbb-idea-feature.has-photo{
+    height:clamp(52px,9vh,78px)!important;
+  }
+  .projects-page .problem-grid .bbb-flip-card .bbb-idea-copy{
+    padding:clamp(9px,1.5vh,15px) 16px clamp(9px,1.3vh,13px)!important;
+    overflow:hidden;
+  }
+  .projects-page .problem-grid .bbb-flip-card h2{
+    font-size:clamp(15px,1.8vh,18px)!important;
+  }
+  .projects-page .problem-grid .bbb-flip-card .problem-fact{
+    margin-top:clamp(4px,.9vh,8px)!important;
+    font-size:clamp(11.5px,1.45vh,13px)!important;
+    line-height:1.35!important;
+  }
+  .projects-page .problem-grid .bbb-flip-card .bbb-flip-action{
+    padding-top:clamp(5px,1vh,9px)!important;
+  }
+  .projects-page .problem-grid .bbb-flip-card .bbb-flip-back-copy{
+    max-height:100%!important;
+    padding:clamp(11px,1.8vh,17px) 16px!important;
+    overflow-y:auto;
+  }
+}
+/* For smaller screens, prefer readable cards and page scrolling over
+   unreadably compressed three-row layouts. */

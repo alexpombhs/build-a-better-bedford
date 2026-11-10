@@ -84,58 +84,58 @@ const projectProblems: ProjectCard[] = [
   {
     number: '01',
     icon: crosswalkIcon,
-    title: "Crosswalk safety",
+    title: "Crosswalk Safety",
     fact: "Three pedestrian deaths were documented in Bedford during 2022–2024.",
-    question: "If crossing the road feels like a mini game where the objective is simply not getting hit, something is off. We can look at speed, visibility, crossing distance, lighting, and road geometry to see whether the street design is making the safe choice obvious—or weirdly difficult."
+    question: "Have you ever stood at a crosswalk wondering whether a driver would actually stop? Speed limits, signs, and painted lines are supposed to help. But are they always enough? What makes one crossing safer than another, and how could we identify places that need attention before another accident happens?"
   },
   {
     number: '02',
     icon: dogparkIcon,
     title: "Where’s the Dog Park?",
     fact: "Bedford has over 1,100 registered dogs.",
-    question: "There are lots of dogs in Bedford, but no dedicated dog park. So sidewalks and trails become the unofficial meetup spot. Could a well-designed dog park give dogs room to run and socialize without turning every walk into surprise dog networking?"
+    question: "Over 1,100 registered dogs in Bedford, but no dedicated dog park? Where do they all go to play? Could we design a place where dogs have room to run, owners can meet, and everyone else can enjoy walking trails too? What would make a location suitable?"
   },
   {
     number: '03',
     icon: electricityIcon,
-    title: "Why Do Outages Happen?",
+    title: "Why Do Power Outages Happen?",
     fact: "Storms can disrupt Bedford's electricity supply.",
-    question: "Storm starts. Wi-Fi disappears. Chargers become precious artifacts. Why do outages happen so often, and could tree management, undergrounding, microgrids, or smarter grid design make Bedford less dramatic about bad weather?"
+    question: "A storm arrives, the lights go out, and suddenly we realize how much we depend on electricity. But why do some neighborhoods lose power while others don't? Could better infrastructure, tree management, or alternative power systems make our community more resilient?"
   },
   {
     number: '04',
     icon: roadworkIcon,
     title: "Why Is This Road Closed Again?",
     fact: "Road repairs and utility projects repeatedly affect local streets.",
-    question: "The road gets paved. Two months later: cones. Again. At this point the orange barrels have lore. Why does the same street keep getting reopened, and could utility, drainage, sewer, sidewalk, and paving work be coordinated better?"
+    question: "Have you ever seen a road repaired, only to find it dug up again a few months later? Why does that happen? Roads aren't just pavement—there are pipes, cables, and drainage systems underneath. Could better coordination reduce repeated construction, costs, and inconvenience?"
   },
   {
     number: '05',
     icon: bathroomIcon,
-    title: "The public bathroom problem",
+    title: "The Public Bathroom Problem",
     fact: "Public bathrooms must balance privacy, access, and space.",
-    question: "At home, one bathroom works for everyone. In public, suddenly we’re sorting into teams—even when each toilet is already in its own stall. Could better layouts improve privacy, accessibility, safety, and efficiency without making the bathroom experience a whole social system?"
+    question: "Why are public bathrooms designed the way they are? At home, one bathroom works for everyone, but public buildings often have separate spaces and more complicated layouts. Could we rethink the design to improve privacy, accessibility, and efficiency while making everyone feel comfortable?"
   },
   {
     number: '06',
     icon: bikepathIcon,
     title: "Why Does the Sidewalk End?",
     fact: "Some Bedford walking and cycling connections are incomplete.",
-    question: "You’re walking. Everything is fine. Then the sidewalk just… ends. Where do Bedford’s walking and biking routes lose continuity, and how could those missing links be redesigned so getting somewhere doesn’t require improvisation?"
+    question: "Imagine walking somewhere when the sidewalk suddenly ends. What are you supposed to do next? Cross the road? Walk along the shoulder? Turn around? Why are some sidewalks disconnected, and how could we improve these missing links to make walking around Bedford easier and less risky?"
   },
   {
     number: '07',
     icon: trailsIcon,
-    title: "Where are the trails?",
+    title: "Where Are the Trails?",
     fact: "Local trails and historic sites can be hard to find.",
-    question: "Bedford has trails, historic places, and cool infrastructure, but sometimes you only find out they exist after someone’s parent mentions them. Could signs, maps, trail connections, or digital wayfinding make local history feel less like hidden side quests?"
+    question: "Bedford has so many interesting trails and historic places, but how many of them do we actually know about? Some seem almost hidden in plain sight! Could better signs, maps, and connected routes make them easier to discover? Could engineering and technology help us explore our own town?"
   },
   {
     number: '08',
     icon: floodIcon,
     title: "Why Does This Spot Flood?",
     fact: "Heavy rain can overwhelm local drainage systems.",
-    question: "Rain falls. Giant puddle appears. Somebody’s sneaker is sacrificed. Could greener streets, rain gardens, permeable surfaces, or better drainage help Bedford manage stormwater without turning random corners into temporary ponds?"
+    question: "Have you noticed how some places turn into puddles every time it rains, while others stay almost completely dry? Where does the water go, and why can't some drainage systems handle it? Could rain gardens, permeable pavement, or better drainage design make a difference?"
   },
   {
     number: '',
@@ -269,16 +269,37 @@ function App() {
     recordVisit()
   }, [page])
   const projectsPerPage = 6
-  const submittedProjectCards: ProjectCard[] = submittedIdeas.map((idea) => ({
+  // Editorial previews for the two existing submissions. These changes are
+  // presentation-only on this experiment branch; the submitted text remains
+  // unchanged in the database and in the edit form.
+  const submittedIdeaEditorial: Record<number, { originalTitle: string; title: string; fact: string; question: string }> = {
+    5: {
+      originalTitle: 'Sturdy Bridge',
+      title: 'Can We Build a Bridge That Lasts Longer?',
+      fact: 'What makes some bridges last longer than others?',
+      question: 'We rely on bridges every day, but how often do we think about what keeps them standing? Why do some bridges last for decades while others need repairs much sooner? Could different materials, shapes, or structural designs help a bridge withstand heavy loads and changing weather for longer?'
+    },
+    4: {
+      originalTitle: 'Turning electronics into safety guards',
+      title: 'Can Headphones Help Us Cross More Safely?',
+      fact: 'Could headphones remind us to pay attention at crosswalks?',
+      question: 'Have you ever crossed the road while listening to music and wondered whether you might miss something around you? Noise-cancelling headphones can make traffic harder to hear. What if a phone or headphones could offer an optional reminder to pause audio near a crossing? Would that actually help pedestrians notice their surroundings, and how could we test the idea without creating another distraction?'
+    }
+  }
+  const submittedProjectCards: ProjectCard[] = submittedIdeas.map((idea) => { 
+    const draft = submittedIdeaEditorial[idea.id]
+    const editorial = draft?.originalTitle === idea.title ? draft : null
+    return {
     id: idea.id,
     number: 'NEW',
     isSubmitted: true,
-    title: idea.title,
-    fact: idea.subtitle,
-    question: idea.description,
+    title: editorial?.title ?? idea.title,
+    fact: editorial?.fact ?? idea.subtitle,
+    question: editorial?.question ?? idea.description,
     photoUrl: idea.title.trim().toLowerCase() === 'turning electronics into safety guards' ? null : idea.photo_url,
     submitterName: idea.submitter_name,
-  }))
+    }
+  })
   const regularProjects = [...submittedProjectCards, ...projectProblems.filter(problem => !problem.cta)]
   const projectPageCount = Math.max(1, Math.ceil(regularProjects.length / projectsPerPage))
   const visibleProjects = regularProjects.slice(projectPage * projectsPerPage, (projectPage + 1) * projectsPerPage)
@@ -451,7 +472,7 @@ function App() {
               <div className="bbb-flip-front">
                 <div className={problem.photoUrl ? 'bbb-idea-feature has-photo' : 'bbb-idea-feature'}>
                   {problem.photoUrl ? <img src={problem.photoUrl} alt="" loading="lazy" /> : <div className="bbb-idea-feature-text">
-                    <span>STUDENT IDEA</span>
+                    <span>{problem.isSubmitted ? 'STUDENT SUBMISSION' : 'CLUB IDEA'}</span>
                     <strong>{problem.isSubmitted ? 'NEW' : problem.number}</strong>
                   </div>}
                 </div>
