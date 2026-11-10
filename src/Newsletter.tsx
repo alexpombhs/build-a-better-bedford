@@ -14,6 +14,7 @@ import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined'
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import { supabase } from './supabase'
+import NewsletterLike from './components/NewsletterLike'
 import roadSolution from './assets/road_solution.png'
 import './newsletterStudio.css'
 import './newsletterLayouts.css'
@@ -507,6 +508,7 @@ export function IssueView({ issue, layout = 'article', editorPreview = false, on
           </section>}
         </aside>}
       </div>
+      {!editorPreview && issue.status === 'published' && <NewsletterLike issueId={issue.id} />}
       {issue.footer && <footer className="newsletter-disclaimer"><p>{issue.footer}</p></footer>}
     </div>
   </section>
