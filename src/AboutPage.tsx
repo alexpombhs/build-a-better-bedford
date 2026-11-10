@@ -12,7 +12,7 @@ const team: Detail[] = [
 const schedule: Detail[] = [
   {label:'When',value:'Mondays, 2:30–3:30 PM'},
   {label:'Where',value:'Guidance Office'},
-  {label:'Next meeting',value:'Monday, November 2, 2026'},
+  {label:'Next meeting',value:'To be announced'},
 ]
 
 function DetailRows({items}:{items:Detail[]}) {
