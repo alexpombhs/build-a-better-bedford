@@ -53,7 +53,7 @@ export default function WinterSnowman() {
       rib: new THREE.MeshStandardMaterial({ color: 0x9fbcca, metalness: 0.17, roughness: 0.56 }),
       hoop: new THREE.MeshStandardMaterial({ color: 0xd3e2e9, metalness: 0.12, roughness: 0.55 }),
       brace: new THREE.MeshStandardMaterial({ color: 0x6c91a4, metalness: 0.22, roughness: 0.52 }),
-      hat: new THREE.MeshStandardMaterial({ color: 0x506b80, metalness: 0.14, roughness: 0.58 }),
+      branch: new THREE.MeshStandardMaterial({ color: 0x506b80, metalness: 0.14, roughness: 0.58 }),
       scarf: new THREE.MeshStandardMaterial({ color: 0x8eb7bd, metalness: 0.12, roughness: 0.6 }),
       nose: new THREE.MeshStandardMaterial({ color: 0xc99665, metalness: 0.1, roughness: 0.65 }),
     }
@@ -100,23 +100,13 @@ export default function WinterSnowman() {
     openBall(0.43, 0.53, 10)
     openBall(1.18, 0.37, 10)
 
-    // Hat rim, vertical wall, and top hoops remain open frame members.
-    circle(0, 1.59, 0, 0.43, materials.hat, 0.024)
-    circle(0, 1.65, 0, 0.30, materials.scarf, 0.022)
-    circle(0, 1.97, 0, 0.29, materials.hat, 0.016)
-    for (let i = 0; i < 12; i++) {
-      const a = i * 2 * Math.PI / 12
-      addBeam([new THREE.Vector3(0.30 * Math.cos(a), 1.62, 0.30 * Math.sin(a)),
-        new THREE.Vector3(0.29 * Math.cos(a), 1.97, 0.29 * Math.sin(a))], 0.013, materials.hat)
-    }
-
     // Light scarf loops around the neck; two simple stick arms and a nose.
     circle(0, 0.82, 0, 0.40, materials.scarf, 0.022)
     addBeam([new THREE.Vector3(0.16, 0.82, 0.36), new THREE.Vector3(0.20, 0.56, 0.38), new THREE.Vector3(0.27, 0.42, 0.41)], 0.019, materials.scarf)
     for (const side of [-1, 1]) {
       addBeam([new THREE.Vector3(side * 0.44, 0.47, 0), new THREE.Vector3(side * 0.78, 0.64, 0.05),
-        new THREE.Vector3(side * 1.06, 0.84, 0.12)], 0.022, materials.hat)
-      addBeam([new THREE.Vector3(side * 0.84, 0.68, 0.08), new THREE.Vector3(side * 1.05, 0.66, 0.15)], 0.013, materials.hat)
+        new THREE.Vector3(side * 1.06, 0.84, 0.12)], 0.022, materials.branch)
+      addBeam([new THREE.Vector3(side * 0.84, 0.68, 0.08), new THREE.Vector3(side * 1.05, 0.66, 0.15)], 0.013, materials.branch)
     }
     addBeam([new THREE.Vector3(0, 1.18, 0.36), new THREE.Vector3(0, 1.18, 0.54),
       new THREE.Vector3(0.015, 1.14, 0.70)], 0.029, materials.nose)
