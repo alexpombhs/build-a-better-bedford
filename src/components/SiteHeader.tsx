@@ -31,7 +31,7 @@ export default function SiteHeader({ active, onNavigate, onJoin }: Props) {
       <a className="bbb-site-brand" href={hrefFor('home')} onClick={event => linkClick(event, 'home')} aria-label="Build a Better Bedford home">
         <img
           className="bbb-site-brand-logo"
-          src={`${import.meta.env.BASE_URL}${active === 'projects' ? 'projects-logo.svg' : 'site-logo.svg'}`}
+          src={`${import.meta.env.BASE_URL}site-logo.svg`}
           alt=""
           width="94"
           height="72"
