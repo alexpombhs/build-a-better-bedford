@@ -767,6 +767,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                     { value: 'did-you-know', label: 'Did You Know?' },
                     { value: 'halloween', label: 'Halloween (animated)' },
                     { value: 'thanksgiving', label: 'Thanksgiving (animated 3D horn)' },
+                     { value: 'winter', label: 'Winter (animated 3D snowman)' },
                   ]}
                 />
                 <UiSelect
