@@ -1,6 +1,7 @@
 import { UiBox, UiText } from './components/atoms/MuiPrimitives'
 import './about.css'
 import PageHeading from './components/PageHeading'
+import { upcomingMondayLabel } from './meetingSchedule'
 import ProjectCard from './components/ProjectCard'
 
 type Detail = { label: string; value: string; note?: string }
@@ -12,7 +13,7 @@ const team: Detail[] = [
 const schedule: Detail[] = [
   {label:'When',value:'Mondays, 2:30–3:30 PM'},
   {label:'Where',value:'Guidance Office'},
-  {label:'Next meeting',value:'Monday, November 2, 2026'},
+  {label:'Next meeting',value:upcomingMondayLabel()},
 ]
 
 function DetailRows({items}:{items:Detail[]}) {
