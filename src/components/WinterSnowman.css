@@ -1,0 +1,32 @@
+.bbb-winter-snowman {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, 250px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  overflow: hidden;
+  background: transparent;
+}
+.bbb-winter-snowman canvas {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  background: transparent;
+}
+.bbb-winter-snowman-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: clamp(4rem, 14vw, 6rem);
+  color: #7193a4;
+}
+.bbb-winter-snowman:not([data-webgl-unavailable="true"]):has(canvas) .bbb-winter-snowman-fallback {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bbb-winter-snowman { animation: none; }
+}
