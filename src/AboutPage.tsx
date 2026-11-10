@@ -1,7 +1,6 @@
 import { UiBox, UiText } from './components/atoms/MuiPrimitives'
 import './about.css'
 import PageHeading from './components/PageHeading'
-import { upcomingMondayLabel } from './meetingSchedule'
 import ProjectCard from './components/ProjectCard'
 
 type Detail = { label: string; value: string; note?: string }
@@ -10,10 +9,10 @@ const team: Detail[] = [
   {label:'Co-leader',value:'Farah Semy',note:'11th grade'},
   {label:'Club advisor',value:'Julia Richards'},
 ]
-const schedule: Detail[] = [
+const meetingDetails = (nextMeetingDate: string): Detail[] => [
   {label:'When',value:'Mondays, 2:30–3:30 PM'},
   {label:'Where',value:'Guidance Office'},
-  {label:'Next meeting',value:upcomingMondayLabel()},
+  {label:'Next meeting',value:nextMeetingDate},
 ]
 
 function DetailRows({items}:{items:Detail[]}) {
@@ -37,12 +36,12 @@ function InfoPanel({title,items}:{title:string;items:Detail[]}) {
   </ProjectCard>
 }
 
-export default function AboutPage({onJoin}:{onJoin:()=>void}) {
+export default function AboutPage({onJoin,nextMeetingDate}:{onJoin:()=>void;nextMeetingDate:string}) {
   return <UiBox className="bbb-about-page">
     <PageHeading className="bbb-about-intro" title="The club" description="Build a Better Bedford is a student-led civil engineering club. We study real structures and infrastructure, build models, run tests, and learn from people working in the field." />
     <UiBox className="bbb-about-grid">
       <InfoPanel title="Club leadership" items={team}/>
-      <InfoPanel title="Meetings" items={schedule}/>
+      <InfoPanel title="Meetings" items={meetingDetails(nextMeetingDate)}/>
     </UiBox>
     <UiBox className="bbb-about-cta">
       <UiText variant="body1">Want to join?</UiText>
