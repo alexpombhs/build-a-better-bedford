@@ -357,9 +357,18 @@ function App() {
   }
 
   const chooseIdeaPhoto = (file: File | null) => {
+    if (file && !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setIdeaMessage('Choose a JPG, PNG, or WebP image.')
+      return
+    }
+    if (file && (file.size === 0 || file.size > 5 * 1024 * 1024)) {
+      setIdeaMessage('Choose an image smaller than 5 MB.')
+      return
+    }
     if (ideaPhotoPreview) URL.revokeObjectURL(ideaPhotoPreview)
     setIdeaPhoto(file)
     setIdeaPhotoPreview(file ? URL.createObjectURL(file) : '')
+    if (file) setIdeaMessage('')
   }
 
   const submitIdea = async (event: React.FormEvent) => {
@@ -369,9 +378,15 @@ function App() {
     setSubmittingIdea(true); setIdeaMessage('')
     let photoUrl: string | null = editingIdeaId ? existingPhotoUrl : null
     if (ideaPhoto) {
-      const safeName = ideaPhoto.name.replace(/[^a-zA-Z0-9._-]/g, '-')
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(ideaPhoto.type) ||
+          ideaPhoto.size === 0 || ideaPhoto.size > 5 * 1024 * 1024) {
+        setIdeaMessage('Choose a JPG, PNG, or WebP image smaller than 5 MB.')
+        setSubmittingIdea(false)
+        return
+      }
+      const safeName = ideaPhoto.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-100) || 'photo'
       const path = `${crypto.randomUUID()}-${safeName}`
-      const { error: uploadError } = await supabase.storage.from('project-idea-photos').upload(path, ideaPhoto)
+      const { error: uploadError } = await supabase.storage.from('project-idea-photos').upload(path, ideaPhoto, { contentType: ideaPhoto.type })
       if (uploadError) { setIdeaMessage('Photo upload failed. Please try again.'); setSubmittingIdea(false); return }
       photoUrl = supabase.storage.from('project-idea-photos').getPublicUrl(path).data.publicUrl
     }
