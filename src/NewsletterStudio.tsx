@@ -43,7 +43,7 @@ const cleanSections = (sections: NewsletterSection[]) =>
     // Removal is explicit through removeMedia(), never inferred from typing.
     media: (section.media ?? [])
       .map(item => ({
-        ...item, alt: item.alt?.trim() ?? '', caption: item.caption?.trim() ?? '',
+        ...item, alt: item.alt?.trim() ?? '', title: item.title?.trim() ?? '', credit: item.credit?.trim() ?? '', caption: item.caption?.trim() ?? '',
       })),
   })).filter(section => section.heading || section.body || section.media.length)
 // Older newsletters may only contain the legacy sections array. Adapt them
@@ -121,6 +121,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
   const [mediaFile, setMediaFile] = useState<File | null>(null)
   const [mediaUrl, setMediaUrl] = useState('')
   const [mediaAlt, setMediaAlt] = useState('')
+  const [mediaTitle, setMediaTitle] = useState('')
+  const [mediaCredit, setMediaCredit] = useState('')
   const [mediaCaption, setMediaCaption] = useState('')
   const [mediaAlign, setMediaAlign] = useState<'left' | 'right'>('left')
   const [mediaError, setMediaError] = useState('')
@@ -457,6 +459,8 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
     setMediaFile(null)
     setMediaUrl(existing?.url ?? '')
     setMediaAlt(existing?.alt ?? '')
+    setMediaTitle(existing?.title ?? '')
+    setMediaCredit(existing?.credit ?? '')
     setMediaCaption(existing?.caption ?? '')
     setMediaAlign(existing?.align === 'right' ? 'right' : 'left')
     setMediaError('')
@@ -492,16 +496,16 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
       }
       saveItem({
         id:existing?.id ?? crypto.randomUUID(),type:'video',url,
-        alt:mediaAlt.trim()||'Newsletter video',caption:mediaCaption.trim(),align:mediaAlign,
+        alt:mediaAlt.trim()||'Newsletter video',title:mediaTitle.trim(),credit:mediaCredit.trim(),caption:mediaCaption.trim(),align:mediaAlign,
       })
       setMessage(mediaMode === 'google-maps' ? 'Google Maps link preview saved. It opens on Google Maps.' : 'Video saved in the article.')
       closeMediaDialog()
       return
     }
-    // When editing an existing upload, changing only title/caption should not
+    // When editing an existing upload, changing only metadata should not
     // force another upload. Selecting a file genuinely REPLACES that file.
     if (!mediaFile && existing?.storagePath) {
-      saveItem({...existing,alt:mediaAlt.trim(),caption:mediaCaption.trim(),align:mediaAlign})
+      saveItem({...existing,alt:mediaAlt.trim(),title:mediaTitle.trim(),credit:mediaCredit.trim(),caption:mediaCaption.trim(),align:mediaAlign})
       closeMediaDialog()
       return
     }
@@ -834,7 +838,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
               {(mediaMode === 'upload'
                 ? <div className="studio-dialog-file">
                     <MediaFilePicker file={mediaFile} disabled={uploading} onFileChange={file => {setMediaFile(file);setMediaError('')}} />
-                    <small>{mediaTarget?.mediaIndex == null ? 'Images: JPG, PNG, WebP, GIF up to 8 MB. Videos: MP4, WebM up to 30 MB.' : 'Choose a new file to replace this attachment, or leave it empty to edit the caption. Original aspect ratio will be preserved.'}</small>
+                    <small>{mediaTarget?.mediaIndex == null ? 'Images: JPG, PNG, WebP, GIF up to 8 MB. Videos: MP4, WebM up to 30 MB.' : 'Choose a new file to replace this attachment, or leave it empty to edit the title, credit, or caption. Original aspect ratio will be preserved.'}</small>
                   </div>
                 : <UiTextField fullWidth label="Video URL" type="url" size="small" value={mediaUrl}
                     onChange={event => setMediaUrl(event.target.value)} placeholder={mediaMode === 'google-maps' ? 'https://www.google.com/search?q=...#lpg=...' : 'https://www.youtube.com/watch?v=…'} />)}
@@ -848,7 +852,12 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
                 options={[{value:'left',label:'Left — text flows on the right'},{value:'right',label:'Right — text flows on the left'}]}
               />
               <p className="studio-template-help">The photo or video keeps its original proportions. To change its position, place the text cursor where it should appear and use Move to cursor beside the attachment.</p>
-              <UiTextField fullWidth size="small" label="Caption or credit (optional)" value={mediaCaption}
+              <UiTextField fullWidth size="small" label="Photo title (optional)" value={mediaTitle}
+                onChange={event => setMediaTitle(event.target.value)} inputProps={{maxLength:160}} />
+              <UiTextField fullWidth size="small" label="Photo credit or source (optional)" value={mediaCredit}
+                onChange={event => setMediaCredit(event.target.value)} inputProps={{maxLength:240}}
+                helperText="Photographer, organization, or publication to credit." />
+              <UiTextField fullWidth size="small" label="Caption (optional)" value={mediaCaption}
                 onChange={event => setMediaCaption(event.target.value)} inputProps={{maxLength:500}} multiline minRows={2} />
               {mediaError && <p className="studio-media-dialog-error" role="alert">{mediaError}</p>}
             </div>
