@@ -329,14 +329,14 @@
     margin:0!important;
     align-self:start!important;
   }
-  #root .site-shell--ideas .projects-page--ideas .bbb-page-heading-title{
+  #root .site-shell.site-shell--ideas .projects-page.projects-page--ideas .bbb-page-heading.bbb-page-heading .bbb-page-heading-title{
     font-size:clamp(36px,5.4vh,52px)!important;
     line-height:1.07!important;
   }
-  #root .site-shell--ideas .projects-page--ideas .bbb-page-heading-eyebrow{
+  #root .site-shell.site-shell--ideas .projects-page.projects-page--ideas .bbb-page-heading.bbb-page-heading .bbb-page-heading-eyebrow{
     margin:0 0 5px!important;
   }
-  #root .site-shell--ideas .projects-page--ideas .bbb-page-heading-description{
+  #root .site-shell.site-shell--ideas .projects-page.projects-page--ideas .bbb-page-heading.bbb-page-heading .bbb-page-heading-description{
     margin:7px 0 0!important;
     font-size:clamp(14px,1.9vh,17px)!important;
     line-height:1.35!important;
