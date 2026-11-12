@@ -455,7 +455,7 @@ function App() {
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
         </UiActionButton>
         <UiActionButton className="portfolio-project portfolio-lab" onClick={() => {setProjectTab('simulators');go('projects')}}>
-          {homepageImage("bridge_blueprint_64.jpg") ? <img src={homepageImage("bridge_blueprint_64.jpg")} alt="Technical line drawing showing truss bridge elevations and details" /> : <span className="portfolio-missing-image">Bridge blueprint not found</span>}
+          {homepageImage("bridge_blueprint_64.jpeg") ? <img src={homepageImage("bridge_blueprint_64.jpeg")} alt="Technical line drawing showing truss bridge elevations and details" /> : <span className="portfolio-missing-image">Bridge blueprint not found</span>}
           <span className="portfolio-project-copy"><strong>02 / Engineering Lab</strong><small>SIMULATIONS · EXPERIMENTS · DESIGN TOOLS</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
         </UiActionButton>
