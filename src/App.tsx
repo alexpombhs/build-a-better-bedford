@@ -434,7 +434,7 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  return <main className="site-shell">
+  return <main className={`site-shell${(page === 'projects' || page === 'lab') && projectTab === 'ideas' ? ' site-shell--ideas' : ''}`}>
     <SiteHeader
       active={page === 'projects' || page === 'lab' ? 'projects' : page === 'newsletter' ? 'newsletter' : page === 'about' ? 'about' : 'home'}
       onNavigate={section => {
@@ -479,7 +479,7 @@ function App() {
     {page === 'newsletter' && <Newsletter />}
     {page === 'admin' && <NewsletterStudio onPublished={() => go('newsletter')} />}
 
-    {(page === 'projects' || page === 'lab') && <section className="projects-page">
+    {(page === 'projects' || page === 'lab') && <section className={projectTab === 'ideas' ? 'projects-page projects-page--ideas' : 'projects-page'}>
       <div className="projects-heading projects-toolbar">
         <EngineeringTabs active={projectTab} onChange={tab => { setProjectTab(tab); go('projects') }} />
       </div>
