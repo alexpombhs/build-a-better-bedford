@@ -407,26 +407,39 @@ body:has(.portfolio-home){overflow-y:auto!important}
 /* Short desktop windows and browser zoom retain normal scrolling; never
    solve a height constraint by hiding the footer or cropping text. */
 
-/* Engineering Lab card experiment: preserve the graphite sketch while improving
-   the focal crop and keeping its label readable over fine drafting lines. */
+/* Engineering Lab A/B experiment: give the technical drawing its own stage,
+   and put the title in a quiet, legible editorial footer. */
+.portfolio-lab{background:#f7f8f8}
 .portfolio-lab > img{
-  object-position:center 20%;
+  height:calc(100% - 94px);
+  object-fit:cover;
+  object-position:center 12%;
 }
 .portfolio-lab::after{
   content:"";
   position:absolute;
-  inset:43% 0 0;
-  background:linear-gradient(to bottom,
-    rgba(250,251,252,0) 0%,
-    rgba(250,251,252,.42) 35%,
-    rgba(250,251,252,.92) 72%,
-    rgba(250,251,252,.98) 100%);
+  left:0;right:0;bottom:94px;height:32px;
+  background:linear-gradient(to bottom,rgba(247,248,248,0),#f7f8f8);
   pointer-events:none;
   z-index:0;
 }
 .portfolio-lab .portfolio-project-copy{
-  background:none;
+  left:0;right:0;bottom:0;
+  max-width:none;
+  height:94px;
+  box-sizing:border-box;
+  display:flex;
+  justify-content:center;
+  padding:11px 72px 11px 5.5%;
+  background:#f7f8f8;
+  border-top:1px solid rgba(16,34,46,.08);
+}
+.portfolio-lab .portfolio-project-arrow{
+  right:5%;bottom:25px;
 }
 @media(max-width:700px){
-  .portfolio-lab > img{object-position:center 16%}
+  .portfolio-lab > img{height:calc(100% - 80px);object-position:center 10%}
+  .portfolio-lab::after{bottom:80px;height:22px}
+  .portfolio-lab .portfolio-project-copy{height:80px;padding:9px 55px 9px 5.5%}
+  .portfolio-lab .portfolio-project-arrow{bottom:19px}
 }
