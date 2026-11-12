@@ -26,7 +26,7 @@ import './portfolio.css'
 
 // Vite resolves these to hashed built assets when PNGs are in src/assets.
 // The glob also permits checking out this branch before the image commit lands.
-const homepageAssetFiles = import.meta.glob('./assets/**/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+const homepageAssetFiles = import.meta.glob('./assets/**/*.{png,jpg,jpeg,webp}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 const homepageImage = (name: string): string | undefined => {
   const entry = Object.entries(homepageAssetFiles).find(([path]) => path.toLowerCase().endsWith('/' + name.toLowerCase()))
   return entry?.[1]
