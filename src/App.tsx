@@ -26,7 +26,7 @@ import './portfolio.css'
 
 // Vite resolves these to hashed built assets when PNGs are in src/assets.
 // The glob also permits checking out this branch before the image commit lands.
-const homepageAssetFiles = import.meta.glob('./assets/**/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+const homepageAssetFiles = import.meta.glob('./assets/**/*.{png,jpg,jpeg,webp}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 const homepageImage = (name: string): string | undefined => {
   const entry = Object.entries(homepageAssetFiles).find(([path]) => path.toLowerCase().endsWith('/' + name.toLowerCase()))
   return entry?.[1]
@@ -455,7 +455,7 @@ function App() {
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
         </UiActionButton>
         <UiActionButton className="portfolio-project portfolio-lab" onClick={() => {setProjectTab('simulators');go('projects')}}>
-          {homepageImage("bridge_blueprint_64.png") ? <img src={homepageImage("bridge_blueprint_64.png")} alt="Technical line drawing showing truss bridge elevations and details" /> : <span className="portfolio-missing-image">Bridge blueprint not found</span>}
+          {homepageImage("bridge_blueprint_64.jpeg") ? <img src={homepageImage("bridge_blueprint_64.jpeg")} alt="Technical line drawing showing truss bridge elevations and details" /> : <span className="portfolio-missing-image">Bridge blueprint not found</span>}
           <span className="portfolio-project-copy"><strong>02 / Engineering Lab</strong><small>SIMULATIONS · EXPERIMENTS · DESIGN TOOLS</small></span>
           <span className="portfolio-project-arrow" aria-hidden="true">→</span>
         </UiActionButton>
