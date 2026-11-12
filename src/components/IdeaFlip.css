@@ -290,9 +290,9 @@
   }
 }
 
-/* Desktop Ideas viewport: the six-card page occupies two equal rows.
-   Earlier responsive rules intentionally remain for tablets and phones. */
-@media (min-width:1051px){
+/* Desktop Ideas viewport: size both rows from the remaining viewport space.
+   On shorter desktops and zoomed screens, keep natural scrolling instead. */
+@media (min-width:1051px) and (min-height:780px){
   html:has(.projects-page:has(.bbb-flip-card)),
   body:has(.projects-page:has(.bbb-flip-card)),
   #root:has(.projects-page:has(.bbb-flip-card)){
@@ -311,18 +311,20 @@
     display:grid!important;
     grid-template-rows:auto auto minmax(0,1fr)!important;
     align-content:stretch;
-    gap:clamp(8px,1.2vh,14px)!important;
-    padding:clamp(8px,1.5vh,14px) 0 clamp(7px,1.2vh,12px)!important;
+    gap:8px!important;
+    padding:8px 0 6px!important;
     overflow:hidden!important;
   }
   .projects-page .problem-grid:has(.bbb-flip-card){
     display:grid!important;
     min-height:0!important;
+    box-sizing:border-box;
     height:100%!important;
+    padding:0!important; /* Remove inherited 28px bottom padding that steals row height. */
     grid-template-columns:repeat(3,minmax(0,1fr))!important;
     grid-template-rows:repeat(2,minmax(0,1fr))!important;
     grid-auto-rows:minmax(0,1fr)!important;
-    gap:clamp(9px,1.3vh,14px)!important;
+    gap:10px!important;
     align-content:stretch!important;
     overflow:hidden;
   }
@@ -344,7 +346,7 @@
   }
   .projects-page .problem-grid .bbb-flip-card .bbb-idea-feature,
   .projects-page .problem-grid .bbb-flip-card .bbb-idea-feature.has-photo{
-    height:clamp(52px,9vh,78px)!important;
+    height:clamp(52px,8vh,68px)!important;
   }
   .projects-page .problem-grid .bbb-flip-card .bbb-idea-copy{
     padding:clamp(9px,1.5vh,15px) 16px clamp(9px,1.3vh,13px)!important;
@@ -365,6 +367,13 @@
     max-height:100%!important;
     padding:clamp(11px,1.8vh,17px) 16px!important;
     overflow-y:auto;
+  }
+  /* Keep the Ideas heading compact without changing other section headings. */
+  #root .site-shell .projects-page:has(.bbb-flip-card) .bbb-page-heading.bbb-page-heading .bbb-page-heading-eyebrow{
+    margin-bottom:6px!important;
+  }
+  #root .site-shell .projects-page:has(.bbb-flip-card) .bbb-page-heading.bbb-page-heading .bbb-page-heading-description{
+    margin-top:7px!important;
   }
 }
 /* For smaller screens, prefer readable cards and page scrolling over
