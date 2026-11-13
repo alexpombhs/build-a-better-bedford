@@ -67,7 +67,7 @@ export const communitySections: CommunitySection[] = [
   {
     id: 'industry',
     number: '02',
-    title: 'Engineering industry',
+    title: 'Engineering Industry',
     description: 'Conferences, trade shows and the technologies engineers are discussing.',
     topics: 'CONFERENCES · TRADE SHOWS · RESEARCH',
     directoryLabel: 'ASCE conference & event calendar',
@@ -104,7 +104,7 @@ export const communitySections: CommunitySection[] = [
   {
     id: 'universities',
     number: '03',
-    title: 'Colleges & universities',
+    title: 'Colleges & Universities',
     description: 'Civil engineering programs, curriculum benchmarks and admissions timelines.',
     topics: 'PROGRAMS · ACCREDITATION · DEADLINES',
     directoryLabel: 'Compare official program information',
