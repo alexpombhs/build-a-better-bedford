@@ -37,19 +37,22 @@ function UpcomingEvent({ item }: { item: CommunityUpcomingItem }) {
   )
 }
 
-/** All previews the three beats and their upcoming dates. Events & Opportunities
- * gives fairs, competitions, conferences and deadlines a dedicated home. */
+/** The Community page indexes primary sources. BBB selects relevant links;
+ * it does not present the linked news as its own reporting. */
 export default function CommunityPage() {
   const [topic, setTopic] = useState<CommunityTopic>('all')
-  const section = topic === 'all' || topic === 'events' ? null : communitySections.find(item => item.id === topic) ?? communitySections[0]
+  const section = topic !== 'all' && topic !== 'events'
+    ? communitySections.find(item => item.id === topic)
+    : undefined
   const today = new Date()
   const upcoming = communityUpcoming
     .filter(item => new Date(`${item.endDate ?? item.date}T23:59:59`).getTime() >= today.getTime())
     .sort((a, b) => a.date.localeCompare(b.date))
 
-  const mainHighlight = communitySections[0].stories[0]
-  const otherHighlights = [
-    communitySections[0].stories[1],
+  // One consistent feed component everywhere. The All tab samples sources from
+  // each topic without pretending that evergreen resources are breaking news.
+  const selectedLinks = [
+    ...communitySections[0].stories.slice(0, 3),
     communitySections[1].stories[0],
     communitySections[2].stories[0],
   ]
@@ -60,7 +63,7 @@ export default function CommunityPage() {
         className="bbb-community-heading"
         eyebrow="BEDFORD & BEYOND"
         title="Community"
-        description="Civil engineering updates — from Bedford projects to industry events and university programs."
+        description="A collection of original sources on Bedford infrastructure, civil engineering and education."
       />
 
       <UiTabs
@@ -84,23 +87,24 @@ export default function CommunityPage() {
 
       {topic === 'all' ? (
         <section
-          className="bbb-community-active-section bbb-community-all"
+          className="bbb-community-active-section"
           id="bbb-community-panel"
           role="tabpanel"
           aria-labelledby="bbb-community-tab-all"
         >
-          <UiBox className="bbb-community-intro">
-            <UiBox className="bbb-community-intro-copy">
-              <UiText component="h2" className="bbb-community-section-title">Highlights</UiText>
-              <UiText component="p" className="bbb-community-section-description">
-                A selection of local infrastructure, engineering industry and university updates.
-              </UiText>
-            </UiBox>
-          </UiBox>
-
-          <UiBox className="bbb-community-all-lead">
-            <UiBox className="bbb-community-all-feature">
-              <CommunityStoryCard story={mainHighlight} />
+          <UiBox className="bbb-community-all-layout">
+            <UiBox className="bbb-community-source-feed">
+              <UiBox className="bbb-community-intro">
+                <UiBox className="bbb-community-intro-copy">
+                  <UiText component="h2" className="bbb-community-section-title">From the Sources</UiText>
+                  <UiText component="p" className="bbb-community-section-description">
+                    Selected official updates and resources. Open any headline to read the original publication.
+                  </UiText>
+                </UiBox>
+              </UiBox>
+              <UiBox className="bbb-community-news-list">
+                {selectedLinks.map(story => <CommunityStoryCard key={story.id} story={story} />)}
+              </UiBox>
             </UiBox>
             <aside className="bbb-community-coming-up" aria-labelledby="bbb-community-coming-up-heading">
               <UiBox className="bbb-community-coming-up-header">
@@ -113,22 +117,15 @@ export default function CommunityPage() {
                 </ul>
               ) : (
                 <UiText component="p" className="bbb-community-upcoming-empty">
-                  No scheduled updates yet. Check the individual tabs for current resources.
+                  No future events are listed yet. Check the original sources for updates.
                 </UiText>
               )}
             </aside>
           </UiBox>
-
-          <UiBox className="bbb-community-more">
-            <UiText component="h2" className="bbb-community-more-title">Across Bedford &amp; beyond</UiText>
-            <UiBox className="bbb-community-more-grid">
-              {otherHighlights.map(story => <CommunityStoryCard key={story.id} story={story} />)}
-            </UiBox>
-          </UiBox>
         </section>
       ) : topic === 'events' ? (
         <section
-          className="bbb-community-active-section bbb-community-events"
+          className="bbb-community-active-section"
           id="bbb-community-panel"
           role="tabpanel"
           aria-labelledby="bbb-community-tab-events"
@@ -137,10 +134,10 @@ export default function CommunityPage() {
             <UiBox className="bbb-community-intro-copy">
               <UiText component="h2" className="bbb-community-section-title">Events &amp; Opportunities</UiText>
               <UiText component="p" className="bbb-community-section-description">
-                Science fairs, student competitions, engineering conferences and application deadlines.
+                Science fairs, student competitions, engineering conferences and application deadlines — linked to organizers.
               </UiText>
             </UiBox>
-            <span className="bbb-community-section-topics">UPCOMING EVENTS · DEADLINES</span>
+            <span className="bbb-community-section-topics">EVENTS · DEADLINES</span>
           </UiBox>
           {upcoming.length ? (
             <ul className="bbb-community-events-grid">
@@ -148,48 +145,44 @@ export default function CommunityPage() {
             </ul>
           ) : (
             <UiText component="p" className="bbb-community-upcoming-empty">
-              No future events listed yet. Check the original sources for new announcements.
+              No future events are listed yet. Check the original sources for updates.
             </UiText>
           )}
         </section>
-      ) : (
-        section && (
-          <section
-            className="bbb-community-active-section"
-            id="bbb-community-panel"
-            role="tabpanel"
-            aria-labelledby={`bbb-community-tab-${section.id}`}
-            key={section.id}
+      ) : section ? (
+        <section
+          className="bbb-community-active-section"
+          id="bbb-community-panel"
+          role="tabpanel"
+          aria-labelledby={`bbb-community-tab-${section.id}`}
+          key={section.id}
+        >
+          <UiBox className="bbb-community-intro">
+            <UiBox className="bbb-community-intro-copy">
+              <UiText component="h2" className="bbb-community-section-title">{section.title}</UiText>
+              <UiText component="p" className="bbb-community-section-description">{section.description}</UiText>
+            </UiBox>
+            <span className="bbb-community-section-topics">{section.topics}</span>
+          </UiBox>
+
+          <UiBox className="bbb-community-news-list">
+            {section.stories.map(story => <CommunityStoryCard key={story.id} story={story} />)}
+          </UiBox>
+
+          <a
+            className="bbb-community-directory-link"
+            href={section.directoryHref}
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            <UiBox className="bbb-community-intro">
-              <UiBox className="bbb-community-intro-copy">
-                <UiText component="h2" className="bbb-community-section-title">{section.title}</UiText>
-                <UiText component="p" className="bbb-community-section-description">
-                  {section.description}
-                </UiText>
-              </UiBox>
-              <span className="bbb-community-section-topics">{section.topics}</span>
-            </UiBox>
-
-            <UiBox className="bbb-community-story-grid">
-              {section.stories.map(story => <CommunityStoryCard key={story.id} story={story} />)}
-            </UiBox>
-
-            <a
-              className="bbb-community-directory-link"
-              href={section.directoryHref}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {section.directoryLabel}
-              <UiArrowForwardIcon aria-hidden="true" fontSize="small" />
-            </a>
-          </section>
-        )
-      )}
+            {section.directoryLabel}
+            <UiArrowForwardIcon aria-hidden="true" fontSize="small" />
+          </a>
+        </section>
+      ) : null}
 
       <UiText component="p" className="bbb-community-editorial-note">
-        Curated by BBB · Sources reviewed November 2026. Confirm event dates, admissions deadlines and current conditions with the linked official sources. Not a real-time weather or emergency alert service.
+        Curated, not reported, by BBB · Dates are the publishers’ publication or update dates. This is a manually maintained collection, not a live news or weather alert service.
       </UiText>
     </UiBox>
   )
