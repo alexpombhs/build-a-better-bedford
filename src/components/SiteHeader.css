@@ -31,3 +31,14 @@
 @media(max-width:390px){
   .bbb-site-brand-logo{width:68px;height:58px}
 }
+
+/* Allow the added Community and Home links to fit intermediate laptop widths
+   without clipping the navigation or shifting the logo. */
+@media (max-width:1020px) and (min-width:761px) {
+  .bbb-site-nav {gap:clamp(11px,1.5vw,18px)}
+  .bbb-site-nav-link {font-size:13px}
+  .bbb-site-join {padding:10px 14px;font-size:13px}
+}
+@media (max-width:910px) and (min-width:761px) {
+  .bbb-site-brand span {display:none}
+}
