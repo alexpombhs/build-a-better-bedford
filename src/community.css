@@ -359,3 +359,23 @@
   .bbb-community-all-feature .bbb-community-story-title.MuiTypography-root {font-size:30px}
   .bbb-community-all-feature .bbb-community-story-summary.MuiTypography-root {font-size:14px}
 }
+
+/* Dedicated event list reuses the Coming up molecule without duplicating data. */
+.bbb-community-events-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  column-gap:clamp(20px,3vw,44px);
+  list-style:none;
+  margin:0;
+  padding:0;
+  border-top:1px solid var(--community-line);
+}
+.bbb-community-events-grid .bbb-community-upcoming-link {
+  min-height:86px;
+  padding:15px 0;
+}
+.bbb-community-events-grid .bbb-community-upcoming-details strong {font-size:15px}
+.bbb-community-events-grid .bbb-community-upcoming-description {font-size:12px}
+@media(max-width:650px) {
+  .bbb-community-events-grid {grid-template-columns:1fr}
+}
