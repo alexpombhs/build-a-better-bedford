@@ -43,7 +43,7 @@ export default function CommunityPage() {
   const section = topic === 'all' ? null : communitySections.find(item => item.id === topic) ?? communitySections[0]
   const today = new Date()
   const upcoming = communityUpcoming
-    .filter(item => new Date(`${item.endDate ?? item.date}T23:59:59`) >= today)
+    .filter(item => new Date(`${item.endDate ?? item.date}T23:59:59`).getTime() >= today.getTime())
     .sort((a, b) => a.date.localeCompare(b.date))
 
   const mainHighlight = communitySections[0].stories[0]
