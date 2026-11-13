@@ -139,3 +139,70 @@ export const communitySections: CommunitySection[] = [
     ],
   },
 ]
+
+
+/** Verified, future-facing event dates and deadlines for the All tab.
+ * End dates are local to the event/organization. The page hides expired
+ * entries automatically; maintainers must still review sources for updates.
+ */
+export type CommunityUpcomingItem = {
+  id: string
+  date: string
+  endDate?: string
+  label: string
+  title: string
+  detail: string
+  href: string
+}
+export const communityUpcoming: CommunityUpcomingItem[] = [
+  {
+    id: 'mit-2027-regular-action',
+    date: '2027-01-04',
+    label: 'ADMISSIONS DEADLINE',
+    title: 'MIT · Regular Action',
+    detail: 'First-year applications',
+    href: 'https://mitadmissions.org/apply/firstyear/deadlines-requirements/',
+  },
+  {
+    id: 'umass-2027-regular-decision',
+    date: '2027-01-15',
+    label: 'ADMISSIONS DEADLINE',
+    title: 'UMass Amherst · Regular Decision',
+    detail: 'First-year applications',
+    href: 'https://www.umass.edu/admissions/important-dates-deadlines',
+  },
+  {
+    id: 'wpi-2027-regular-decision',
+    date: '2027-02-01',
+    label: 'ADMISSIONS DEADLINE',
+    title: 'WPI · Regular Decision',
+    detail: 'First-year applications',
+    href: 'https://www.wpi.edu/admissions/undergraduate/apply',
+  },
+  {
+    id: 'asce-2027',
+    date: '2027-03-01',
+    endDate: '2027-03-05',
+    label: 'INDUSTRY CONFERENCE',
+    title: 'ASCE2027',
+    detail: 'Philadelphia · Mar 1–5',
+    href: 'https://www.asce.org/education-and-events/events/meetings/asce2027',
+  },
+  {
+    id: 'world-of-asphalt-2027',
+    date: '2027-03-15',
+    endDate: '2027-03-17',
+    label: 'TRADE SHOW',
+    title: 'World of Asphalt',
+    detail: 'New Orleans · Mar 15–17',
+    href: 'https://www.worldofasphalt.com/press/event-fact-sheet',
+  },
+  {
+    id: 'msef-2027',
+    date: '2027-04-08',
+    label: 'ENGINEERING FAIR',
+    title: 'MSEF High School State Fair',
+    detail: 'DCU Center · Worcester',
+    href: 'https://scifair.com/hsstatefair/',
+  },
+]
