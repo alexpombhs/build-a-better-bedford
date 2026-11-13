@@ -1,6 +1,8 @@
 name: Check website build
 
 on:
+  push:
+    branches: [feature/community-page-20261113]
   pull_request:
     branches: [main]
 
