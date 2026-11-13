@@ -495,3 +495,46 @@
 .studio-sidebar .studio-issue.selected .studio-issue-title {
   color:#183f2c;
 }
+
+/* Uploaded video: an explicit play action helps iOS Safari start playback
+   after the user's gesture, without hiding its native media controls. */
+.newsletter-media .newsletter-video-player {width:100%;max-width:100%}
+.newsletter-media .newsletter-video-player video {
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:auto 16 / 9;
+  background:#10222e;
+  border-radius:9px;
+}
+.newsletter-media .newsletter-video-support {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px 14px;
+  margin-top:9px;
+  font-size:12px;
+  line-height:1.45;
+}
+.newsletter-media .newsletter-video-support .MuiButton-root {
+  font-size:12px;
+  padding:5px 12px;
+  border-color:#aebfca;
+  color:#10222e;
+}
+.newsletter-media .newsletter-video-open {
+  color:#294b63;
+  font-weight:650;
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+.newsletter-media .newsletter-video-open:focus-visible {
+  outline:2px solid #294b63;
+  outline-offset:3px;
+}
+.newsletter-media .newsletter-video-error {
+  flex-basis:100%;
+  color:#784d2b;
+  font-weight:600;
+}
+.newsletter-media .newsletter-media-placeholder .MuiButton-root {margin-left:10px}
