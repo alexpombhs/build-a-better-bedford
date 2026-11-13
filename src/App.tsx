@@ -7,7 +7,8 @@ import AboutPage from './AboutPage'
 import SiteHeader from './components/SiteHeader'
 import PageHeading from './components/PageHeading'
 import ProjectCard from './components/ProjectCard'
-import { UiActionButton, UiBox, UiIconButton } from './components/atoms/MuiPrimitives'
+import { UiBox, UiIconButton } from './components/atoms/MuiPrimitives'
+import HomeProjectTile from './components/molecules/HomeProjectTile'
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
 import './components/IdeaFlip.css'
 import { EngineeringTabs, EngineeringWorkspace, EngineeringSectionIntro } from './EngineeringLab'
@@ -433,7 +434,7 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  return <main className="site-shell">
+  return <main className={`site-shell${(page === 'projects' || page === 'lab') && projectTab === 'ideas' ? ' site-shell--ideas' : ''}`}>
     <SiteHeader
       active={page === 'projects' || page === 'lab' ? 'projects' : page === 'newsletter' ? 'newsletter' : page === 'about' ? 'about' : 'home'}
       onNavigate={section => {
@@ -449,16 +450,24 @@ function App() {
         {homepageImage("bridge_sketch_64.png") ? <img className="portfolio-hero-sketch" src={homepageImage("bridge_sketch_64.png")} alt="Conceptual pen sketch of a truss bridge" /> : <div className="portfolio-missing-sketch" role="status">Bridge sketch unavailable</div>}
       </UiBox>
       <UiBox className="portfolio-projects">
-        <UiActionButton className="portfolio-project portfolio-bridge" onClick={() => {go('projects');setProjectTab('hands-on')}}>
-          {homepageImage("bridge_photo_64.png") ? <img src={homepageImage("bridge_photo_64.png")} alt="Steel truss bridge photographed from below" /> : <span className="portfolio-missing-image">Bridge photo not found</span>}
-          <span className="portfolio-project-copy"><strong>01 / Bridge Project</strong><small>STRUCTURAL MECHANICS · CURRENT PROJECT</small></span>
-          <span className="portfolio-project-arrow" aria-hidden="true">→</span>
-        </UiActionButton>
-        <UiActionButton className="portfolio-project portfolio-lab" onClick={() => {setProjectTab('simulators');go('projects')}}>
-          {homepageImage("bridge_blueprint_64.jpeg") ? <img src={homepageImage("bridge_blueprint_64.jpeg")} alt="Technical line drawing showing truss bridge elevations and details" /> : <span className="portfolio-missing-image">Bridge blueprint not found</span>}
-          <span className="portfolio-project-copy"><strong>02 / Engineering Lab</strong><small>SIMULATIONS · EXPERIMENTS · DESIGN TOOLS</small></span>
-          <span className="portfolio-project-arrow" aria-hidden="true">→</span>
-        </UiActionButton>
+        <HomeProjectTile
+          variant="bridge"
+          imageSrc={homepageImage("bridge_photo_64.png")}
+          imageAlt="Steel truss bridge photographed from below"
+          missingLabel="Bridge photo not found"
+          title="01 / Bridge Project"
+          subtitle="STRUCTURAL MECHANICS · CURRENT PROJECT"
+          onClick={() => {go('projects');setProjectTab('hands-on')}}
+        />
+        <HomeProjectTile
+          variant="lab"
+          imageSrc={homepageImage("bridge_blueprint_64.jpeg")}
+          imageAlt="Technical line drawing showing truss bridge elevations and details"
+          missingLabel="Bridge blueprint not found"
+          title="02 / Engineering Lab"
+          subtitle="SIMULATIONS · EXPERIMENTS · DESIGN TOOLS"
+          onClick={() => {setProjectTab('simulators');go('projects')}}
+        />
       </UiBox>
       <UiBox className="portfolio-details">
         <UiBox className="portfolio-detail"><span className="portfolio-detail-icon" aria-hidden="true"><CalendarMonthOutlinedIcon fontSize="inherit" /></span><UiBox><small>NEXT MEETING</small><strong>{nextMeetingDate}</strong><p>2:30–3:30 PM · Guidance Office</p></UiBox></UiBox>
@@ -470,7 +479,7 @@ function App() {
     {page === 'newsletter' && <Newsletter />}
     {page === 'admin' && <NewsletterStudio onPublished={() => go('newsletter')} />}
 
-    {(page === 'projects' || page === 'lab') && <section className="projects-page">
+    {(page === 'projects' || page === 'lab') && <section className={projectTab === 'ideas' ? 'projects-page projects-page--ideas' : 'projects-page'}>
       <div className="projects-heading projects-toolbar">
         <EngineeringTabs active={projectTab} onChange={tab => { setProjectTab(tab); go('projects') }} />
       </div>

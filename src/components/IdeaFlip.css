@@ -290,82 +290,117 @@
   }
 }
 
-/* Desktop Ideas viewport: the six-card page occupies two equal rows.
-   Earlier responsive rules intentionally remain for tablets and phones. */
-@media (min-width:1051px){
-  html:has(.projects-page:has(.bbb-flip-card)),
-  body:has(.projects-page:has(.bbb-flip-card)),
-  #root:has(.projects-page:has(.bbb-flip-card)){
+/* Desktop Ideas layout — one authoritative rule set.
+   At desktop sizes, the header and intro use their natural height, and the
+   remaining height goes to two grid rows. Below the minimum usable height
+   the page scrolls rather than hiding controls or compressing text. */
+@media (min-width:1051px) and (min-height:680px){
+  html:has(.site-shell--ideas),
+  body:has(.site-shell--ideas),
+  #root:has(.site-shell--ideas){
     height:100%;
     overflow:hidden!important;
   }
-  .site-shell:has(.projects-page:has(.bbb-flip-card)){
+  #root .site-shell.site-shell--ideas{
     height:100dvh!important;
     min-height:0!important;
+    max-height:100dvh!important;
     overflow:hidden!important;
-    grid-template-rows:auto minmax(0,1fr) auto!important;
+    display:grid!important;
+    grid-template-rows:var(--bbb-shared-header,76px) minmax(0,1fr) auto!important;
   }
-  .projects-page:has(.bbb-flip-card){
+  #root .site-shell.site-shell--ideas > .projects-page.projects-page--ideas{
+    display:grid!important;
     height:100%!important;
     min-height:0!important;
-    display:grid!important;
+    margin:0!important;
+    align-self:stretch!important;
     grid-template-rows:auto auto minmax(0,1fr)!important;
-    align-content:stretch;
-    gap:clamp(8px,1.2vh,14px)!important;
-    padding:clamp(8px,1.5vh,14px) 0 clamp(7px,1.2vh,12px)!important;
+    gap:clamp(6px,1vh,10px)!important;
+    padding:clamp(4px,.8vh,8px) 0 6px!important;
     overflow:hidden!important;
   }
-  .projects-page .problem-grid:has(.bbb-flip-card){
+  #root .site-shell--ideas .projects-page--ideas > .projects-heading{
+    min-height:0!important;
+    margin:0!important;
+  }
+  #root .site-shell--ideas .projects-page--ideas .bbb-section-heading{
+    min-height:0!important;
+    margin:0!important;
+    align-self:start!important;
+  }
+  #root .site-shell.site-shell--ideas .projects-page.projects-page--ideas .bbb-page-heading.bbb-page-heading .bbb-page-heading-title{
+    font-size:clamp(36px,5.4vh,52px)!important;
+    line-height:1.07!important;
+  }
+  #root .site-shell.site-shell--ideas .projects-page.projects-page--ideas .bbb-page-heading.bbb-page-heading .bbb-page-heading-eyebrow{
+    margin:0 0 5px!important;
+  }
+  #root .site-shell.site-shell--ideas .projects-page.projects-page--ideas .bbb-page-heading.bbb-page-heading .bbb-page-heading-description{
+    margin:7px 0 0!important;
+    font-size:clamp(14px,1.9vh,17px)!important;
+    line-height:1.35!important;
+  }
+  #root .site-shell--ideas .projects-page--ideas > .problem-grid{
+    box-sizing:border-box!important;
     display:grid!important;
     min-height:0!important;
     height:100%!important;
+    overflow:hidden!important;
+    margin:0!important;
+    padding:0!important;
     grid-template-columns:repeat(3,minmax(0,1fr))!important;
     grid-template-rows:repeat(2,minmax(0,1fr))!important;
     grid-auto-rows:minmax(0,1fr)!important;
-    gap:clamp(9px,1.3vh,14px)!important;
+    gap:clamp(8px,1.2vh,12px)!important;
     align-content:stretch!important;
-    overflow:hidden;
   }
-  .projects-page .problem-grid .bbb-flip-card.bbb-ui-card{
+  #root .site-shell--ideas .projects-page--ideas .problem-grid .bbb-flip-card.bbb-ui-card{
     height:100%!important;
     min-height:0!important;
     max-height:none!important;
     transform:none;
   }
-  .projects-page .problem-grid .bbb-flip-card.bbb-ui-card:hover{
+  #root .site-shell--ideas .projects-page--ideas .problem-grid .bbb-flip-card.bbb-ui-card:hover{
     transform:none;
   }
-  .projects-page .problem-grid .bbb-flip-card .bbb-project-card-content,
-  .projects-page .problem-grid .bbb-flip-card .bbb-flip-inner,
-  .projects-page .problem-grid .bbb-flip-card .bbb-flip-front,
-  .projects-page .problem-grid .bbb-flip-card .bbb-flip-back{
+  #root .site-shell--ideas .projects-page--ideas .bbb-flip-card .bbb-project-card-content,
+  #root .site-shell--ideas .projects-page--ideas .bbb-flip-card .bbb-flip-inner,
+  #root .site-shell--ideas .projects-page--ideas .bbb-flip-card .bbb-flip-front,
+  #root .site-shell--ideas .projects-page--ideas .bbb-flip-card .bbb-flip-back{
     height:100%!important;
     min-height:0!important;
   }
-  .projects-page .problem-grid .bbb-flip-card .bbb-idea-feature,
-  .projects-page .problem-grid .bbb-flip-card .bbb-idea-feature.has-photo{
-    height:clamp(52px,9vh,78px)!important;
+  #root .site-shell--ideas .projects-page--ideas .bbb-flip-card .bbb-idea-feature,
+  #root .site-shell--ideas .projects-page--ideas .bbb-flip-card .bbb-idea-feature.has-photo{
+    height:clamp(48px,7vh,65px)!important;
   }
-  .projects-page .problem-grid .bbb-flip-card .bbb-idea-copy{
-    padding:clamp(9px,1.5vh,15px) 16px clamp(9px,1.3vh,13px)!important;
+  #root .site-shell--ideas .projects-page--ideas .bbb-flip-card .bbb-idea-feature-text{
+    padding:10px 16px!important;
+  }
+  #root .site-shell--ideas .projects-page--ideas .bbb-flip-card .bbb-idea-copy{
+    padding:clamp(8px,1.2vh,12px) 16px clamp(8px,1.2vh,12px)!important;
+    min-height:0!important;
     overflow:hidden;
   }
-  .projects-page .problem-grid .bbb-flip-card h2{
-    font-size:clamp(15px,1.8vh,18px)!important;
+  #root .site-shell--ideas .projects-page--ideas .bbb-flip-card h2{
+    font-size:clamp(14px,1.85vh,17px)!important;
+    line-height:1.22!important;
   }
-  .projects-page .problem-grid .bbb-flip-card .problem-fact{
-    margin-top:clamp(4px,.9vh,8px)!important;
-    font-size:clamp(11.5px,1.45vh,13px)!important;
-    line-height:1.35!important;
+  #root .site-shell--ideas .projects-page--ideas .bbb-flip-card .problem-fact{
+    font-size:clamp(11.5px,1.55vh,13.5px)!important;
+    line-height:1.36!important;
+    margin-top:clamp(4px,.8vh,7px)!important;
   }
-  .projects-page .problem-grid .bbb-flip-card .bbb-flip-action{
-    padding-top:clamp(5px,1vh,9px)!important;
+  #root .site-shell--ideas .projects-page--ideas .bbb-flip-card .bbb-flip-action{
+    flex-shrink:0!important;
+    padding-top:clamp(5px,.85vh,8px)!important;
   }
-  .projects-page .problem-grid .bbb-flip-card .bbb-flip-back-copy{
+  #root .site-shell--ideas .projects-page--ideas .bbb-flip-card .bbb-flip-back-copy{
     max-height:100%!important;
-    padding:clamp(11px,1.8vh,17px) 16px!important;
-    overflow-y:auto;
+    padding:12px 16px!important;
+    overflow:auto!important;
   }
 }
-/* For smaller screens, prefer readable cards and page scrolling over
-   unreadably compressed three-row layouts. */
+/* Shorter desktops, high browser zoom and mobile devices retain scrolling.
+   Never hide or truncate cards just to enforce a two-row viewport. */

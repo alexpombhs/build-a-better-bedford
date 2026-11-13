@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import type { ComponentProps } from 'react'
 import { Box, Button, ButtonBase, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Slider, Stack, Tab, Tabs, TextField, Typography } from '@mui/material'
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded'
 
 /** Atomic MUI boundary. Screens and organisms must import wrappers, never MUI directly. */
 const classes = {
@@ -20,6 +21,12 @@ export function UiTab({className,...props}:ComponentProps<typeof Tab>){return <T
 export function UiTabs({className,...props}:ComponentProps<typeof Tabs>){return <Tabs {...props} className={cx(classes.tabs,className)} />}
 
 export function UiIconButton({className,...props}:ComponentProps<typeof IconButton>){return <IconButton {...props} className={cx(classes.iconButton,className)} />}
+
+/** Visual icon atom for an arrow in an already-clickable surface.
+ * Do not nest an IconButton inside another button. */
+export function UiArrowForwardIcon({className,...props}:ComponentProps<typeof ArrowForwardRoundedIcon>){
+  return <ArrowForwardRoundedIcon {...props} className={cx('bbb-ui-arrow-forward',className)} />
+}
 
 /** Accessible button atom. ButtonBase preserves native button semantics while
  * leaving presentation to the existing BBB class names and theme. */
