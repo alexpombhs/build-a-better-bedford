@@ -99,7 +99,7 @@
   min-width:0;
 }
 .bbb-community-story {min-width:0;display:flex}
-.bbb-community-story:first-child {grid-row:1 / span 2}
+.bbb-community-story-grid > .bbb-community-story:first-child {grid-row:1 / span 2}
 .bbb-community-story-link {
   display:flex;
   flex-direction:column;
@@ -114,7 +114,7 @@
   background:#fff;
   transition:border-color .16s ease,background-color .16s ease;
 }
-.bbb-community-story:first-child .bbb-community-story-link {
+.bbb-community-story-grid > .bbb-community-story:first-child .bbb-community-story-link {
   background:#f2f5f7;
   padding:clamp(20px,2.4vw,35px);
 }
@@ -150,7 +150,7 @@
   font:400 clamp(21px,1.85vw,27px)/1.18 Georgia,'Times New Roman',serif;
   letter-spacing:-.02em;
 }
-.bbb-community-story:first-child .bbb-community-story-title.MuiTypography-root {
+.bbb-community-story-grid > .bbb-community-story:first-child .bbb-community-story-title.MuiTypography-root {
   font-size:clamp(28px,2.8vw,39px);
   line-height:1.14;
   margin-top:clamp(15px,2vw,26px);
@@ -199,11 +199,11 @@
   .bbb-community-intro {align-items:flex-start;flex-direction:column;gap:10px}
   .bbb-community-section-topics {text-align:left}
   .bbb-community-story-grid {grid-template-columns:1fr;grid-template-rows:none}
-  .bbb-community-story:first-child {grid-row:auto}
-  .bbb-community-story:first-child .bbb-community-story-link {
+  .bbb-community-story-grid > .bbb-community-story:first-child {grid-row:auto}
+  .bbb-community-story-grid > .bbb-community-story:first-child .bbb-community-story-link {
     padding:clamp(18px,2.5vw,27px);
   }
-  .bbb-community-story:first-child .bbb-community-story-title.MuiTypography-root {
+  .bbb-community-story-grid > .bbb-community-story:first-child .bbb-community-story-title.MuiTypography-root {
     font-size:clamp(26px,4vw,34px);
     margin-top:13px;
   }
@@ -221,4 +221,141 @@
 }
 @media(prefers-reduced-motion:reduce) {
   .bbb-community-story-link {transition:none}
+}
+
+/* All tab: one featured local story, a calm dated rail and three topic cards.
+   Individual topic panels retain their existing feature/two-story layout. */
+.bbb-community-all-lead {
+  display:grid;
+  grid-template-columns:minmax(0,1.55fr) minmax(290px,.95fr);
+  gap:clamp(20px,2.8vw,38px);
+  align-items:stretch;
+  min-width:0;
+}
+.bbb-community-all-feature,
+.bbb-community-all-feature .bbb-community-story {
+  min-width:0;
+  display:flex;
+  flex:1;
+}
+.bbb-community-all-feature .bbb-community-story-link {
+  background:#f2f5f7;
+  padding:clamp(25px,3.2vw,45px);
+  min-height:345px;
+}
+.bbb-community-all-feature .bbb-community-story-title.MuiTypography-root {
+  margin-top:clamp(17px,2vw,28px);
+  font-size:clamp(29px,3.1vw,43px);
+  line-height:1.12;
+}
+.bbb-community-all-feature .bbb-community-story-summary.MuiTypography-root {
+  font-size:clamp(14px,1.25vw,17px);
+  max-width:510px;
+}
+.bbb-community-coming-up {min-width:0;display:flex;flex-direction:column}
+.bbb-community-coming-up-header {
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:14px;
+  padding-bottom:11px;
+}
+.bbb-community-coming-up-header h2.MuiTypography-root {
+  margin:0;
+  color:var(--community-ink);
+  font:400 clamp(25px,2.4vw,33px)/1.15 Georgia,'Times New Roman',serif;
+  letter-spacing:-.025em;
+}
+.bbb-community-coming-up-header > span {
+  color:#617589;
+  font-size:11px;
+  white-space:nowrap;
+}
+.bbb-community-upcoming-list {
+  padding:0;
+  margin:0;
+  list-style:none;
+  border-top:1px solid var(--community-line);
+}
+.bbb-community-upcoming-item {border-bottom:1px solid var(--community-line)}
+.bbb-community-upcoming-link {
+  display:grid;
+  grid-template-columns:53px minmax(0,1fr);
+  align-items:center;
+  gap:13px;
+  color:inherit;
+  padding:11px 0;
+  text-decoration:none;
+}
+.bbb-community-upcoming-link:focus-visible {
+  outline:2px solid #365f80;
+  outline-offset:2px;
+}
+.bbb-community-upcoming-link:hover .bbb-community-upcoming-details strong {
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.bbb-community-upcoming-date {
+  border-right:1px solid var(--community-line);
+  min-height:47px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  padding-right:10px;
+}
+.bbb-community-upcoming-date span {
+  color:#617589;
+  font-size:10px;
+  font-weight:750;
+  letter-spacing:.08em;
+  line-height:1.3;
+}
+.bbb-community-upcoming-date strong {
+  font-size:18px;
+  font-weight:700;
+  line-height:1.35;
+}
+.bbb-community-upcoming-details {min-width:0;display:flex;flex-direction:column;gap:3px}
+.bbb-community-upcoming-type {color:#62778a;font-size:9px;font-weight:750;letter-spacing:.075em}
+.bbb-community-upcoming-details strong {font-size:13px;line-height:1.3}
+.bbb-community-upcoming-description {color:var(--community-secondary);font-size:11px;line-height:1.4}
+.bbb-community-upcoming-empty.MuiTypography-root {color:var(--community-secondary);font-size:13px;line-height:1.5}
+
+.bbb-community-more {display:flex;flex-direction:column;gap:15px;min-width:0}
+.bbb-community-more-title.MuiTypography-root {
+  margin:0;
+  font:400 clamp(23px,2.1vw,29px)/1.2 Georgia,'Times New Roman',serif;
+  color:var(--community-ink);
+  letter-spacing:-.025em;
+}
+.bbb-community-more-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  align-items:stretch;
+  gap:clamp(12px,1.5vw,20px);
+}
+.bbb-community-more-grid .bbb-community-story-title.MuiTypography-root {
+  font-size:clamp(20px,1.9vw,26px);
+}
+.bbb-community-more-grid .bbb-community-story-summary.MuiTypography-root {
+  font-size:13px;
+}
+@media(max-width:940px) {
+  .bbb-community-all-lead {grid-template-columns:1fr}
+  .bbb-community-all-feature .bbb-community-story-link {min-height:235px}
+  .bbb-community-upcoming-list {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    column-gap:22px;
+  }
+  .bbb-community-more-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px) {
+  .bbb-community-coming-up-header {flex-wrap:wrap}
+  .bbb-community-upcoming-list,
+  .bbb-community-more-grid {grid-template-columns:1fr}
+  .bbb-community-all-feature .bbb-community-story-link {padding:22px}
+  .bbb-community-all-feature .bbb-community-story-title.MuiTypography-root {font-size:30px}
+  .bbb-community-all-feature .bbb-community-story-summary.MuiTypography-root {font-size:14px}
 }
