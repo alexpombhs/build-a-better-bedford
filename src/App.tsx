@@ -478,7 +478,7 @@ function App() {
       </UiBox>
     </UiBox>}
 
-    {page === 'community' && <CommunityPage onExploreProjects={() => { setProjectTab('ideas'); go('projects') }} />}
+    {page === 'community' && <CommunityPage />}
     {page === 'newsletter' && <Newsletter />}
     {page === 'admin' && <NewsletterStudio onPublished={() => go('newsletter')} />}
 
