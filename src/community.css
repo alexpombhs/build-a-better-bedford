@@ -269,3 +269,183 @@
 @media(prefers-reduced-motion:reduce) {
   .bbb-community-story-link {transition:none}
 }
+
+/* Featured original-source link + compact accompanying feed.
+   These two areas replace the full-width news directory for Bedford and All. */
+.bbb-community-news-layout {
+  display:grid;
+  grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);
+  gap:clamp(23px,3vw,44px);
+  align-items:start;
+  min-width:0;
+}
+.bbb-community-featured {
+  min-width:0;
+  border:1px solid var(--community-line);
+  border-radius:7px;
+  overflow:hidden;
+  background:#fff;
+}
+.bbb-community-featured-link {
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  height:100%;
+  color:inherit;
+  text-decoration:none;
+}
+.bbb-community-featured-link:hover .bbb-community-featured-title.MuiTypography-root {
+  color:#27506e;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.bbb-community-featured-link:focus-visible {
+  outline:3px solid #365f80;
+  outline-offset:-4px;
+}
+.bbb-community-featured-art {
+  position:relative;
+  overflow:hidden;
+  background:#102833;
+  aspect-ratio:1200 / 660;
+}
+.bbb-community-featured-art img {
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.bbb-community-featured-image-credit {
+  position:absolute;
+  bottom:10px;
+  right:11px;
+  padding:5px 8px;
+  background:rgba(10,26,38,.82);
+  border-radius:3px;
+  color:#e6eee9;
+  font-size:10px;
+  line-height:1.3;
+}
+.bbb-community-featured-copy {
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:10px;
+  padding:clamp(20px,2.5vw,30px);
+}
+.bbb-community-featured-meta {
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:6px 12px;
+  font-size:10px;
+  color:#60788a;
+  line-height:1.5;
+  letter-spacing:.065em;
+  font-weight:700;
+}
+.bbb-community-featured-meta time {
+  font-weight:500;
+  letter-spacing:0;
+}
+.bbb-community-featured-title.MuiTypography-root {
+  margin:0;
+  font:400 clamp(25px,2.4vw,33px)/1.15 Georgia,'Times New Roman',serif;
+  letter-spacing:-.022em;
+  color:var(--community-ink);
+}
+.bbb-community-featured-summary.MuiTypography-root {
+  margin:0;
+  font-size:14px;
+  line-height:1.5;
+  color:var(--community-secondary);
+}
+.bbb-community-featured-bottom {
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:7px 16px;
+  padding-top:9px;
+  color:#6b7e8d;
+  font-size:11px;
+}
+.bbb-community-featured-read {
+  display:inline-flex;
+  gap:5px;
+  align-items:center;
+  color:#254960;
+  font-size:12px;
+  font-weight:700;
+}
+.bbb-community-featured-read svg {font-size:16px}
+.bbb-community-feed-aside {min-width:0}
+.bbb-community-feed-title.MuiTypography-root {
+  margin:-2px 0 10px;
+  font:400 clamp(21px,2vw,28px)/1.2 Georgia,'Times New Roman',serif;
+  color:var(--community-ink);
+}
+.bbb-community-feed-aside .bbb-community-news-list {
+  border-top:1px solid var(--community-line);
+}
+.bbb-community-feed-aside .bbb-community-story-link {
+  display:flex;
+  align-items:stretch;
+  flex-direction:column;
+  gap:7px;
+  padding:clamp(12px,1.3vw,17px) 4px 15px 0;
+}
+.bbb-community-feed-aside .bbb-community-story-meta {
+  display:flex;
+  flex-direction:row;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:8px 15px;
+  padding:0;
+}
+.bbb-community-feed-aside .bbb-community-story-meta > span:last-child:not(:first-child) {
+  font-size:11px;
+}
+.bbb-community-feed-aside .bbb-community-story-body {gap:5px}
+.bbb-community-feed-aside .bbb-community-story-title.MuiTypography-root {
+  font-size:clamp(18px,1.5vw,22px);
+  line-height:1.25;
+}
+.bbb-community-feed-aside .bbb-community-story-summary.MuiTypography-root {
+  font-size:12px;
+  line-height:1.45;
+}
+.bbb-community-feed-aside .bbb-community-story-source {font-size:11px}
+.bbb-community-feed-aside .bbb-community-story-action {display:none}
+.bbb-community-upcoming-section {margin-top:3px}
+.bbb-community-upcoming-section .bbb-community-coming-up-header {
+  padding-bottom:12px;
+}
+.bbb-community-upcoming-section .bbb-community-coming-up-header .MuiButton-root {
+  color:#284b65;
+  text-transform:none;
+  font-weight:700;
+  font-size:13px;
+}
+.bbb-community-upcoming-section .bbb-community-upcoming-list {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  column-gap:clamp(18px,2.3vw,30px);
+}
+@media(max-width:1100px) {
+  .bbb-community-upcoming-section .bbb-community-upcoming-list {grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:830px) {
+  .bbb-community-news-layout {grid-template-columns:1fr}
+  .bbb-community-featured-art {max-height:380px}
+  .bbb-community-featured-copy {padding:21px}
+  .bbb-community-feed-aside .bbb-community-story-title.MuiTypography-root {font-size:20px}
+}
+@media(max-width:600px) {
+  .bbb-community-featured-title.MuiTypography-root {font-size:28px}
+  .bbb-community-featured-art {aspect-ratio:16 / 10}
+  .bbb-community-featured-image-credit {font-size:9px}
+  .bbb-community-featured-copy {padding:18px}
+  .bbb-community-upcoming-section .bbb-community-upcoming-list {grid-template-columns:1fr}
+}
