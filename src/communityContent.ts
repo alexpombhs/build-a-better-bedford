@@ -35,20 +35,11 @@ export const communitySections: CommunitySection[] = [
     directoryHref: 'https://thebedfordcitizen.org/latest/',
     stories: [
       {
-        id: 'bedford-weekend-calendar',
-        label: 'AROUND TOWN',
-        publishedAt: '2026-11-12',
-        title: 'What’s on the Calendar? — Bedford Events Through Nov. 14',
-        summary: 'This weekend’s lineup includes the BHS play and a Scandinavian Christmas Fair.',
-        source: 'The Bedford Citizen · Community',
-        href: 'https://thebedfordcitizen.org/2026/11/whats-on-the-calendar-bedford-events-through-nov-14/',
-      },
-      {
         id: 'bhs-radium-girls',
         label: 'BEDFORD HIGH SCHOOL',
         publishedAt: '2026-11-09',
         title: 'Bedford High School Students Share ‘Radium Girls’ Experience',
-        summary: 'Students share their experiences putting on the play, with performances Nov. 13 and 14.',
+        summary: 'The BHS Performing Arts Department presents Radium Girls Nov. 13 at 7 PM and Nov. 14 at 1 PM and 7 PM.',
         source: 'The Bedford Citizen · Schools',
         href: 'https://thebedfordcitizen.org/2026/11/bedford-high-school-students-share-radium-girls-experience/',
       },
