@@ -538,3 +538,44 @@
   font-weight:600;
 }
 .newsletter-media .newsletter-media-placeholder .MuiButton-root {margin-left:10px}
+
+/* Public newsletter video preview: one play control over its actual frame.
+   No extra button/link row is rendered unless Safari reports playback failure. */
+.newsletter-media .newsletter-video-stage {
+  position:relative;
+  width:100%;
+  overflow:hidden;
+  border-radius:9px;
+}
+.newsletter-media .newsletter-video-play-overlay.MuiButton-root {
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:56px;
+  height:56px;
+  min-width:56px;
+  padding:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.94);
+  color:#10222e;
+  box-shadow:0 3px 18px rgba(16,34,46,.2);
+}
+.newsletter-media .newsletter-video-play-overlay.MuiButton-root:hover {
+  background:#fff;
+}
+.newsletter-media .newsletter-video-play-overlay svg {
+  width:32px;
+  height:32px;
+}
+.newsletter-media .newsletter-video-play-overlay:focus-visible {
+  outline:3px solid #31576f;
+  outline-offset:3px;
+}
+@media (max-width:540px) {
+  .newsletter-media .newsletter-video-play-overlay.MuiButton-root {
+    width:50px;
+    height:50px;
+    min-width:50px;
+  }
+}
