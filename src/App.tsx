@@ -4,6 +4,7 @@ import { upcomingMondayLabel } from './meetingSchedule'
 import Newsletter from './Newsletter'
 import NewsletterStudio from './NewsletterStudio'
 import AboutPage from './AboutPage'
+import CommunityPage from './CommunityPage'
 import SiteHeader from './components/SiteHeader'
 import PageHeading from './components/PageHeading'
 import ProjectCard from './components/ProjectCard'
@@ -34,11 +35,11 @@ const homepageImage = (name: string): string | undefined => {
 }
 
 
-type Page = 'home' | 'about' | 'what-we-do' | 'projects' | 'lab' | 'newsletter' | 'join' | 'admin'
+type Page = 'home' | 'community' | 'about' | 'what-we-do' | 'projects' | 'lab' | 'newsletter' | 'join' | 'admin'
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
 const pagePaths: Record<Page, string> = {
-  home: '/', about: '/about', 'what-we-do': '/what-we-do', projects: '/projects',
+  home: '/', community: '/community', about: '/about', 'what-we-do': '/what-we-do', projects: '/projects',
   lab: '/lab', newsletter: '/newsletter', join: '/join', admin: '/admin',
 }
 const pageFromLocation = (): Page => {
@@ -133,6 +134,7 @@ const projectProblems: ProjectCard[] = [
 
 const labels: Record<Page, string> = {
   home: 'Home',
+  community: 'Community',
   about: 'About',
   'what-we-do': 'What we do',
   projects: 'Projects',
@@ -436,7 +438,7 @@ function App() {
 
   return <main className={`site-shell${(page === 'projects' || page === 'lab') && projectTab === 'ideas' ? ' site-shell--ideas' : ''}`}>
     <SiteHeader
-      active={page === 'projects' || page === 'lab' ? 'projects' : page === 'newsletter' ? 'newsletter' : page === 'about' ? 'about' : 'home'}
+      active={page === 'projects' || page === 'lab' ? 'projects' : page === 'newsletter' ? 'newsletter' : page === 'community' ? 'community' : page === 'about' ? 'about' : 'home'}
       onNavigate={section => {
         if (section === 'projects') { setProjectTab('ideas'); go('projects') }
         else go(section)
@@ -476,6 +478,7 @@ function App() {
       </UiBox>
     </UiBox>}
 
+    {page === 'community' && <CommunityPage onExploreProjects={() => { setProjectTab('ideas'); go('projects') }} />}
     {page === 'newsletter' && <Newsletter />}
     {page === 'admin' && <NewsletterStudio onPublished={() => go('newsletter')} />}
 
@@ -577,7 +580,7 @@ function App() {
 
     {page === 'about' && <AboutPage onJoin={joinClub} nextMeetingDate={nextMeetingDate} />}
 
-    {page !== 'home' && page !== 'newsletter' && page !== 'projects' && page !== 'lab' && page !== 'admin' && page !== 'about' && <section className="coming-page">
+    {page !== 'home' && page !== 'newsletter' && page !== 'projects' && page !== 'lab' && page !== 'admin' && page !== 'about' && page !== 'community' && <section className="coming-page">
       <p className="eyebrow">{labels[page]}</p>
       <h1>Coming soon.</h1>
       <p>We’re preparing this part of Build a Better Bedford.</p>
