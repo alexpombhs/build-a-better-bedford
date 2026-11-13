@@ -6,13 +6,14 @@ import { communitySections, communityUpcoming } from './communityContent'
 import type { CommunitySection, CommunityUpcomingItem } from './communityContent'
 import './community.css'
 
-type CommunityTopic = 'all' | CommunitySection['id']
+type CommunityTopic = 'all' | CommunitySection['id'] | 'events'
 
 const tabLabels: Record<CommunityTopic, string> = {
   all: 'All',
   bedford: 'Bedford',
-  industry: 'Engineering industry',
-  universities: 'Colleges & universities',
+  industry: 'Engineering Industry',
+  universities: 'Colleges & Universities',
+  events: 'Events & Opportunities',
 }
 
 function UpcomingEvent({ item }: { item: CommunityUpcomingItem }) {
@@ -36,11 +37,11 @@ function UpcomingEvent({ item }: { item: CommunityUpcomingItem }) {
   )
 }
 
-/** All is the concise overview; the other three tabs show a single topic.
- * All dates have source links and expire automatically after the event ends. */
+/** All previews the three beats and their upcoming dates. Events & Opportunities
+ * gives fairs, competitions, conferences and deadlines a dedicated home. */
 export default function CommunityPage() {
   const [topic, setTopic] = useState<CommunityTopic>('all')
-  const section = topic === 'all' ? null : communitySections.find(item => item.id === topic) ?? communitySections[0]
+  const section = topic === 'all' || topic === 'events' ? null : communitySections.find(item => item.id === topic) ?? communitySections[0]
   const today = new Date()
   const upcoming = communityUpcoming
     .filter(item => new Date(`${item.endDate ?? item.date}T23:59:59`).getTime() >= today.getTime())
@@ -70,7 +71,7 @@ export default function CommunityPage() {
         scrollButtons="auto"
         aria-label="Community topics"
       >
-        {(['all', ...communitySections.map(item => item.id)] as CommunityTopic[]).map(id => (
+        {(['all', ...communitySections.map(item => item.id), 'events'] as CommunityTopic[]).map(id => (
           <UiTab
             key={id}
             id={`bbb-community-tab-${id}`}
@@ -124,6 +125,32 @@ export default function CommunityPage() {
               {otherHighlights.map(story => <CommunityStoryCard key={story.id} story={story} />)}
             </UiBox>
           </UiBox>
+        </section>
+      ) : topic === 'events' ? (
+        <section
+          className="bbb-community-active-section bbb-community-events"
+          id="bbb-community-panel"
+          role="tabpanel"
+          aria-labelledby="bbb-community-tab-events"
+        >
+          <UiBox className="bbb-community-intro">
+            <UiBox className="bbb-community-intro-copy">
+              <UiText component="h2" className="bbb-community-section-title">Events &amp; Opportunities</UiText>
+              <UiText component="p" className="bbb-community-section-description">
+                Science fairs, student competitions, engineering conferences and application deadlines.
+              </UiText>
+            </UiBox>
+            <span className="bbb-community-section-topics">UPCOMING EVENTS · DEADLINES</span>
+          </UiBox>
+          {upcoming.length ? (
+            <ul className="bbb-community-events-grid">
+              {upcoming.map(item => <UpcomingEvent key={item.id} item={item} />)}
+            </ul>
+          ) : (
+            <UiText component="p" className="bbb-community-upcoming-empty">
+              No future events listed yet. Check the original sources for new announcements.
+            </UiText>
+          )}
         </section>
       ) : (
         section && (
