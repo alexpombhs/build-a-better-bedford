@@ -1,5 +1,6 @@
 import CircularProgress from '@mui/material/CircularProgress'
-import { UiText } from './components/atoms/MuiPrimitives'
+import { UiButton, UiText } from './components/atoms/MuiPrimitives'
+import NewsletterVideoPlayer from './components/molecules/NewsletterVideoPlayer'
 import NewsletterSidebarSection from './components/molecules/NewsletterSidebarSection'
 import NewsletterRailHeading from './components/atoms/NewsletterRailHeading'
 import { createElement, useEffect, useRef, useState } from 'react'
@@ -154,6 +155,7 @@ export function NewsletterMediaView({
 }) {
   const [signedUrl,setSignedUrl]=useState('')
   const [loadingError,setLoadingError]=useState(false)
+  const [videoRetry,setVideoRetry]=useState(0)
   const [selected,setSelected]=useState(false)
   const [cropping,setCropping]=useState(false)
   const [cropDraft,setCropDraft]=useState({left:0,top:0,width:100,height:100})
@@ -173,7 +175,7 @@ export function NewsletterMediaView({
       })
     }
     return ()=>{active=false}
-  },[media.storagePath])
+  },[media.storagePath,videoRetry])
   const imageUrl=media.asset==='road-solution'?roadSolution:signedUrl
   const embedded=media.type==='video'&&media.url?embeddedVideoUrl(media.url):null
   const googleMapsClip=media.type==='video'&&media.url?externalGoogleMapsVideoUrl(media.url):null
@@ -264,7 +266,7 @@ export function NewsletterMediaView({
         style={hasCrop&&naturalRatio?{position:'absolute',maxWidth:'none',maxHeight:'none',width:(10000/cropWidth)+'%',height:(10000/cropHeight)+'%',left:(-100*cropLeft/cropWidth)+'%',top:(-100*cropTop/cropHeight)+'%',objectFit:'fill',transform:'none'}:!hasNewCrop&&legacyRatio?{height:'100%',objectFit:'cover',objectPosition:(media.cropX??50)+'% '+(media.cropY??50)+'%',transform:'scale('+(media.cropZoom??1)+')'}:undefined}/>
 
     </div>}
-    {media.type==='video'&&media.storagePath&&signedUrl&&<video src={signedUrl} controls playsInline preload="metadata" aria-label={media.alt||'Newsletter video'}/>}
+    {media.type==='video'&&media.storagePath&&signedUrl&&<NewsletterVideoPlayer key={signedUrl} src={signedUrl} label={media.alt||'Newsletter video'} onRetry={()=>setVideoRetry(value=>value+1)}/>}
     {media.type==='video'&&embedded&&<div className="newsletter-video-frame"><iframe src={embedded} title={media.alt||'Newsletter video'} loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin"/></div>}
     {googleMapsClip&&<a className="newsletter-external-video" href={googleMapsClip} target="_blank" rel="noopener noreferrer" aria-label={(media.alt||'Bridge video')+' — watch the original clip on Google Maps'}>
       <span className="newsletter-external-video-poster">
@@ -277,7 +279,10 @@ export function NewsletterMediaView({
       <span className="newsletter-external-video-description">Video opens on Google Maps; it cannot play directly on this site.</span>
     </a>}
     {((!imageUrl&&media.type==='image')||(media.type==='video'&&!signedUrl&&!embedded&&!googleMapsClip))&&
-      <p className="newsletter-media-placeholder" role="status">{loadingError?'This attachment could not be loaded.':'Loading attachment…'}</p>}
+      <div className="newsletter-media-placeholder" role="status">
+        {loadingError?'This attachment could not be loaded.':'Loading attachment…'}
+        {loadingError&&media.type==='video'&&<UiButton type="button" variant="outlined" size="small" onClick={()=>setVideoRetry(value=>value+1)}>Retry video</UiButton>}
+      </div>}
     {media.caption&&<figcaption>{media.caption}</figcaption>}
     {editable&&media.type==='image'&&<>
       <span className="newsletter-photo-grip newsletter-photo-grip-se" role="slider" tabIndex={0}

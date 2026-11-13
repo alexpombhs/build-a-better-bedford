@@ -834,7 +834,7 @@ export default function NewsletterStudio({ onPublished }: { onPublished: () => v
               {(mediaMode === 'upload'
                 ? <div className="studio-dialog-file">
                     <MediaFilePicker file={mediaFile} disabled={uploading} onFileChange={file => {setMediaFile(file);setMediaError('')}} />
-                    <small>{mediaTarget?.mediaIndex == null ? 'Images: JPG, PNG, WebP, GIF up to 8 MB. Videos: MP4, WebM up to 30 MB.' : 'Choose a new file to replace this attachment, or leave it empty to edit the caption. Original aspect ratio will be preserved.'}</small>
+                    <small>{mediaTarget?.mediaIndex == null ? 'Images: JPG, PNG, WebP, GIF up to 8 MB. Videos: MP4, WebM up to 30 MB. For iPhone Safari, use H.264 MP4 with AAC audio.' : 'Choose a new file to replace this attachment, or leave it empty to edit the caption. Original aspect ratio will be preserved.'}</small>
                   </div>
                 : <UiTextField fullWidth label="Video URL" type="url" size="small" value={mediaUrl}
                     onChange={event => setMediaUrl(event.target.value)} placeholder={mediaMode === 'google-maps' ? 'https://www.google.com/search?q=...#lpg=...' : 'https://www.youtube.com/watch?v=…'} />)}
