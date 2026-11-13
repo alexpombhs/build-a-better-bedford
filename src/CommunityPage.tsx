@@ -52,7 +52,7 @@ export default function CommunityPage() {
   // One consistent feed component everywhere. The All tab samples sources from
   // each topic without pretending that evergreen resources are breaking news.
   const selectedLinks = [
-    ...communitySections[0].stories.slice(0, 3),
+    ...communitySections[0].stories.slice(0, 4),
     communitySections[1].stories[0],
     communitySections[2].stories[0],
   ]
@@ -63,7 +63,7 @@ export default function CommunityPage() {
         className="bbb-community-heading"
         eyebrow="BEDFORD & BEYOND"
         title="Community"
-        description="A collection of original sources on Bedford infrastructure, civil engineering and education."
+        description="Local Bedford news, engineering updates, college information and events — all linked to their original sources."
       />
 
       <UiTabs
@@ -96,9 +96,9 @@ export default function CommunityPage() {
             <UiBox className="bbb-community-source-feed">
               <UiBox className="bbb-community-intro">
                 <UiBox className="bbb-community-intro-copy">
-                  <UiText component="h2" className="bbb-community-section-title">From the Sources</UiText>
+                  <UiText component="h2" className="bbb-community-section-title">Latest updates</UiText>
                   <UiText component="p" className="bbb-community-section-description">
-                    Selected official updates and resources. Open any headline to read the original publication.
+                    Bedford news and engineering resources. Select a headline to read the original article or announcement.
                   </UiText>
                 </UiBox>
               </UiBox>
@@ -182,7 +182,7 @@ export default function CommunityPage() {
       ) : null}
 
       <UiText component="p" className="bbb-community-editorial-note">
-        Curated, not reported, by BBB · Dates are the publishers’ publication or update dates. This is a manually maintained collection, not a live news or weather alert service.
+        Collected by BBB from local news, town announcements and official resources. Dates reflect the original publishers. This is not a live news or weather alert service.
       </UiText>
     </UiBox>
   )
