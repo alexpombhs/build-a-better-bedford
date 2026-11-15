@@ -93,14 +93,16 @@ export default function FunicularSimulator() {
   const displayedPeak = maxTension(displayed)
   const status = broken ? 'broken' : displayedPeak >= shownStrength * 0.85 ? 'warning' : 'intact'
 
-  // Fixed horizontal scale: at the maximum 16 m span, supports reach
-  // x=32 and x=608 in a 640-unit SVG, using nearly its full width while
-  // retaining 8-unit margins beyond the 24-unit anchor blocks.
-  const anchorY = 84
+  // The 640 x 330 SVG matches the desktop panel's actual aspect ratio much
+  // more closely, eliminating the old side letterboxing caused by 'meet'.
+  // At 16 m the anchors reach x=32 and x=608 (nearly edge to edge).
+  // Use fixed vertical scale for ordinary sag, compressing extreme deflection
+  // only to preserve clearance for weight blocks, arrows and the span marker.
+  const anchorY = 70
   const pixelsPerMeter = 36
   const leftX = (640 - pixelsPerMeter * shownSpan) / 2
   const rightX = leftX + pixelsPerMeter * shownSpan
-  const verticalScale = Math.min(25, 135 / Math.max(1, displayed.sag))
+  const verticalScale = Math.min(14, 88 / Math.max(1, displayed.sag))
   const screen = displayed.xs.map((x, i) => [
     leftX + pixelsPerMeter * x,
     anchorY + displayed.ys[i] * verticalScale,
@@ -173,15 +175,15 @@ export default function FunicularSimulator() {
         segment={broken ? breakIndex + 1 : undefined}
         onReset={replaceCable}
       />
-      <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, bgcolor: '#f5f8fa', borderColor: labColors.border, borderRadius: 2, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, bgcolor: '#f5f8fa', borderColor: labColors.border, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <UiText sx={{ fontSize: 14, fontWeight: 700, color: labColors.ink, mb: 0.5 }}>
         Elastic cable under {count === 1 ? 'one load' : 'two loads'}
       </UiText>
-      <svg viewBox="0 0 640 397" width="100%" style={{height:'min(43vh,405px)',display:'block'}} role="img"
+      <svg viewBox="0 0 640 330" width="100%" style={{height:'min(43vh,405px)',display:'block'}} role="img"
         aria-label={broken
           ? 'Cable snapped in segment ' + (breakIndex + 1) + ' under ' + fmt(displayedTotal) + ' kilonewtons of applied load. The weights are falling.'
           : 'Elastic cable across ' + shownSpan + ' meters with ' + fmt(displayed.sag) + ' meters calculated sag and ' + shownLoads.length + ' hanging weights.'}>
-        <path d={'M' + leftX + ' 56V340 M' + rightX + ' 56V340'} stroke="#d1dce2" strokeDasharray="5 6" />
+        <path d={'M' + leftX + ' 43V295 M' + rightX + ' 43V295'} stroke="#d1dce2" strokeDasharray="5 6" />
         <path d={'M' + leftX + ' ' + anchorY + 'H' + rightX} stroke="#a5b7c3" strokeDasharray="6 7" strokeWidth="1.5" />
         <rect x={leftX - 24} y={anchorY - 13} width="24" height="26" fill="#c6d4dc" />
         <rect x={rightX} y={anchorY - 13} width="24" height="26" fill="#c6d4dc" />
@@ -244,9 +246,9 @@ export default function FunicularSimulator() {
         <text x={Math.max(rightX, 455)} y="43" textAnchor="end" fill="#276957" fontSize="14">
           B: {fmt(displayed.rightReaction)} kN ↑
         </text>
-        <path d={'M' + leftX + ' 368H' + rightX + ' M' + leftX + ' 360v16 M' + rightX + ' 360v16'}
+        <path d={'M' + leftX + ' 307H' + rightX + ' M' + leftX + ' 299v16 M' + rightX + ' 299v16'}
           fill="none" stroke="#8197a5" strokeWidth="1.5" />
-        <text x="320" y="392" textAnchor="middle" fontSize="15" fill="#465d70">{shownSpan} m span</text>
+        <text x="320" y="324" textAnchor="middle" fontSize="15" fill="#465d70">{shownSpan} m span</text>
         <line x1="635" y1={anchorY} x2="635" y2={sagY}
           stroke="#657f90" strokeDasharray="3 4" />
         <text x="627" y={(anchorY + sagY) / 2 + 4} textAnchor="end"
@@ -258,7 +260,7 @@ export default function FunicularSimulator() {
       </UiSurface>
     </UiBox>
 
-    <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, borderColor: labColors.border, borderRadius: 2, height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+    <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, borderColor: labColors.border, height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
       <UiBox sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
         <UiText sx={{ fontWeight: 700, fontSize: 14 }}>Point loads</UiText>
         <UiTabs value={count} onChange={(_, value) => changeCount(value as 1 | 2)}
@@ -283,7 +285,7 @@ export default function FunicularSimulator() {
         This experiment is frozen. Use “Replace cable” above the drawing to restart it.
       </UiText>}
 
-      <UiBox sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, p: 1.1, mt: 0.75, bgcolor: '#f2f6f8', borderRadius: 1.5 }}>
+      <UiBox sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, p: 1.1, mt: 0.75, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)' }}>
         <UiBox>
           <UiText variant="caption" sx={{fontSize:11.5,color:labColors.muted}}>Total applied load</UiText>
           <UiText sx={{fontWeight:800,fontSize:15,color:labColors.ink}}>{fmt(displayedTotal)} kN</UiText>
@@ -296,7 +298,7 @@ export default function FunicularSimulator() {
         </UiBox>
       </UiBox>
       <LabDetails title="Force calculations">
-        <UiBox sx={{ p: 1.5, bgcolor: '#f2f6f8', borderRadius: 1.5 }}>
+        <UiBox sx={{ p: 1.5, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)' }}>
           <UiText variant="caption" sx={{display:'block',color:labColors.muted,mb:1}}>
             Maximum supported load assumes the same load positions and proportions.
           </UiText>
