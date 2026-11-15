@@ -179,6 +179,11 @@ export default function FunicularSimulator() {
           const offset = Math.max(0, 70 - distance) / 2 * (i === 0 ? -1 : 1)
           const weightX = x + offset
           const top = y + (broken ? 42 : 23)
+          // Keep the downward force arrow outside the weight; in two-load
+          // mode, point the arrows outward so the labels stay readable.
+          const arrowSide = shownLoads.length === 2 && i === 0 ? -1 : 1
+          const forceX = weightX + arrowSide * (width / 2 + 15)
+          const forceTipY = top + height + 13
           return <g key={i}>
             <circle cx={x} cy={y} r="7" fill="#fff" stroke={broken ? '#b4573d' : '#123b55'} strokeWidth="3" />
             {broken ? <>
@@ -196,6 +201,12 @@ export default function FunicularSimulator() {
               fontSize="12" fill="white" fontWeight="700">{point.load} kN</text>
             <text x={weightX} y={top - 12} textAnchor="middle"
               fontSize="12" fill="#974d31" fontWeight="700">P{i + 1}</text>
+            <line x1={forceX} y1={top - 5} x2={forceX} y2={forceTipY - 8}
+              stroke="#c05e3d" strokeWidth="3" strokeLinecap="round" />
+            <path d={'M' + (forceX - 7) + ' ' + (forceTipY - 11) +
+              ' L' + forceX + ' ' + forceTipY +
+              ' L' + (forceX + 7) + ' ' + (forceTipY - 11) + ' Z'}
+              fill="#c05e3d" />
           </g>
         })}
         <text x={Math.min(leftX, 185)} y="43" fill="#276957" fontSize="14">
@@ -213,9 +224,10 @@ export default function FunicularSimulator() {
           fill="#465d70" fontSize="13">{fmt(displayed.sag)} m sag</text>
       </svg>
       <UiText variant="body2" sx={{ color: labColors.muted, mt: 1, lineHeight: 1.55 }}>
-        Hanging weights grow or shrink with the applied force. The cable snaps when any
-        segment's tension exceeds its breaking strength. The broken picture is an illustrative
-        snapshot, not a simulation of the falling motion.
+        Hanging weights grow or shrink with the applied force. Orange arrows show
+        the downward force on each weight. The cable snaps when any segment's tension
+        exceeds its breaking strength. The broken picture is an illustrative snapshot,
+        not a simulation of the falling motion.
       </UiText>
     </UiSurface>
 
