@@ -91,24 +91,24 @@ export default function AntifunicularSimulator() {
             stroke={labDiagramColors.dimension} strokeWidth="2" />
           <line x1={endX - 21} y1={baselineY + 16} x2={endX + 21} y2={baselineY + 16}
             stroke={labDiagramColors.dimension} strokeWidth="2" />
-          {/* The arch keeps its shape; load positions change the separate thrust line. */}
+          {/* The pale band already shows the fixed arch shape and thickness.
+              There is no duplicate solid centerline: only the dashed thrust
+              line moves when point loads change. */}
           <polyline points={archPoints} fill="none" stroke={labDiagramColors.archOutline}
-            strokeWidth={bandWidth + 2} strokeLinejoin="round" strokeLinecap="round" />
+            strokeWidth={bandWidth + 1.5} strokeLinejoin="round" strokeLinecap="butt" />
           <polyline points={archPoints} fill="none" stroke={labDiagramColors.archFill}
-            strokeWidth={bandWidth} strokeLinejoin="round" strokeLinecap="round" />
-          <polyline points={archPoints} fill="none" stroke={labDiagramColors.archAxis}
-            strokeWidth="1.5" strokeLinejoin="round" />
+            strokeWidth={bandWidth} strokeLinejoin="round" strokeLinecap="butt" />
           <polyline points={thrustPoints} fill="none" stroke={labDiagramColors.thrust}
-            strokeWidth="3.2" strokeDasharray="9 6" strokeLinecap="round" strokeLinejoin="round" />
+            strokeWidth="2.4" strokeDasharray="7 7" strokeLinecap="round" strokeLinejoin="round" />
 
           {loads.map((point, i) => {
             if (point.load <= 0) return null
             const x = xScreen(span * point.position / 100)
             const y = yScreen(archHeight(span, rise, span * point.position / 100))
-            const width = 36 + point.load * 0.65
-            const height = 38 + point.load * 0.16
+            const width = 36 + point.load * 0.5
+            const height = 38 + point.load * 0.12
             const other = count === 2 ? loads[1 - i] : null
-            const otherWidth = other ? 36 + other.load * 0.65 : 0
+            const otherWidth = other ? 36 + other.load * 0.5 : 0
             const spacing = other
               ? Math.abs(point.position - other.position) * span * pixelsPerMeter / 100
               : Infinity
@@ -144,8 +144,8 @@ export default function AntifunicularSimulator() {
         </svg>
         <UiBox sx={{display:'flex',flexWrap:'wrap',columnGap:2,rowGap:0.5,pt:0.5,mt:'auto'}}>
           <UiText sx={{fontSize:11.5,color:labColors.muted}}>
-            <UiText component="span" sx={{display:'inline-block',width:18,height:5,bgcolor:labDiagramColors.archFill,verticalAlign:'middle',mr:0.7}} />
-            Fixed arch · compression
+            <UiText component="span" sx={{display:'inline-block',width:18,height:6,bgcolor:labDiagramColors.archFill,border:'1px solid '+labDiagramColors.archOutline,verticalAlign:'middle',mr:0.7}} />
+            Fixed arch section
           </UiText>
           <UiText sx={{fontSize:11.5,color:labColors.muted}}>
             <UiText component="span" sx={{display:'inline-block',width:18,borderTop:'2px dashed '+labDiagramColors.thrust,verticalAlign:'middle',mr:0.7}} />
