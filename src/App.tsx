@@ -35,16 +35,37 @@ const homepageImage = (name: string): string | undefined => {
 
 
 type Page = 'home' | 'about' | 'what-we-do' | 'projects' | 'lab' | 'newsletter' | 'join' | 'admin'
+type ProjectTab = 'ideas' | 'simulators' | 'hands-on' | 'lab'
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
 const pagePaths: Record<Page, string> = {
   home: '/', about: '/about', 'what-we-do': '/what-we-do', projects: '/projects',
   lab: '/lab', newsletter: '/newsletter', join: '/join', admin: '/admin',
 }
-const pageFromLocation = (): Page => {
+// Project tabs have actual, shareable routes instead of only React state.
+const projectTabPaths: Record<ProjectTab, string> = {
+  ideas: '/projects',
+  simulators: '/projects/simulators',
+  'hands-on': '/projects/hands-on',
+  lab: '/lab', // Keep supporting the existing /lab route.
+}
+
+const normalizedLocationPath = () => {
   const pathname = window.location.pathname
   const relative = pathname.startsWith(basePath + '/') ? pathname.slice(basePath.length) : pathname
-  const normalized = relative.replace(/\/+$/, '') || '/'
+  return relative.replace(/\/+$/, '') || '/'
+}
+
+const projectTabFromLocation = (): ProjectTab => {
+  const path = normalizedLocationPath()
+  if (path === projectTabPaths.simulators || path === pagePaths.lab) return 'simulators'
+  if (path === projectTabPaths['hands-on']) return 'hands-on'
+  return 'ideas'
+}
+
+const pageFromLocation = (): Page => {
+  const normalized = normalizedLocationPath()
+  if (normalized === projectTabPaths.simulators || normalized === projectTabPaths['hands-on']) return 'projects'
   return (Object.keys(pagePaths) as Page[]).find(page => pagePaths[page] === normalized) ?? 'home'
 }
 
@@ -177,7 +198,7 @@ function App() {
     return () => { active = false; subscription.subscription.unsubscribe() }
   }, [])
   const [projectPage, setProjectPage] = useState(0)
-  const [projectTab, setProjectTab] = useState<'simulators'|'ideas'|'lab'|'hands-on'>(() => pageFromLocation() === 'lab' ? 'simulators' : 'ideas')
+  const [projectTab, setProjectTab] = useState<ProjectTab>(projectTabFromLocation)
 
   // External citations open in another tab. Returning to this tab must leave
   // the reader in the same place, including after a browser page restore.
@@ -233,8 +254,8 @@ function App() {
     const handlePopState = () => {
       const next = pageFromLocation()
       setPage(next)
-      if (next === 'lab') setProjectTab('simulators')
-      if (next === 'projects') setProjectTab('ideas')
+      // Browser Back/Forward must restore the tab encoded in the URL.
+      setProjectTab(projectTabFromLocation())
     }
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
@@ -422,15 +443,18 @@ function App() {
     window.open('https://forms.gle/ejjaRZzo5HMMtkVD7', '_blank', 'noopener,noreferrer')
   }
 
-  const go = (next: Page) => {
-    const path = `${basePath}${pagePaths[next]}`
-    if (window.location.pathname !== path) {
-      // An intentional in-app navigation starts at the top; returning from
-      // another browser tab is not an intentional navigation.
+  const go = (next: Page, tab: ProjectTab = 'ideas') => {
+    const route = next === 'projects' ? projectTabPaths[tab] : pagePaths[next]
+    const path = `${basePath}${route}`
+    if (window.location.pathname.replace(/\/+$/, '') !== path || window.location.search) {
+      // Each project tab gets a distinct history entry and URL.
+      // Navigating inside the site starts at the top, unlike browser restore.
       try { window.sessionStorage.removeItem('bbb-scroll:' + path) } catch { /* optional */ }
       window.history.pushState(null, '', path)
     }
     setPage(next)
+    if (next === 'projects') setProjectTab(tab)
+    else if (next === 'lab') setProjectTab('simulators')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -438,7 +462,7 @@ function App() {
     <SiteHeader
       active={page === 'projects' || page === 'lab' ? 'projects' : page === 'newsletter' ? 'newsletter' : page === 'about' ? 'about' : 'home'}
       onNavigate={section => {
-        if (section === 'projects') { setProjectTab('ideas'); go('projects') }
+        if (section === 'projects') go('projects', 'ideas')
         else go(section)
       }}
       onJoin={joinClub}
@@ -457,7 +481,7 @@ function App() {
           missingLabel="Bridge photo not found"
           title="01 / Bridge Project"
           subtitle="STRUCTURAL MECHANICS · CURRENT PROJECT"
-          onClick={() => {go('projects');setProjectTab('hands-on')}}
+          onClick={() => go('projects', 'hands-on')}
         />
         <HomeProjectTile
           variant="lab"
@@ -466,7 +490,7 @@ function App() {
           missingLabel="Bridge blueprint not found"
           title="02 / Engineering Lab"
           subtitle="SIMULATIONS · EXPERIMENTS · DESIGN TOOLS"
-          onClick={() => {setProjectTab('simulators');go('projects')}}
+          onClick={() => go('projects', 'simulators')}
         />
       </UiBox>
       <UiBox className="portfolio-details">
@@ -481,7 +505,7 @@ function App() {
 
     {(page === 'projects' || page === 'lab') && <section className={projectTab === 'ideas' ? 'projects-page projects-page--ideas' : 'projects-page'}>
       <div className="projects-heading projects-toolbar">
-        <EngineeringTabs active={projectTab} onChange={tab => { setProjectTab(tab); go('projects') }} />
+        <EngineeringTabs active={projectTab} onChange={tab => go('projects', tab)} />
       </div>
       <EngineeringSectionIntro tab={projectTab} actions={projectTab === 'ideas' ? (
 <div className="ideas-toolbar"><div className="project-pagination" aria-label="Project pages">
