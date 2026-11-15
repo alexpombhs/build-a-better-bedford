@@ -72,7 +72,7 @@ export function CableStatusBar({
     sx={{
       border: '1px solid ' + palette.border,
       bgcolor: palette.bg,
-      borderRadius: 2,
+      borderRadius: 'var(--bbb-card-radius, 4px)',
       px: 2,
       py: 0.75,
       mb: 0,
