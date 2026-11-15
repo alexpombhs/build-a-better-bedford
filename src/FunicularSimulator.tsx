@@ -68,8 +68,8 @@ export default function FunicularSimulator() {
             </text>
           </g>
         })}
-        <text x={leftX} y="43" fill="#276957" fontSize="14">A: {fmt(result.leftReaction)} kN ↑</text>
-        <text x={rightX} y="43" textAnchor="end" fill="#276957" fontSize="14">B: {fmt(result.rightReaction)} kN ↑</text>
+        <text x={Math.min(leftX, 185)} y="43" fill="#276957" fontSize="14">A: {fmt(result.leftReaction)} kN ↑</text>
+        <text x={Math.max(rightX, 455)} y="43" textAnchor="end" fill="#276957" fontSize="14">B: {fmt(result.rightReaction)} kN ↑</text>
         <path d={'M' + leftX + ' 311H' + rightX + ' M' + leftX + ' 303v16 M' + rightX + ' 303v16'} fill="none" stroke="#8197a5" strokeWidth="1.5" />
         <text x="320" y="337" textAnchor="middle" fontSize="16" fill="#465d70">{span} m span</text>
         <line x1="606" y1={anchorY} x2="606" y2={sagY} stroke="#657f90" strokeDasharray="3 4" />
