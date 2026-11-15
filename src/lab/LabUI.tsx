@@ -6,6 +6,20 @@ import { UiBox, UiButton, UiSlider, UiStack, UiTab, UiTabs, UiText } from '../co
 
 export const labColors = { ink:'#10222e', accent:'#294b63', muted:'#465d70', border:'#d3dce2' }
 
+/** Shared drawing tokens for structural mechanics diagrams. Diagram-specific
+ * SVG primitives use these values; interactive controls use MUI atom wrappers. */
+export const labDiagramColors = {
+  archFill: '#d7e1e8',
+  archOutline: '#294b63',
+  archAxis: '#6c8799',
+  thrust: '#c05e3d',
+  weight: '#b66c4c',
+  weightOutline: '#8b432e',
+  support: '#c6d4dc',
+  guide: '#bacad6',
+  dimension: '#8197a5',
+} as const
+
 export function SectionHeading({eyebrow,title,description,actions,compact=false}:{eyebrow?:string;title:string;description:string;actions?:ReactNode;compact?:boolean}) {
   // Compact simulator heading: retain the section eyebrow only, without
   // the large page title or descriptive subtitle used on editorial pages.
