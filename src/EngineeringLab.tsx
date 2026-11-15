@@ -48,13 +48,16 @@ export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
   const maxMoment=left*a
   if(tab==='lab') return <UiBox sx={{pb:4}}><UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',md:'repeat(3,minmax(0,1fr))'},gap:2}}><LabCard eyebrow="01 / QUESTION" title="Make a prediction">Choose a problem and decide what you expect before testing.</LabCard><LabCard eyebrow="02 / TEST" title="Change one variable">Keep the other conditions the same, record measurements, and repeat trials.</LabCard><LabCard eyebrow="03 / REVIEW" title="Check the results">Graph your results, explain unexpected behavior, and revise the design.</LabCard></UiBox></UiBox>
   if(tab==='hands-on') return null
+  // Keep the unfinished beam experiment in code, but hide it from visitors
+  // until it has been reviewed and explicitly enabled.
+  const showBeamForces = false
   return <UiBox sx={{pb:2}}>
-    <UiTabs value={simulator} onChange={(_,value) => setSimulator(value as 'beam'|'funicular')} aria-label="Choose a force simulator"
+    {showBeamForces && <UiTabs value={simulator} onChange={(_,value) => setSimulator(value as 'beam'|'funicular')} aria-label="Choose a force simulator"
       sx={{mb:1.5,minHeight:34,'& .MuiTabs-indicator':{backgroundColor:labColors.ink}}}>
       <UiTab value="funicular" label="Funicular cable" sx={{textTransform:'none',minHeight:34,py:0.5}}/>
       <UiTab value="beam" label="Beam forces" sx={{textTransform:'none',minHeight:34,py:0.5}}/>
-    </UiTabs>
-    {simulator === 'funicular' ? <FunicularSimulator/> :
+    </UiTabs>}
+    {!showBeamForces || simulator === 'funicular' ? <FunicularSimulator/> :
     <UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',lg:'minmax(0,1.35fr) minmax(320px,.65fr)'},gap:3}}>
       <UiSurface variant="outlined" sx={{p:3,bgcolor:"#f5f8f6",borderColor:labColors.border,borderRadius:3}}>
         <svg viewBox="0 0 640 310" role="img" aria-label="A simply supported beam with an adjustable point load and reactions at both ends">
