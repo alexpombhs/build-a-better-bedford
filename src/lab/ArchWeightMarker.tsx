@@ -22,31 +22,29 @@ export function ArchWeightMarker({
   if (force <= 0) return null
 
   const bottom = top + height
-  const shaftStart = bottom + 10
-  const arrowHeadTop = arrowTipY - 11
+  const shaftStart = bottom + 9
+  const arrowHeadTop = arrowTipY - 7
 
   return <g role="group" aria-label={label + ', ' + force + ' kilonewtons downward'}>
-    {/* Simple flat block matches the cable simulator's hanging weight style. */}
+    {/* Outlined load tag: deliberately quieter than the line-of-thrust drawing. */}
     <rect x={weightX - width / 2} y={top} width={width} height={height}
       rx="4" fill={labDiagramColors.weight}
-      stroke={labDiagramColors.weightOutline} strokeWidth="1.8" />
-    <rect x={weightX - width / 2 + 5} y={top + 5}
-      width={Math.max(0, width - 10)} height="3.5" rx="1.75" fill="#e3b09a" />
-    <text x={weightX} y={top + height / 2 - 4} textAnchor="middle"
-      fontSize="11" fontWeight="700" fill="#fff">{label}</text>
-    <text x={weightX} y={top + height / 2 + 12} textAnchor="middle"
-      fontSize="13" fontWeight="700" fill="#fff">{force} kN</text>
-    {/* Keep the arrow separate from the weight (never draw through it). */}
+      stroke={labDiagramColors.weightOutline} strokeWidth="1.15" />
+    <text x={weightX} y={top + height / 2 - 5} textAnchor="middle"
+      fontSize="10.5" fontWeight="700" fill="#8a5542">{label}</text>
+    <text x={weightX} y={top + height / 2 + 10} textAnchor="middle"
+      fontSize="12.5" fontWeight="700" fill="#10222e">{force} kN</text>
+    {/* Arrow remains outside the label. A subtle leader handles close loads. */}
     {Math.abs(centerX - weightX) > 1 && <path
       d={'M' + weightX + ' ' + (bottom + 3) +
         ' L' + centerX + ' ' + shaftStart}
       fill="none" stroke={labDiagramColors.dimension}
-      strokeWidth="1.7" strokeLinecap="round" />}
-    <line x1={centerX} y1={shaftStart} x2={centerX} y2={arrowHeadTop + 2}
-      stroke={labDiagramColors.thrust} strokeWidth="3.5" strokeLinecap="round" />
-    <path d={'M' + (centerX - 7) + ' ' + arrowHeadTop +
+      strokeWidth="1.1" strokeLinecap="round" />}
+    <line x1={centerX} y1={shaftStart} x2={centerX} y2={arrowHeadTop}
+      stroke={labDiagramColors.thrust} strokeWidth="2.1" strokeLinecap="round" />
+    <path d={'M' + (centerX - 5) + ' ' + arrowHeadTop +
       ' L' + centerX + ' ' + arrowTipY +
-      ' L' + (centerX + 7) + ' ' + arrowHeadTop + ' Z'}
+      ' L' + (centerX + 5) + ' ' + arrowHeadTop + ' Z'}
       fill={labDiagramColors.thrust} />
   </g>
 }
