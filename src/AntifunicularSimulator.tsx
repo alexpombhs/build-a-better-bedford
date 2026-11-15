@@ -150,11 +150,11 @@ export default function AntifunicularSimulator() {
         </svg>
         <UiBox sx={{display:'flex',flexWrap:'wrap',columnGap:2,rowGap:0.5,pt:0.5,mt:'auto'}}>
           <UiText sx={{fontSize:11.5,color:labColors.muted}}>
-            <UiBox component="span" sx={{display:'inline-block',width:18,height:5,bgcolor:'#a4c4b5',verticalAlign:'middle',mr:0.7}} />
+            <UiText component="span" sx={{display:'inline-block',width:18,height:5,bgcolor:'#a4c4b5',verticalAlign:'middle',mr:0.7}} />
             Fixed arch (compression)
           </UiText>
           <UiText sx={{fontSize:11.5,color:labColors.muted}}>
-            <UiBox component="span" sx={{display:'inline-block',width:18,borderTop:'2px dashed #c46c39',verticalAlign:'middle',mr:0.7}} />
+            <UiText component="span" sx={{display:'inline-block',width:18,borderTop:'2px dashed #c46c39',verticalAlign:'middle',mr:0.7}} />
             Thrust line (changes with loads)
           </UiText>
         </UiBox>
