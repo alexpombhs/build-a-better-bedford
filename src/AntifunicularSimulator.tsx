@@ -41,7 +41,7 @@ export default function AntifunicularSimulator() {
       ? 'deviating'
       : 'outside'
 
-  const pixelsPerMeter = 30
+  const pixelsPerMeter = 31
   const centerX = 320
   const startX = centerX - span * pixelsPerMeter / 2
   const endX = centerX + span * pixelsPerMeter / 2
@@ -105,18 +105,25 @@ export default function AntifunicularSimulator() {
             const y = yScreen(archHeight(span, rise, loadX))
             const blockWidth = 34 + point.load * 0.85
             const blockHeight = 34 + point.load * 0.2
+            const otherLoad = count === 2 ? loads[1 - i] : null
+            const otherWidth = otherLoad ? 34 + otherLoad.load * 0.85 : 0
+            const spacing = otherLoad ? Math.abs(point.position - otherLoad.position) * span * pixelsPerMeter / 100 : Infinity
+            const requiredSpacing = (blockWidth + otherWidth) / 2 + 12
+            const blockX = x + (count === 2
+              ? Math.max(0, requiredSpacing - spacing) / 2 * (i === 0 ? -1 : 1)
+              : 0)
             const yTop = Math.max(5, y - blockHeight - 20)
             const shaftBottom = y - bandWidth / 2 - 4
             return <g key={i}>
-              <rect x={x - blockWidth / 2} y={yTop} rx="3"
+              <rect x={blockX - blockWidth / 2} y={yTop} rx="3"
                 width={blockWidth} height={blockHeight}
                 fill="#b56c4c" stroke="#8b432e" strokeWidth="1.8" />
-              <text x={x} y={yTop + 13} textAnchor="middle"
+              <text x={blockX} y={yTop + 13} textAnchor="middle"
                 fill="white" fontWeight="700" fontSize="11">P{i + 1}</text>
-              <text x={x} y={yTop + 27} textAnchor="middle"
+              <text x={blockX} y={yTop + 27} textAnchor="middle"
                 fill="white" fontWeight="700" fontSize="12">{point.load} kN</text>
               {shaftBottom > yTop + blockHeight + 6 &&
-                <line x1={x} y1={yTop + blockHeight + 3} x2={x} y2={shaftBottom - 7}
+                <line x1={blockX} y1={yTop + blockHeight + 3} x2={x} y2={shaftBottom - 7}
                   stroke="#ba5a38" strokeWidth="3" strokeLinecap="round" />}
               <path d={'M' + (x - 6) + ' ' + (shaftBottom - 9) +
                 ' L' + x + ' ' + shaftBottom +
