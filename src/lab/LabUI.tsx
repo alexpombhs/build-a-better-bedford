@@ -7,12 +7,11 @@ import { UiBox, UiButton, UiSlider, UiStack, UiTab, UiTabs, UiText } from '../co
 export const labColors = { ink:'#10222e', accent:'#294b63', muted:'#465d70', border:'#d3dce2' }
 
 export function SectionHeading({eyebrow,title,description,actions,compact=false}:{eyebrow?:string;title:string;description:string;actions?:ReactNode;compact?:boolean}) {
-  if (compact) return <UiBox sx={{display:'flex',flexWrap:'wrap',alignItems:'baseline',columnGap:2,rowGap:0.5,mb:1.25}}>
-    <UiText component="h1" sx={{m:0,fontFamily:"Georgia, 'Times New Roman', serif",fontSize:{xs:26,md:30},fontWeight:500,lineHeight:1.2,letterSpacing:'-.025em',color:labColors.ink}}>
-      {title}
-    </UiText>
-    <UiText variant="body2" sx={{fontSize:13.5,color:labColors.muted,lineHeight:1.4}}>
-      {description}
+  // Compact simulator heading: retain the section eyebrow only, without
+  // the large page title or descriptive subtitle used on editorial pages.
+  if (compact) return <UiBox sx={{display:'flex',alignItems:'center',flexWrap:'wrap',gap:1,mb:1}}>
+    <UiText component="h1" sx={{m:0,fontSize:11,fontWeight:800,lineHeight:1.35,letterSpacing:'.09em',textTransform:'uppercase',color:labColors.muted}}>
+      {eyebrow || title}
     </UiText>
     {actions && <UiBox sx={{ml:'auto'}}>{actions}</UiBox>}
   </UiBox>
