@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { UiBox, UiButton, UiSurface, UiText, UiStack, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
-import { LabSlider, labColors } from './lab/LabUI'
+import { UiBox, UiSurface, UiText, UiStack, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
+import { CableStatusBar, LabSlider, labColors } from './lab/LabUI'
 import { maxSupportedTotalLoad, solveElasticCable } from './lab/funicularPhysics'
 import type { CableLoad, CableSolution } from './lab/funicularPhysics'
 
@@ -18,17 +18,44 @@ type FailureSnapshot = {
   segment: number
 }
 
+type CableSettings = {
+  span: number
+  restLength: number
+  stiffness: number
+  breakingStrength: number
+  p1: number
+  p2: number
+  pos1: number
+  pos2: number
+}
+
+const defaultSettings: CableSettings = {
+  span: 11, restLength: 13.5, stiffness: 120, breakingStrength: 20,
+  p1: 10, p2: 8, pos1: 45, pos2: 70,
+}
+
 export default function FunicularSimulator() {
   const [count, setCount] = useState<1 | 2>(1)
-  const [span, setSpan] = useState(11)
-  const [restLength, setRestLength] = useState(13.5)
-  const [stiffness, setStiffness] = useState(120)
-  const [breakingStrength, setBreakingStrength] = useState(20)
-  const [p1, setP1] = useState(10)
-  const [p2, setP2] = useState(8)
-  const [pos1, setPos1] = useState(45)
-  const [pos2, setPos2] = useState(70)
-  const [failure, setFailure] = useState<FailureSnapshot | null>(null)
+
+  // Each load tab is its own experiment. Changing tabs cannot change the
+  // failed geometry, load values, or controls of the other experiment.
+  const [settingsByMode, setSettingsByMode] = useState<Record<1 | 2, CableSettings>>({
+    1: { ...defaultSettings },
+    2: { ...defaultSettings },
+  })
+  const [failures, setFailures] = useState<Record<1 | 2, FailureSnapshot | null>>({
+    1: null, 2: null,
+  })
+  const settings = settingsByMode[count]
+  const { span, restLength, stiffness, breakingStrength, p1, p2, pos1, pos2 } = settings
+  const failure = failures[count]
+
+  const updateSettings = (patch: Partial<CableSettings>) => {
+    setSettingsByMode(previous => ({
+      ...previous,
+      [count]: { ...previous[count], ...patch },
+    }))
+  }
 
   const loads: CableLoad[] = count === 1
     ? [{ position: pos1, load: p1 }]
@@ -50,8 +77,11 @@ export default function FunicularSimulator() {
   } : null
 
   useEffect(() => {
-    if (!failure && currentFailure) setFailure(currentFailure)
-  }, [failure, currentFailure])
+    if (!currentFailure) return
+    setFailures(previous => previous[count]
+      ? previous
+      : { ...previous, [count]: currentFailure })
+  }, [count, currentFailure])
 
   const broken = failure ?? currentFailure
   const displayed = broken?.solution ?? solution
@@ -61,7 +91,7 @@ export default function FunicularSimulator() {
   const shownCapacity = broken?.capacity ?? capacity
   const displayedTotal = shownLoads.reduce((sum, point) => sum + point.load, 0)
   const displayedPeak = maxTension(displayed)
-  const peakIndex = peakSegment(displayed)
+  const status = broken ? 'broken' : displayedPeak >= shownStrength * 0.85 ? 'warning' : 'intact'
 
   // Fixed horizontal scale: the anchors actually move with the span.
   // A capped vertical scale keeps the hanging weights visible at high sag.
@@ -94,20 +124,14 @@ export default function FunicularSimulator() {
     ...screen.slice(breakIndex + 1),
   ].map(([x, y]) => x.toFixed(2) + ',' + y.toFixed(2)).join(' ')
 
-  const changeCount = (value: 1 | 2) => {
-    if (value === 2) {
-      const first = Math.min(pos1, 75)
-      setPos1(first)
-      setPos2(Math.max(pos2, first + 10))
-    }
-    setCount(value)
-  }
+  // Independent settings make it safe to switch without changing the other tab.
+  const changeCount = (value: 1 | 2) => setCount(value)
 
   const replaceCable = () => {
     // Clearing only the failure snapshot immediately re-triggers failure if
     // the current load is still above the cable's tensile strength.
     if (!overload) {
-      setFailure(null)
+      setFailures(previous => ({ ...previous, [count]: null }))
       return
     }
 
@@ -117,12 +141,7 @@ export default function FunicularSimulator() {
     if (minimumPeak > breakingStrength) {
       // Even the smallest supported weights would break this configuration.
       // Restore a safe baseline rather than silently increasing strength.
-      setSpan(11)
-      setRestLength(13.5)
-      setStiffness(120)
-      setBreakingStrength(20)
-      setP1(1)
-      setP2(1)
+      updateSettings({ ...defaultSettings, p1: 1, p2: 1 })
     } else {
       // Retain the geometry and relative load proportions where possible.
       // Restart well below the estimated failure threshold so the new
@@ -137,18 +156,24 @@ export default function FunicularSimulator() {
         nextP1 = 1
         nextP2 = 1
       }
-      setP1(nextP1)
-      setP2(nextP2)
+      updateSettings({ p1: nextP1, p2: nextP2 })
     }
 
-    setFailure(null)
+    setFailures(previous => ({ ...previous, [count]: null }))
   }
 
   return <UiBox sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0,1.3fr) minmax(310px,.7fr)' }, gap: 3, pb: 4 }}>
     <UiSurface variant="outlined" sx={{ p: { xs: 2, md: 3 }, bgcolor: '#f5f8fa', borderColor: labColors.border, borderRadius: 2 }}>
       <UiText variant="subtitle1" sx={{ fontWeight: 600, color: labColors.ink, mb: 1 }}>
-        Elastic cable under {shownLoads.length === 1 ? 'one load' : 'two loads'}
+        Elastic cable under {count === 1 ? 'one load' : 'two loads'}
       </UiText>
+      <CableStatusBar
+        status={status}
+        tension={displayedPeak}
+        strength={shownStrength}
+        segment={broken ? breakIndex + 1 : undefined}
+        onReset={replaceCable}
+      />
       <svg viewBox="0 0 640 475" width="100%" role="img"
         aria-label={broken
           ? 'Cable snapped in segment ' + (breakIndex + 1) + ' under ' + fmt(displayedTotal) + ' kilonewtons of applied load. The weights are falling.'
@@ -164,10 +189,7 @@ export default function FunicularSimulator() {
             stroke="#b4573d" strokeWidth="2" strokeLinecap="round" fill="none" />
           <text x={midpointX} y={Math.max(77, midpointY - 23)} textAnchor="middle"
             fontSize="16" fill="#a33e2a" fontWeight="800">SNAP!</text>
-          <text x="320" y="21" textAnchor="middle" fontSize="15" fill="#a33e2a" fontWeight="800">
-            CABLE BROKEN
-          </text>
-        </> : <polyline points={polyline} fill="none" stroke="#123b55" strokeWidth="5"
+         </> : <polyline points={polyline} fill="none" stroke="#123b55" strokeWidth="5"
           strokeLinejoin="round" strokeLinecap="round" />}
         {shownLoads.map((point, i) => {
           const [x, y] = screen[i + 1]
@@ -244,34 +266,20 @@ export default function FunicularSimulator() {
         <UiTab value={2} label="2 loads" sx={{ minHeight: 40, textTransform: 'none' }} />
       </UiTabs>
       <UiStack spacing={1}>
-        <LabSlider label="Span" value={span} min={4} max={16} unit="m" onChange={setSpan} />
-        <LabSlider label="Unstretched cable length" value={restLength} min={8} max={18} step={0.5} unit="m" onChange={setRestLength} />
-        <LabSlider label="Cable stiffness" value={stiffness} min={80} max={400} step={20} unit="kN" onChange={setStiffness} />
-        <LabSlider label="Cable breaking strength" value={breakingStrength} min={5} max={60} step={1} unit="kN" onChange={setBreakingStrength} />
-        <LabSlider label="Load 1" value={p1} min={1} max={30} unit="kN" onChange={setP1} />
-        <LabSlider label="Load 1 position" value={pos1} min={15} max={count === 2 ? pos2 - 10 : 85} step={5} unit="%" onChange={setPos1} />
+        <LabSlider label="Span" value={span} min={4} max={16} unit="m" onChange={value => updateSettings({ span: value })} disabled={Boolean(broken)} />
+        <LabSlider label="Unstretched cable length" value={restLength} min={8} max={18} step={0.5} unit="m" onChange={value => updateSettings({ restLength: value })} disabled={Boolean(broken)} />
+        <LabSlider label="Cable stiffness" value={stiffness} min={80} max={400} step={20} unit="kN" onChange={value => updateSettings({ stiffness: value })} disabled={Boolean(broken)} />
+        <LabSlider label="Cable breaking strength" value={breakingStrength} min={5} max={60} step={1} unit="kN" onChange={value => updateSettings({ breakingStrength: value })} disabled={Boolean(broken)} />
+        <LabSlider label="Load 1" value={p1} min={1} max={30} unit="kN" onChange={value => updateSettings({ p1: value })} disabled={Boolean(broken)} />
+        <LabSlider label="Load 1 position" value={pos1} min={15} max={count === 2 ? pos2 - 10 : 85} step={5} unit="%" onChange={value => updateSettings({ pos1: value })} disabled={Boolean(broken)} />
         {count === 2 && <>
-          <LabSlider label="Load 2" value={p2} min={1} max={30} unit="kN" onChange={setP2} />
-          <LabSlider label="Load 2 position" value={pos2} min={pos1 + 10} max={85} step={5} unit="%" onChange={setPos2} />
+          <LabSlider label="Load 2" value={p2} min={1} max={30} unit="kN" onChange={value => updateSettings({ p2: value })} disabled={Boolean(broken)} />
+          <LabSlider label="Load 2 position" value={pos2} min={pos1 + 10} max={85} step={5} unit="%" onChange={value => updateSettings({ pos2: value })} disabled={Boolean(broken)} />
         </>}
       </UiStack>
-      {broken && <UiBox role="alert" sx={{ mt: 2, p: 2, bgcolor: '#fff0eb', border: '1px solid #c77964', borderRadius: 2 }}>
-        <UiText sx={{ fontWeight: 800, color: '#9c3e2a' }}>
-          Cable snapped — segment {breakIndex + 1} exceeded its limit
-        </UiText>
-        <UiText variant="body2" sx={{ color: '#704334', mt: 0.5, mb: 1 }}>
-          At failure, the peak tension was {fmt(displayedPeak)} kN,
-          above the cable's {fmt(shownStrength)} kN breaking strength.
-          The broken view stays frozen until you replace the cable.
-        </UiText>
-        <UiText variant="body2" sx={{ color: '#704334', mb: 1 }}>
-          Replacing the cable restarts with lighter weights. If the span alone causes overload, the cable setup also resets to a safe baseline.
-        </UiText>
-        <UiButton variant="contained" size="small" onClick={replaceCable}
-          sx={{ bgcolor: labColors.accent, '&:hover': { bgcolor: labColors.ink } }}>
-          Replace cable and test again
-        </UiButton>
-      </UiBox>}
+      {broken && <UiText variant="caption" sx={{ display: 'block', mt: 1.5, color: labColors.muted }}>
+        This experiment is frozen. Use “Replace cable” above the drawing to restart it.
+      </UiText>}
       <UiBox sx={{ mt: 2, p: 2, bgcolor: '#f2f6f8', borderRadius: 2 }}>
         <UiText sx={{ fontSize: 13, color: labColors.muted }}>
           {broken ? 'At the moment of failure · total applied load' : 'Total applied load'}
