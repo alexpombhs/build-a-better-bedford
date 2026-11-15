@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { UiBox, UiSurface, UiTab, UiTabs, UiText } from './components/atoms/MuiPrimitives'
-import { ArchStatusBar, LabDetails, LabSlider, labColors } from './lab/LabUI'
+import { ArchStatusBar, LabDetails, LabSlider, labColors, labDiagramColors } from './lab/LabUI'
+import { ArchWeightMarker } from './lab/ArchWeightMarker'
 import { archHeight, solveThreeHingedArch } from './lab/antifunicularPhysics'
 import type { ArchPointLoad } from './lab/antifunicularPhysics'
 
@@ -45,7 +46,8 @@ export default function AntifunicularSimulator() {
   const centerX = 320
   const startX = centerX - span * pixelsPerMeter / 2
   const endX = centerX + span * pixelsPerMeter / 2
-  const baselineY = 248
+  // Space for the load block, a visible downward arrow, and the arch crest.
+  const baselineY = 300
   const xScreen = (x: number) => startX + x * pixelsPerMeter
   const yScreen = (height: number) => baselineY - height * pixelsPerMeter
   const archPoints = result.samples.map(p => xScreen(p.x).toFixed(2) + ',' + yScreen(p.archY).toFixed(2)).join(' ')
@@ -70,92 +72,84 @@ export default function AntifunicularSimulator() {
         <UiText sx={{fontSize:14,fontWeight:700,color:labColors.ink,mb:0.5}}>
           Anti-funicular compression arch
         </UiText>
-        <svg viewBox="0 0 640 304" width="100%"
-          style={{height:'min(43vh,405px)',display:'block'}}
+        <svg viewBox="0 0 640 360" width="100%"
+          style={{height:'auto',display:'block'}}
           role="img"
           aria-label={'A fixed parabolic compression arch with ' + count +
             ' movable point loads. The dashed orange line is the calculated thrust line.'}>
-          <path d={'M' + startX + ' 34V280 M' + endX + ' 34V280'}
-            stroke="#d1dce2" strokeDasharray="5 6" />
+          <path d={'M' + startX + ' 44V333 M' + endX + ' 44V333'}
+            stroke={labDiagramColors.guide} strokeDasharray="5 6" />
           <line x1={startX} y1={baselineY} x2={endX} y2={baselineY}
-            stroke="#9fb2bd" strokeWidth="1.5" strokeDasharray="5 6" />
+            stroke={labDiagramColors.guide} strokeWidth="1.5" strokeDasharray="5 6" />
           <path d={'M' + (startX - 14) + ' ' + (baselineY + 13) + ' L' +
             (startX + 14) + ' ' + (baselineY + 13) + ' L' + startX + ' ' + baselineY + ' Z'}
-            fill="#9eb9ad" stroke="#2a6351" strokeWidth="1.5" />
+            fill={labDiagramColors.support} stroke={labDiagramColors.archOutline} strokeWidth="1.5" />
           <path d={'M' + (endX - 14) + ' ' + (baselineY + 13) + ' L' +
             (endX + 14) + ' ' + (baselineY + 13) + ' L' + endX + ' ' + baselineY + ' Z'}
-            fill="#9eb9ad" stroke="#2a6351" strokeWidth="1.5" />
+            fill={labDiagramColors.support} stroke={labDiagramColors.archOutline} strokeWidth="1.5" />
           <line x1={startX - 21} y1={baselineY + 16} x2={startX + 21} y2={baselineY + 16}
-            stroke="#547a71" strokeWidth="2" />
+            stroke={labDiagramColors.dimension} strokeWidth="2" />
           <line x1={endX - 21} y1={baselineY + 16} x2={endX + 21} y2={baselineY + 16}
-            stroke="#547a71" strokeWidth="2" />
+            stroke={labDiagramColors.dimension} strokeWidth="2" />
           {/* The arch keeps its shape; load positions change the separate thrust line. */}
-          <polyline points={archPoints} fill="none" stroke="#244b4d"
+          <polyline points={archPoints} fill="none" stroke={labDiagramColors.archOutline}
             strokeWidth={bandWidth + 2} strokeLinejoin="round" strokeLinecap="round" />
-          <polyline points={archPoints} fill="none" stroke="#a4c4b5"
+          <polyline points={archPoints} fill="none" stroke={labDiagramColors.archFill}
             strokeWidth={bandWidth} strokeLinejoin="round" strokeLinecap="round" />
-          <polyline points={archPoints} fill="none" stroke="#376b65"
+          <polyline points={archPoints} fill="none" stroke={labDiagramColors.archAxis}
             strokeWidth="1.5" strokeLinejoin="round" />
-          <polyline points={thrustPoints} fill="none" stroke="#c46c39"
-            strokeWidth="3" strokeDasharray="9 6" strokeLinecap="round" strokeLinejoin="round" />
+          <polyline points={thrustPoints} fill="none" stroke={labDiagramColors.thrust}
+            strokeWidth="3.2" strokeDasharray="9 6" strokeLinecap="round" strokeLinejoin="round" />
 
           {loads.map((point, i) => {
-            const loadX = span * point.position / 100
-            const x = xScreen(loadX)
-            const y = yScreen(archHeight(span, rise, loadX))
-            const blockWidth = 34 + point.load * 0.85
-            const blockHeight = 34 + point.load * 0.2
-            const otherLoad = count === 2 ? loads[1 - i] : null
-            const otherWidth = otherLoad ? 34 + otherLoad.load * 0.85 : 0
-            const spacing = otherLoad ? Math.abs(point.position - otherLoad.position) * span * pixelsPerMeter / 100 : Infinity
-            const requiredSpacing = (blockWidth + otherWidth) / 2 + 12
-            const blockX = x + (count === 2
-              ? Math.max(0, requiredSpacing - spacing) / 2 * (i === 0 ? -1 : 1)
+            if (point.load <= 0) return null
+            const x = xScreen(span * point.position / 100)
+            const y = yScreen(archHeight(span, rise, span * point.position / 100))
+            const width = 36 + point.load * 0.65
+            const height = 38 + point.load * 0.16
+            const other = count === 2 ? loads[1 - i] : null
+            const otherWidth = other ? 36 + other.load * 0.65 : 0
+            const spacing = other
+              ? Math.abs(point.position - other.position) * span * pixelsPerMeter / 100
+              : Infinity
+            const separation = (width + otherWidth) / 2 + 12
+            const weightX = x + (count === 2
+              ? Math.max(0, separation - spacing) / 2 * (i === 0 ? -1 : 1)
               : 0)
-            const yTop = Math.max(5, y - blockHeight - 20)
-            const shaftBottom = y - bandWidth / 2 - 4
-            return <g key={i}>
-              <rect x={blockX - blockWidth / 2} y={yTop} rx="3"
-                width={blockWidth} height={blockHeight}
-                fill="#b56c4c" stroke="#8b432e" strokeWidth="1.8" />
-              <text x={blockX} y={yTop + 13} textAnchor="middle"
-                fill="white" fontWeight="700" fontSize="11">P{i + 1}</text>
-              <text x={blockX} y={yTop + 27} textAnchor="middle"
-                fill="white" fontWeight="700" fontSize="12">{point.load} kN</text>
-              {shaftBottom > yTop + blockHeight + 6 &&
-                <line x1={blockX} y1={yTop + blockHeight + 3} x2={x} y2={shaftBottom - 7}
-                  stroke="#ba5a38" strokeWidth="3" strokeLinecap="round" />}
-              <path d={'M' + (x - 6) + ' ' + (shaftBottom - 9) +
-                ' L' + x + ' ' + shaftBottom +
-                ' L' + (x + 6) + ' ' + (shaftBottom - 9) + ' Z'}
-                fill="#ba5a38" />
-            </g>
+            // Arrow ends just above the arch surface. Its entire shaft sits
+            // BELOW the weight with a white clearance between the two.
+            const arrowTipY = y - bandWidth / 2 - 5
+            const top = arrowTipY - 33 - height
+            return <ArchWeightMarker key={i}
+              label={'P' + (i + 1)} force={point.load}
+              centerX={x} weightX={weightX}
+              top={top} width={width} height={height} arrowTipY={arrowTipY} />
           })}
 
-          <text x={startX} y="18" fontSize="13" fill="#276957">
+          <text x={startX} y="25" fontSize="13" fill={labColors.accent}>
             A: {format(result.leftReaction)} kN ↑
           </text>
-          <text x={endX} y="18" textAnchor="end" fontSize="13" fill="#276957">
+          <text x={endX} y="25" textAnchor="end" fontSize="13" fill={labColors.accent}>
             B: {format(result.rightReaction)} kN ↑
           </text>
-          <text x={startX + 5} y="40" fontSize="12" fill="#465d70">
+          <text x={startX + 5} y="51" fontSize="12" fill={labColors.muted}>
             q = {distributed} kN/m
           </text>
-          <path d={'M' + startX + ' 280H' + endX +
-            ' M' + startX + ' 275v10 M' + endX + ' 275v10'}
-            fill="none" stroke="#7c929e" strokeWidth="1.3" />
-          <text x="320" y="297" textAnchor="middle" fontSize="14" fill="#465d70">
+          <path d={'M' + startX + ' 333H' + endX +
+            ' M' + startX + ' 328v10 M' + endX + ' 328v10'}
+            fill="none" stroke={labDiagramColors.dimension} strokeWidth="1.3" />
+          <text x="320" y="354" textAnchor="middle" fontSize="14" fill={labColors.muted}>
             {span} m span
           </text>
         </svg>
         <UiBox sx={{display:'flex',flexWrap:'wrap',columnGap:2,rowGap:0.5,pt:0.5,mt:'auto'}}>
           <UiText sx={{fontSize:11.5,color:labColors.muted}}>
-            <UiText component="span" sx={{display:'inline-block',width:18,height:5,bgcolor:'#a4c4b5',verticalAlign:'middle',mr:0.7}} />
-            Fixed arch (compression)
+            <UiText component="span" sx={{display:'inline-block',width:18,height:5,bgcolor:labDiagramColors.archFill,verticalAlign:'middle',mr:0.7}} />
+            Fixed arch · compression
           </UiText>
           <UiText sx={{fontSize:11.5,color:labColors.muted}}>
-            <UiText component="span" sx={{display:'inline-block',width:18,borderTop:'2px dashed #c46c39',verticalAlign:'middle',mr:0.7}} />
-            Thrust line (changes with loads)
+            <UiText component="span" sx={{display:'inline-block',width:18,borderTop:'2px dashed '+labDiagramColors.thrust,verticalAlign:'middle',mr:0.7}} />
+            Thrust line · force path
           </UiText>
         </UiBox>
       </UiSurface>
