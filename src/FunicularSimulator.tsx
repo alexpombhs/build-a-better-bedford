@@ -1,38 +1,98 @@
-import { useState } from 'react'
-import { UiBox, UiSurface, UiText, UiStack, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
+import { useEffect, useState } from 'react'
+import { UiBox, UiButton, UiSurface, UiText, UiStack, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
 import { LabSlider, labColors } from './lab/LabUI'
-import { solveElasticCable } from './lab/funicularPhysics'
-import type { CableLoad } from './lab/funicularPhysics'
+import { maxSupportedTotalLoad, solveElasticCable } from './lab/funicularPhysics'
+import type { CableLoad, CableSolution } from './lab/funicularPhysics'
 
 const fmt = (v: number) => v.toFixed(1)
+const maxTension = (solution: CableSolution) => Math.max(...solution.tensions)
+const peakSegment = (solution: CableSolution) =>
+  solution.tensions.indexOf(maxTension(solution))
+
+type FailureSnapshot = {
+  span: number
+  loads: CableLoad[]
+  solution: CableSolution
+  breakingStrength: number
+  capacity: number
+  segment: number
+}
 
 export default function FunicularSimulator() {
   const [count, setCount] = useState<1 | 2>(1)
   const [span, setSpan] = useState(11)
   const [restLength, setRestLength] = useState(13.5)
   const [stiffness, setStiffness] = useState(120)
+  const [breakingStrength, setBreakingStrength] = useState(20)
   const [p1, setP1] = useState(10)
   const [p2, setP2] = useState(8)
   const [pos1, setPos1] = useState(45)
   const [pos2, setPos2] = useState(70)
+  const [failure, setFailure] = useState<FailureSnapshot | null>(null)
 
   const loads: CableLoad[] = count === 1
     ? [{ position: pos1, load: p1 }]
     : [{ position: pos1, load: p1 }, { position: pos2, load: p2 }]
-  const result = solveElasticCable(span, restLength, stiffness, loads)
+  const solution = solveElasticCable(span, restLength, stiffness, loads)
+  const appliedTotal = loads.reduce((sum, point) => sum + point.load, 0)
+  const capacity = maxSupportedTotalLoad(span, restLength, stiffness, loads, breakingStrength)
+  const overload = maxTension(solution) > breakingStrength
 
-  // One fixed horizontal scale makes widening the span MOVE the anchors.
-  // The vertical scale is also fixed unless extreme sag needs extra room.
-  const anchorY = 100
-  const leftX = 320 - 16 * span
-  const rightX = 320 + 16 * span
-  const verticalScale = Math.min(25, 190 / Math.max(1, result.sag))
-  const screen = result.xs.map((x, i) => [
+  // A failure persists instead of healing when the user moves a load slider.
+  // Snapshot the last equilibrium geometry as an illustrative instant of rupture.
+  const currentFailure: FailureSnapshot | null = overload ? {
+    span,
+    loads,
+    solution,
+    breakingStrength,
+    capacity,
+    segment: peakSegment(solution),
+  } : null
+
+  useEffect(() => {
+    if (!failure && currentFailure) setFailure(currentFailure)
+  }, [failure, currentFailure])
+
+  const broken = failure ?? currentFailure
+  const displayed = broken?.solution ?? solution
+  const shownLoads = broken?.loads ?? loads
+  const shownSpan = broken?.span ?? span
+  const shownStrength = broken?.breakingStrength ?? breakingStrength
+  const shownCapacity = broken?.capacity ?? capacity
+  const displayedTotal = shownLoads.reduce((sum, point) => sum + point.load, 0)
+  const displayedPeak = maxTension(displayed)
+  const peakIndex = peakSegment(displayed)
+
+  // Fixed horizontal scale: the anchors actually move with the span.
+  // A capped vertical scale keeps the hanging weights visible at high sag.
+  const anchorY = 102
+  const leftX = 320 - 16 * shownSpan
+  const rightX = 320 + 16 * shownSpan
+  const verticalScale = Math.min(25, 155 / Math.max(1, displayed.sag))
+  const screen = displayed.xs.map((x, i) => [
     leftX + 32 * x,
-    anchorY + result.ys[i] * verticalScale,
+    anchorY + displayed.ys[i] * verticalScale,
   ] as const)
   const polyline = screen.map(([x, y]) => x.toFixed(2) + ',' + y.toFixed(2)).join(' ')
   const sagY = Math.max(...screen.map(point => point[1]))
+
+  // Failure is determined by the highest T, not by total vertical weight.
+  const breakIndex = broken?.segment ?? -1
+  const breakFrom = breakIndex >= 0 ? screen[breakIndex] : null
+  const breakTo = breakIndex >= 0 ? screen[breakIndex + 1] : null
+  const midpointX = breakFrom && breakTo ? (breakFrom[0] + breakTo[0]) / 2 : 0
+  const midpointY = breakFrom && breakTo ? (breakFrom[1] + breakTo[1]) / 2 : 0
+  const breakHalfGap = breakFrom && breakTo
+    ? Math.min(14, (breakTo[0] - breakFrom[0]) * 0.24)
+    : 0
+  const brokenLeft = breakIndex < 0 ? '' : [
+    ...screen.slice(0, breakIndex + 1),
+    [midpointX - breakHalfGap, midpointY + 25],
+  ].map(([x, y]) => x.toFixed(2) + ',' + y.toFixed(2)).join(' ')
+  const brokenRight = breakIndex < 0 ? '' : [
+    [midpointX + breakHalfGap, midpointY + 45],
+    ...screen.slice(breakIndex + 1),
+  ].map(([x, y]) => x.toFixed(2) + ',' + y.toFixed(2)).join(' ')
 
   const changeCount = (value: 1 | 2) => {
     if (value === 2) {
@@ -46,42 +106,78 @@ export default function FunicularSimulator() {
   return <UiBox sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0,1.3fr) minmax(310px,.7fr)' }, gap: 3, pb: 4 }}>
     <UiSurface variant="outlined" sx={{ p: { xs: 2, md: 3 }, bgcolor: '#f5f8fa', borderColor: labColors.border, borderRadius: 2 }}>
       <UiText variant="subtitle1" sx={{ fontWeight: 600, color: labColors.ink, mb: 1 }}>
-        Elastic cable under {count === 1 ? 'one load' : 'two loads'}
+        Elastic cable under {shownLoads.length === 1 ? 'one load' : 'two loads'}
       </UiText>
-      <svg viewBox="0 0 640 350" width="100%" role="img"
-        aria-label={'Elastic cable across ' + span + ' meters with ' + fmt(result.sag) + ' meters calculated sag under ' + count + ' loads.'}>
-        <path d={'M' + leftX + ' 63V295 M' + rightX + ' 63V295'} stroke="#d1dce2" strokeDasharray="5 6" />
+      <svg viewBox="0 0 640 405" width="100%" role="img"
+        aria-label={broken
+          ? 'Cable snapped in segment ' + (breakIndex + 1) + ' under ' + fmt(displayedTotal) + ' kilonewtons of applied load. The weights are falling.'
+          : 'Elastic cable across ' + shownSpan + ' meters with ' + fmt(displayed.sag) + ' meters calculated sag and ' + shownLoads.length + ' hanging weights.'}>
+        <path d={'M' + leftX + ' 63V345 M' + rightX + ' 63V345'} stroke="#d1dce2" strokeDasharray="5 6" />
         <path d={'M' + leftX + ' ' + anchorY + 'H' + rightX} stroke="#a5b7c3" strokeDasharray="6 7" strokeWidth="1.5" />
         <rect x={leftX - 24} y={anchorY - 13} width="24" height="26" fill="#c6d4dc" />
         <rect x={rightX} y={anchorY - 13} width="24" height="26" fill="#c6d4dc" />
-        <polyline points={polyline} fill="none" stroke="#123b55" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round" />
-        {loads.map((point, i) => {
+        {broken ? <>
+          <polyline points={brokenLeft} fill="none" stroke="#b4573d" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round" />
+          <polyline points={brokenRight} fill="none" stroke="#b4573d" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round" />
+          <path d={'M' + (midpointX - 11) + ' ' + (midpointY + 16) + 'l-6 8m10-2l-4 10m24 3l6 8m-11-4l2 10'}
+            stroke="#b4573d" strokeWidth="2" strokeLinecap="round" fill="none" />
+          <text x={midpointX} y={Math.max(77, midpointY - 23)} textAnchor="middle"
+            fontSize="16" fill="#a33e2a" fontWeight="800">SNAP!</text>
+          <text x="320" y="21" textAnchor="middle" fontSize="15" fill="#a33e2a" fontWeight="800">
+            CABLE BROKEN
+          </text>
+        </> : <polyline points={polyline} fill="none" stroke="#123b55" strokeWidth="5"
+          strokeLinejoin="round" strokeLinecap="round" />}
+        {shownLoads.map((point, i) => {
           const [x, y] = screen[i + 1]
-          const arrowTop = y - 46
-          const labelY = arrowTop - 12 - (count === 2 && i === 1 ? 12 : 0)
+          const width = 30 + point.load * 1.1
+          const height = 27 + point.load * 0.6
+          const distance = shownLoads.length === 2
+            ? Math.abs(screen[2][0] - screen[1][0])
+            : 1000
+          const offset = Math.max(0, 70 - distance) / 2 * (i === 0 ? -1 : 1)
+          const weightX = x + offset
+          const top = y + (broken ? 42 : 23)
           return <g key={i}>
-            <circle cx={x} cy={y} r="7" fill="#fff" stroke="#123b55" strokeWidth="3" />
-            <line x1={x} y1={arrowTop} x2={x} y2={y - 15} stroke="#c05e3d" strokeWidth="3" />
-            <path d={'M' + (x - 8) + ' ' + (y - 24) + 'L' + x + ' ' + (y - 11) + 'L' + (x + 8) + ' ' + (y - 24) + 'Z'} fill="#c05e3d" />
-            <text x={x} y={labelY} textAnchor="middle" fontSize="14" fill="#a14e35" fontWeight="700">
-              P{i + 1}: {point.load} kN
-            </text>
+            <circle cx={x} cy={y} r="7" fill="#fff" stroke={broken ? '#b4573d' : '#123b55'} strokeWidth="3" />
+            {broken ? <>
+              <path d={'M' + (weightX - 6) + ' ' + (top - 27) + 'v11 M' + (weightX + 6) + ' ' + (top - 23) + 'v9'}
+                stroke="#c05e3d" strokeWidth="2" strokeDasharray="4 4" opacity="0.75" />
+            </> : <line x1={x} y1={y + 8} x2={weightX} y2={top - 8}
+              stroke="#506575" strokeWidth="2.5" />}
+            <path d={'M' + (weightX - 8) + ' ' + (top - 1) + 'v-7a8 8 0 0 1 16 0v7'}
+              fill="none" stroke="#5b6970" strokeWidth="3" />
+            <rect x={weightX - width / 2} y={top} width={width} height={height} rx="5"
+              fill="#b66c4c" stroke="#8b432e" strokeWidth="2" />
+            <rect x={weightX - width / 2 + 5} y={top + 6} width={width - 10}
+              height="4" rx="2" fill="#e3b09a" />
+            <text x={weightX} y={top + height / 2 + 7} textAnchor="middle"
+              fontSize="12" fill="white" fontWeight="700">{point.load} kN</text>
+            <text x={weightX} y={top - 12} textAnchor="middle"
+              fontSize="12" fill="#974d31" fontWeight="700">P{i + 1}</text>
           </g>
         })}
-        <text x={Math.min(leftX, 185)} y="43" fill="#276957" fontSize="14">A: {fmt(result.leftReaction)} kN ↑</text>
-        <text x={Math.max(rightX, 455)} y="43" textAnchor="end" fill="#276957" fontSize="14">B: {fmt(result.rightReaction)} kN ↑</text>
-        <path d={'M' + leftX + ' 311H' + rightX + ' M' + leftX + ' 303v16 M' + rightX + ' 303v16'} fill="none" stroke="#8197a5" strokeWidth="1.5" />
-        <text x="320" y="337" textAnchor="middle" fontSize="16" fill="#465d70">{span} m span</text>
-        <line x1="606" y1={anchorY} x2="606" y2={sagY} stroke="#657f90" strokeDasharray="3 4" />
-        <text x="600" y={(anchorY + sagY) / 2 + 4} textAnchor="end" fill="#465d70" fontSize="13">
-          {fmt(result.sag)} m sag
+        <text x={Math.min(leftX, 185)} y="43" fill="#276957" fontSize="14">
+          A: {fmt(displayed.leftReaction)} kN ↑
         </text>
+        <text x={Math.max(rightX, 455)} y="43" textAnchor="end" fill="#276957" fontSize="14">
+          B: {fmt(displayed.rightReaction)} kN ↑
+        </text>
+        <path d={'M' + leftX + ' 367H' + rightX + ' M' + leftX + ' 359v16 M' + rightX + ' 359v16'}
+          fill="none" stroke="#8197a5" strokeWidth="1.5" />
+        <text x="320" y="391" textAnchor="middle" fontSize="16" fill="#465d70">{shownSpan} m span</text>
+        <line x1="606" y1={anchorY} x2="606" y2={sagY}
+          stroke="#657f90" strokeDasharray="3 4" />
+        <text x="598" y={(anchorY + sagY) / 2 + 4} textAnchor="end"
+          fill="#465d70" fontSize="13">{fmt(displayed.sag)} m sag</text>
       </svg>
       <UiText variant="body2" sx={{ color: labColors.muted, mt: 1, lineHeight: 1.55 }}>
-        The anchors move when the span changes. With the same cable length and stiffness,
-        a heavier load stretches the cable farther down. Green labels show vertical support reactions.
+        Hanging weights grow or shrink with the applied force. The cable snaps when any
+        segment's tension exceeds its breaking strength. The broken picture is an illustrative
+        snapshot, not a simulation of the falling motion.
       </UiText>
     </UiSurface>
+
     <UiSurface variant="outlined" sx={{ p: 3, borderColor: labColors.border, borderRadius: 2 }}>
       <UiText sx={{ fontWeight: 600, mb: 1 }}>Number of point loads</UiText>
       <UiTabs value={count} onChange={(_, value) => changeCount(value as 1 | 2)}
@@ -93,6 +189,7 @@ export default function FunicularSimulator() {
         <LabSlider label="Span" value={span} min={4} max={16} unit="m" onChange={setSpan} />
         <LabSlider label="Unstretched cable length" value={restLength} min={8} max={18} step={0.5} unit="m" onChange={setRestLength} />
         <LabSlider label="Cable stiffness" value={stiffness} min={80} max={400} step={20} unit="kN" onChange={setStiffness} />
+        <LabSlider label="Cable breaking strength" value={breakingStrength} min={5} max={60} step={1} unit="kN" onChange={setBreakingStrength} />
         <LabSlider label="Load 1" value={p1} min={1} max={30} unit="kN" onChange={setP1} />
         <LabSlider label="Load 1 position" value={pos1} min={15} max={count === 2 ? pos2 - 10 : 85} step={5} unit="%" onChange={setPos1} />
         {count === 2 && <>
@@ -100,45 +197,85 @@ export default function FunicularSimulator() {
           <LabSlider label="Load 2 position" value={pos2} min={pos1 + 10} max={85} step={5} unit="%" onChange={setPos2} />
         </>}
       </UiStack>
+      {broken && <UiBox role="alert" sx={{ mt: 2, p: 2, bgcolor: '#fff0eb', border: '1px solid #c77964', borderRadius: 2 }}>
+        <UiText sx={{ fontWeight: 800, color: '#9c3e2a' }}>
+          Cable snapped — segment {breakIndex + 1} exceeded its limit
+        </UiText>
+        <UiText variant="body2" sx={{ color: '#704334', mt: 0.5, mb: 1 }}>
+          At failure, the peak tension was {fmt(displayedPeak)} kN,
+          above the cable's {fmt(shownStrength)} kN breaking strength.
+          The broken view stays frozen until you replace the cable.
+        </UiText>
+        <UiText variant="body2" sx={{ color: '#704334', mb: 1 }}>
+          Reduce the load, shorten the span, or choose a stronger cable before retrying.
+        </UiText>
+        <UiButton variant="contained" size="small" onClick={() => setFailure(null)}
+          sx={{ bgcolor: labColors.accent, '&:hover': { bgcolor: labColors.ink } }}>
+          Replace cable and test again
+        </UiButton>
+      </UiBox>}
       <UiBox sx={{ mt: 2, p: 2, bgcolor: '#f2f6f8', borderRadius: 2 }}>
-        <UiText sx={{ fontSize: 13, color: labColors.muted }}>Calculated maximum sag</UiText>
-        <UiText variant="h5" sx={{ color: labColors.ink, fontWeight: 700 }}>{fmt(result.sag)} m</UiText>
+        <UiText sx={{ fontSize: 13, color: labColors.muted }}>
+          {broken ? 'At the moment of failure · total applied load' : 'Total applied load'}
+        </UiText>
+        <UiText variant="h5" sx={{ color: labColors.ink, fontWeight: 700 }}>{fmt(displayedTotal)} kN</UiText>
         <UiBox sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 2 }}>
           <UiBox>
-            <UiText variant="caption">Horizontal tension</UiText>
-            <UiText sx={{ fontWeight: 700 }}>{fmt(result.horizontal)} kN</UiText>
+            <UiText variant="caption">Peak segment tension {broken ? '(at break)' : ''}</UiText>
+            <UiText sx={{ fontWeight: 700, color: broken ? '#9c3e2a' : labColors.ink }}>
+              {fmt(displayedPeak)} kN
+            </UiText>
+          </UiBox>
+          <UiBox>
+            <UiText variant="caption">Cable strength {broken ? '(at break)' : ''}</UiText>
+            <UiText sx={{ fontWeight: 700 }}>{fmt(shownStrength)} kN</UiText>
+          </UiBox>
+          <UiBox sx={{ gridColumn: '1 / -1' }}>
+            <UiText variant="caption">Maximum total load before failure</UiText>
+            <UiText sx={{ fontWeight: 700 }}>
+              {Number.isFinite(shownCapacity) ? fmt(shownCapacity) + ' kN' : 'Above modeled range'}
+            </UiText>
+            <UiText variant="caption" sx={{ color: labColors.muted, display: 'block' }}>
+              For these load positions and the same load proportions.
+            </UiText>
+          </UiBox>
+          <UiBox>
+            <UiText variant="caption">Calculated maximum sag</UiText>
+            <UiText sx={{ fontWeight: 700 }}>{fmt(displayed.sag)} m</UiText>
           </UiBox>
           <UiBox>
             <UiText variant="caption">Stretched length</UiText>
-            <UiText sx={{ fontWeight: 700 }}>{fmt(result.stretchedLength)} m</UiText>
+            <UiText sx={{ fontWeight: 700 }}>{fmt(displayed.stretchedLength)} m</UiText>
           </UiBox>
-          {result.tensions.map((t, i) => <UiBox key={i}>
+          {displayed.tensions.map((t, i) => <UiBox key={i}>
             <UiText variant="caption">Segment {i + 1} tension</UiText>
-            <UiText sx={{ fontWeight: 700 }}>{fmt(t)} kN</UiText>
+            <UiText sx={{ fontWeight: 700, color: broken && breakIndex === i ? '#9c3e2a' : labColors.ink }}>{fmt(t)} kN</UiText>
           </UiBox>)}
           <UiBox>
             <UiText variant="caption">Left vertical reaction</UiText>
-            <UiText sx={{ fontWeight: 700 }}>{fmt(result.leftReaction)} kN</UiText>
+            <UiText sx={{ fontWeight: 700 }}>{fmt(displayed.leftReaction)} kN</UiText>
           </UiBox>
           <UiBox>
             <UiText variant="caption">Right vertical reaction</UiText>
-            <UiText sx={{ fontWeight: 700 }}>{fmt(result.rightReaction)} kN</UiText>
+            <UiText sx={{ fontWeight: 700 }}>{fmt(displayed.rightReaction)} kN</UiText>
           </UiBox>
         </UiBox>
       </UiBox>
-      {result.maxStrainPercent > 12 && <UiText role="status" variant="body2" sx={{ mt: 2, color: '#97501c', lineHeight: 1.5 }}>
-        High modeled stretch ({fmt(result.maxStrainPercent)}%). This educational elastic cord
+      {displayed.maxStrainPercent > 12 && <UiText role="status" variant="body2" sx={{ mt: 2, color: '#97501c', lineHeight: 1.5 }}>
+        High modeled stretch ({fmt(displayed.maxStrainPercent)}%). This educational elastic cord
         is much more stretchable than a typical structural cable; do not treat these values as bridge design limits.
       </UiText>}
       <UiText variant="body2" sx={{ mt: 2, color: labColors.muted, lineHeight: 1.55 }}>
-        Try increasing Load 1 without changing the cable. Then widen the span:
-        the anchors move apart, sag generally decreases, and the tension changes.
-        Higher stiffness means less stretch under the same load.
+        Raise a load until the peak segment tension exceeds the breaking strength,
+        or widen the span while keeping the same cable. In two-load mode, failure
+        depends on both weights and where they hang.
       </UiText>
       <UiText variant="caption" sx={{ display: 'block', mt: 2, color: labColors.muted, lineHeight: 1.5 }}>
-        Simplified static model: level supports, a weightless flexible elastic cable,
-        vertical point loads, and uniform axial stiffness EA. It ignores cable self-weight,
-        failure, and large-material-strain effects. For learning, not structural design.
+        Educational static model: level supports, weightless elastic cable, vertical point loads,
+        and a single idealized tensile failure limit. The displayed failure load is estimated by
+        increasing the current load pattern until a segment reaches that limit. It does not model
+        material fatigue, support failure, cable self-weight, or real falling dynamics.
+        Not for structural design.
       </UiText>
     </UiSurface>
   </UiBox>
