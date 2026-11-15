@@ -162,8 +162,8 @@ export default function FunicularSimulator() {
     setFailures(previous => ({ ...previous, [count]: null }))
   }
 
-  return <UiBox sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0,1.27fr) minmax(335px,.73fr)' }, columnGap: 2, rowGap: 1.25, pb: 2, alignItems: 'start' }}>
-    <UiBox sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, minWidth: 0 }}>
+  return <UiBox sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0,1.27fr) minmax(335px,.73fr)' }, columnGap: 2, rowGap: 1.25, pb: 2, alignItems: 'stretch' }}>
+    <UiBox sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, minWidth: 0, height: '100%' }}>
       <CableStatusBar
         status={status}
         tension={displayedPeak}
@@ -171,7 +171,7 @@ export default function FunicularSimulator() {
         segment={broken ? breakIndex + 1 : undefined}
         onReset={replaceCable}
       />
-      <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, bgcolor: '#f5f8fa', borderColor: labColors.border, borderRadius: 2 }}>
+      <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, bgcolor: '#f5f8fa', borderColor: labColors.border, borderRadius: 2, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <UiText sx={{ fontSize: 14, fontWeight: 700, color: labColors.ink, mb: 0.5 }}>
         Elastic cable under {count === 1 ? 'one load' : 'two loads'}
       </UiText>
@@ -250,13 +250,13 @@ export default function FunicularSimulator() {
         <text x="598" y={(anchorY + sagY) / 2 + 4} textAnchor="end"
           fill="#465d70" fontSize="13">{fmt(displayed.sag)} m sag</text>
       </svg>
-      <UiText variant="caption" sx={{ display: 'block', color: labColors.muted, mt: 0.5, fontSize: 11.5, lineHeight: 1.4 }}>
+      <UiText variant="caption" sx={{ display: 'block', color: labColors.muted, mt: 'auto', pt: 0.5, fontSize: 11.5, lineHeight: 1.4 }}>
         Weights scale with load; orange arrows indicate downward force. Cable failure is a static illustration.
       </UiText>
       </UiSurface>
     </UiBox>
 
-    <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, borderColor: labColors.border, borderRadius: 2 }}>
+    <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, borderColor: labColors.border, borderRadius: 2, height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
       <UiBox sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
         <UiText sx={{ fontWeight: 700, fontSize: 14 }}>Point loads</UiText>
         <UiTabs value={count} onChange={(_, value) => changeCount(value as 1 | 2)}
