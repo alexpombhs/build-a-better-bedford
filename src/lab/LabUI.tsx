@@ -116,3 +116,42 @@ export function LabDetails({children,title='Force details'}:{children:ReactNode;
     <UiBox id={id} sx={{display:expanded?'block':'none'}}>{children}</UiBox>
   </UiBox>
 }
+
+/** Anti-funicular arch status molecule. Normal offset is an educational
+ * approximation, not a structural failure criterion. */
+export function ArchStatusBar({
+  status, normalOffset, thickness, onReset,
+}: {
+  status: 'ideal' | 'deviating' | 'outside'
+  normalOffset: number
+  thickness: number
+  onReset: () => void
+}) {
+  const palette = status === 'ideal'
+    ? { bg: '#edf5f1', border: '#c5dacf', ink: '#276957' }
+    : status === 'deviating'
+      ? { bg: '#fff7e9', border: '#e7d3a4', ink: '#8c5c1c' }
+      : { bg: '#fff0eb', border: '#df9e89', ink: '#9b3825' }
+  const title = status === 'ideal'
+    ? 'Thrust line near the arch center'
+    : status === 'deviating'
+      ? 'Thrust line away from center'
+      : 'Thrust line outside the illustrated arch band'
+  return <UiBox role="status" sx={{
+    display:'flex',alignItems:{xs:'flex-start',sm:'center'},flexWrap:'wrap',
+    justifyContent:'space-between',columnGap:2,rowGap:1,
+    px:2,py:0.75,border:'1px solid '+palette.border,
+    borderRadius:'var(--bbb-card-radius, 4px)',bgcolor:palette.bg,
+  }}>
+    <UiBox>
+      <UiText sx={{fontWeight:800,fontSize:14,color:palette.ink}}>{title}</UiText>
+      <UiText sx={{fontSize:12,color:labColors.muted,lineHeight:1.5}}>
+        Maximum approximate deviation {normalOffset.toFixed(2)} m · arch thickness {thickness.toFixed(1)} m
+      </UiText>
+    </UiBox>
+    <UiButton variant="outlined" size="small" onClick={onReset}
+      sx={{whiteSpace:'nowrap',color:labColors.accent,borderColor:labColors.border}}>
+      Reset arch
+    </UiButton>
+  </UiBox>
+}
