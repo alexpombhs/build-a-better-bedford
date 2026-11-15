@@ -93,14 +93,16 @@ export default function FunicularSimulator() {
   const displayedPeak = maxTension(displayed)
   const status = broken ? 'broken' : displayedPeak >= shownStrength * 0.85 ? 'warning' : 'intact'
 
-  // Fixed horizontal scale: the anchors actually move with the span.
-  // A capped vertical scale keeps the hanging weights visible at high sag.
+  // Fixed horizontal scale: at the maximum 16 m span, supports reach
+  // x=32 and x=608 in a 640-unit SVG, using nearly its full width while
+  // retaining 8-unit margins beyond the 24-unit anchor blocks.
   const anchorY = 84
-  const leftX = 320 - 16 * shownSpan
-  const rightX = 320 + 16 * shownSpan
+  const pixelsPerMeter = 36
+  const leftX = (640 - pixelsPerMeter * shownSpan) / 2
+  const rightX = leftX + pixelsPerMeter * shownSpan
   const verticalScale = Math.min(25, 135 / Math.max(1, displayed.sag))
   const screen = displayed.xs.map((x, i) => [
-    leftX + 32 * x,
+    leftX + pixelsPerMeter * x,
     anchorY + displayed.ys[i] * verticalScale,
   ] as const)
   const polyline = screen.map(([x, y]) => x.toFixed(2) + ',' + y.toFixed(2)).join(' ')
@@ -245,9 +247,9 @@ export default function FunicularSimulator() {
         <path d={'M' + leftX + ' 368H' + rightX + ' M' + leftX + ' 360v16 M' + rightX + ' 360v16'}
           fill="none" stroke="#8197a5" strokeWidth="1.5" />
         <text x="320" y="392" textAnchor="middle" fontSize="15" fill="#465d70">{shownSpan} m span</text>
-        <line x1="606" y1={anchorY} x2="606" y2={sagY}
+        <line x1="635" y1={anchorY} x2="635" y2={sagY}
           stroke="#657f90" strokeDasharray="3 4" />
-        <text x="598" y={(anchorY + sagY) / 2 + 4} textAnchor="end"
+        <text x="627" y={(anchorY + sagY) / 2 + 4} textAnchor="end"
           fill="#465d70" fontSize="13">{fmt(displayed.sag)} m sag</text>
       </svg>
       <UiText variant="caption" sx={{ display: 'block', color: labColors.muted, mt: 'auto', pt: 0.5, fontSize: 11.5, lineHeight: 1.4 }}>
