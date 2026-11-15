@@ -149,7 +149,7 @@ export default function FunicularSimulator() {
       <UiText variant="subtitle1" sx={{ fontWeight: 600, color: labColors.ink, mb: 1 }}>
         Elastic cable under {shownLoads.length === 1 ? 'one load' : 'two loads'}
       </UiText>
-      <svg viewBox="0 0 640 405" width="100%" role="img"
+      <svg viewBox="0 0 640 475" width="100%" role="img"
         aria-label={broken
           ? 'Cable snapped in segment ' + (breakIndex + 1) + ' under ' + fmt(displayedTotal) + ' kilonewtons of applied load. The weights are falling.'
           : 'Elastic cable across ' + shownSpan + ' meters with ' + fmt(displayed.sag) + ' meters calculated sag and ' + shownLoads.length + ' hanging weights.'}>
@@ -172,18 +172,22 @@ export default function FunicularSimulator() {
         {shownLoads.map((point, i) => {
           const [x, y] = screen[i + 1]
           const width = 30 + point.load * 1.1
-          const height = 27 + point.load * 0.6
+          const height = 40 + point.load * 0.45
           const distance = shownLoads.length === 2
             ? Math.abs(screen[2][0] - screen[1][0])
             : 1000
-          const offset = Math.max(0, 70 - distance) / 2 * (i === 0 ? -1 : 1)
+          const otherWidth = shownLoads.length === 2
+            ? 30 + shownLoads[1 - i].load * 1.1
+            : 0
+          const separation = (width + otherWidth) / 2 + 12
+          const offset = Math.max(0, separation - distance) / 2 * (i === 0 ? -1 : 1)
           const weightX = x + offset
           const top = y + (broken ? 42 : 23)
-          // Keep the downward force arrow outside the weight; in two-load
-          // mode, point the arrows outward so the labels stay readable.
-          const arrowSide = shownLoads.length === 2 && i === 0 ? -1 : 1
-          const forceX = weightX + arrowSide * (width / 2 + 15)
-          const forceTipY = top + height + 13
+          // The orange force vector points straight down from BELOW the weight.
+          // Its entire shaft is below both the suspension cable and the block.
+          const forceX = weightX
+          const forceStartY = top + height + 6
+          const forceTipY = forceStartY + 29
           return <g key={i}>
             <circle cx={x} cy={y} r="7" fill="#fff" stroke={broken ? '#b4573d' : '#123b55'} strokeWidth="3" />
             {broken ? <>
@@ -197,11 +201,11 @@ export default function FunicularSimulator() {
               fill="#b66c4c" stroke="#8b432e" strokeWidth="2" />
             <rect x={weightX - width / 2 + 5} y={top + 6} width={width - 10}
               height="4" rx="2" fill="#e3b09a" />
-            <text x={weightX} y={top + height / 2 + 7} textAnchor="middle"
-              fontSize="12" fill="white" fontWeight="700">{point.load} kN</text>
-            <text x={weightX} y={top - 12} textAnchor="middle"
-              fontSize="12" fill="#974d31" fontWeight="700">P{i + 1}</text>
-            <line x1={forceX} y1={top - 5} x2={forceX} y2={forceTipY - 8}
+            <text x={weightX} y={top + height / 2 - 4} textAnchor="middle"
+              fontSize="11" fill="white" fontWeight="700">P{i + 1}</text>
+            <text x={weightX} y={top + height / 2 + 12} textAnchor="middle"
+              fontSize="13" fill="white" fontWeight="700">{point.load} kN</text>
+            <line x1={forceX} y1={forceStartY} x2={forceX} y2={forceTipY - 8}
               stroke="#c05e3d" strokeWidth="3" strokeLinecap="round" />
             <path d={'M' + (forceX - 7) + ' ' + (forceTipY - 11) +
               ' L' + forceX + ' ' + forceTipY +
@@ -215,17 +219,18 @@ export default function FunicularSimulator() {
         <text x={Math.max(rightX, 455)} y="43" textAnchor="end" fill="#276957" fontSize="14">
           B: {fmt(displayed.rightReaction)} kN ↑
         </text>
-        <path d={'M' + leftX + ' 367H' + rightX + ' M' + leftX + ' 359v16 M' + rightX + ' 359v16'}
+        <path d={'M' + leftX + ' 432H' + rightX + ' M' + leftX + ' 424v16 M' + rightX + ' 424v16'}
           fill="none" stroke="#8197a5" strokeWidth="1.5" />
-        <text x="320" y="391" textAnchor="middle" fontSize="16" fill="#465d70">{shownSpan} m span</text>
+        <text x="320" y="457" textAnchor="middle" fontSize="16" fill="#465d70">{shownSpan} m span</text>
         <line x1="606" y1={anchorY} x2="606" y2={sagY}
           stroke="#657f90" strokeDasharray="3 4" />
         <text x="598" y={(anchorY + sagY) / 2 + 4} textAnchor="end"
           fill="#465d70" fontSize="13">{fmt(displayed.sag)} m sag</text>
       </svg>
       <UiText variant="body2" sx={{ color: labColors.muted, mt: 1, lineHeight: 1.55 }}>
-        Hanging weights grow or shrink with the applied force. Orange arrows show
-        the downward force on each weight. The cable snaps when any segment's tension
+        Hanging weights grow or shrink with the applied force. Each weight shows its P label
+        and force value, with an orange downward force arrow underneath.
+        The cable snaps when any segment's tension
         exceeds its breaking strength. The broken picture is an illustrative snapshot,
         not a simulation of the falling motion.
       </UiText>
