@@ -1,4 +1,4 @@
-.bbb-project-card.bbb-ui-card{display:flex;flex-direction:column;min-width:0;height:100%;min-height:205px;border:1px solid #d3dce2;border-radius:12px;background:#fff;box-shadow:none;color:#10222e;overflow:hidden}
+.bbb-project-card.bbb-ui-card{display:flex;flex-direction:column;min-width:0;height:100%;min-height:205px;border:1px solid #d3dce2;border-radius:var(--bbb-card-radius, 4px);background:#fff;box-shadow:none;color:#10222e;overflow:hidden}
 .bbb-project-card-content.bbb-ui-card-content{display:flex;flex-direction:column;flex:1;min-width:0;padding:22px!important}
 .bbb-project-card-content.bbb-ui-card-content:last-child{padding-bottom:22px!important}
 .bbb-project-card.bbb-ui-card .problem-heading{align-items:center;gap:12px}
@@ -9,14 +9,14 @@
 .bbb-project-card.bbb-ui-card .idea-cta{margin-top:auto}
 .bbb-project-card--cta.bbb-ui-card{background:#f7f9fb}
 .projects-page .problem-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px!important;border:0!important;align-items:stretch}
-.projects-page .problem-grid .bbb-project-card.bbb-ui-card{border:1px solid #d3dce2!important;border-radius:12px!important;padding:0!important;min-height:205px!important;background:#fff!important}
+.projects-page .problem-grid .bbb-project-card.bbb-ui-card{border:1px solid #d3dce2!important;border-radius:var(--bbb-card-radius, 4px)!important;padding:0!important;min-height:205px!important;background:#fff!important}
 .projects-page .problem-grid .bbb-project-card--cta.bbb-ui-card{background:#f7f9fb!important}
 @media(max-width:950px){.projects-page .problem-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.projects-page .problem-grid{grid-template-columns:1fr}}
 
 
 /* Ideas editorial treatment: no synthetic diagrams or icon cards. */
-.projects-page .problem-grid .bbb-project-card.bbb-ui-card{border-radius:4px!important;background:#fff!important;min-height:0!important;overflow:hidden}
+.projects-page .problem-grid .bbb-project-card.bbb-ui-card{border-radius:var(--bbb-card-radius, 4px)!important;background:#fff!important;min-height:0!important;overflow:hidden}
 .projects-page .problem-grid .bbb-project-card .bbb-project-card-content{padding:0!important;display:flex;flex-direction:column}
 .bbb-idea-feature{height:112px;position:relative;background:#e9eff2;border-bottom:1px solid #d1dce2;overflow:hidden}
 .bbb-idea-feature-text{height:100%;display:flex;align-items:flex-start;justify-content:space-between;padding:16px 20px;color:#2a485c}
