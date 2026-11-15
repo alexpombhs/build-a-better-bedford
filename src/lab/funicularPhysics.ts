@@ -79,3 +79,47 @@ export function solveElasticCable(
     maxStrainPercent: Math.max(...tensions) / stiffness * 100,
   }
 }
+
+
+/** Maximum combined vertical point load in kN before any segment exceeds
+ * its tensile capacity. Keeps the current point positions and their relative
+ * share of the total load fixed while scaling all loads together.
+ *
+ * Geometry and axial stiffness both influence the limiting applied load.
+ * A value of zero means the cable is already too highly pretensioned by
+ * its span, even with an almost-zero applied load.
+ */
+export function maxSupportedTotalLoad(
+  span: number,
+  restLength: number,
+  stiffness: number,
+  loads: CableLoad[],
+  breakingStrength: number,
+): number {
+  const total = loads.reduce((sum, point) => sum + point.load, 0)
+  if (total <= 0 || breakingStrength <= 0) return 0
+
+  const exceedsStrength = (testTotal: number) => {
+    const ratio = testTotal / total
+    const solution = solveElasticCable(
+      span, restLength, stiffness,
+      loads.map(point => ({ ...point, load: point.load * ratio })),
+    )
+    return Math.max(...solution.tensions) > breakingStrength
+  }
+
+  // A very small positive load avoids the degenerate zero-load shape for a
+  // slack cable, without materially changing its supported-load threshold.
+  if (exceedsStrength(total * 0.000001)) return 0
+  let safe = 0
+  let failed = Math.max(total, 1)
+  while (!exceedsStrength(failed) && failed < 1e7) failed *= 2
+  if (!exceedsStrength(failed)) return Number.POSITIVE_INFINITY
+
+  for (let iteration = 0; iteration < 55; iteration++) {
+    const mid = (safe + failed) / 2
+    if (exceedsStrength(mid)) failed = mid
+    else safe = mid
+  }
+  return safe
+}
