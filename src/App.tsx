@@ -295,29 +295,36 @@ function App() {
         const digest = await crypto.subtle.digest('SHA-256', bytes)
         const visitorId = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('')
 
+        // Rotate the anonymous tab session after 30 minutes of inactivity.
         const sessionKey = 'bbb-anonymous-session'
+        const lastActiveKey = 'bbb-anonymous-session-last-active'
+        const lastActive = Number(sessionStorage.getItem(lastActiveKey) ?? '0')
         let sessionId = sessionStorage.getItem(sessionKey)
-        if (!sessionId) {
+        if (!sessionId || Date.now() - lastActive > 30 * 60 * 1000) {
           sessionId = crypto.randomUUID()
           sessionStorage.setItem(sessionKey, sessionId)
         }
+        sessionStorage.setItem(lastActiveKey, String(Date.now()))
 
         // Preserve only a broad referral category, never the URL or domain.
-        let source = 'direct'
-        if (document.referrer) {
+        // Internal tab changes cannot be attributed to an external referrer.
+        const isInitialView = firstTrackedView.current
+        firstTrackedView.current = false
+        let source = isInitialView ? 'direct' : 'internal'
+        if (isInitialView && document.referrer) {
           try {
             const referringUrl = new URL(document.referrer)
+            const host = referringUrl.hostname.toLowerCase()
+            const matchesDomain = (domain: string) => host === domain || host.endsWith('.' + domain)
             if (referringUrl.origin === window.location.origin) source = 'internal'
-            else if (/(^|\\.)(google|bing|duckduckgo|yahoo)\\./i.test(referringUrl.hostname)) source = 'search'
-            else if (/(^|\\.)(instagram|facebook|linkedin|reddit|tiktok)\\./i.test(referringUrl.hostname)) source = 'social'
+            else if (['google.com','bing.com','duckduckgo.com','yahoo.com'].some(matchesDomain)) source = 'search'
+            else if (['instagram.com','facebook.com','linkedin.com','reddit.com','tiktok.com'].some(matchesDomain)) source = 'social'
             else source = 'other_site'
           } catch { source = 'unknown' }
         }
         const device = window.matchMedia('(max-width: 767px)').matches ? 'mobile'
           : window.matchMedia('(max-width: 1023px)').matches ? 'tablet' : 'desktop'
         const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
-        const isInitialView = firstTrackedView.current
-        firstTrackedView.current = false
         const navigationKind = !isInitialView ? 'in_app'
           : navigationEntry?.type === 'reload' ? 'reload' : 'entry'
 
