@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from './supabase'
 import { upcomingMondayLabel } from './meetingSchedule'
 import Newsletter from './Newsletter'
@@ -272,9 +272,17 @@ function App() {
   const [existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(null)
   const [visitStats, setVisitStats] = useState({ total: 0, today: 0 })
 
-  // Privacy-friendly analytics: keep a random ID in this browser, hash it before
-  // sending it to Supabase, and never collect names, emails, or precise location.
+  // Anonymous, first-party visit context. Do not collect IP addresses, exact
+  // locations, full referrers, user agents, or personally identifying data.
+  const lastTrackedView = useRef<string | null>(null)
+  const firstTrackedView = useRef(true)
   useEffect(() => {
+    // React state can update more than once during a single route transition.
+    // Only record a given page + tab when it actually changes.
+    const viewKey = page === 'projects' ? page + ':' + projectTab : page
+    if (lastTrackedView.current === viewKey) return
+    lastTrackedView.current = viewKey
+
     const recordVisit = async () => {
       try {
         const storageKey = 'bbb-anonymous-visitor'
@@ -286,7 +294,43 @@ function App() {
         const bytes = new TextEncoder().encode(anonymousId)
         const digest = await crypto.subtle.digest('SHA-256', bytes)
         const visitorId = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('')
-        await supabase.from('page_visits').insert({ visitor_id: visitorId, page })
+
+        const sessionKey = 'bbb-anonymous-session'
+        let sessionId = sessionStorage.getItem(sessionKey)
+        if (!sessionId) {
+          sessionId = crypto.randomUUID()
+          sessionStorage.setItem(sessionKey, sessionId)
+        }
+
+        // Preserve only a broad referral category, never the URL or domain.
+        let source = 'direct'
+        if (document.referrer) {
+          try {
+            const referringUrl = new URL(document.referrer)
+            if (referringUrl.origin === window.location.origin) source = 'internal'
+            else if (/(^|\\.)(google|bing|duckduckgo|yahoo)\\./i.test(referringUrl.hostname)) source = 'search'
+            else if (/(^|\\.)(instagram|facebook|linkedin|reddit|tiktok)\\./i.test(referringUrl.hostname)) source = 'social'
+            else source = 'other_site'
+          } catch { source = 'unknown' }
+        }
+        const device = window.matchMedia('(max-width: 767px)').matches ? 'mobile'
+          : window.matchMedia('(max-width: 1023px)').matches ? 'tablet' : 'desktop'
+        const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+        const isInitialView = firstTrackedView.current
+        firstTrackedView.current = false
+        const navigationKind = !isInitialView ? 'in_app'
+          : navigationEntry?.type === 'reload' ? 'reload' : 'entry'
+
+        const { error } = await supabase.from('page_visits').insert({
+          visitor_id: visitorId,
+          page,
+          session_id: sessionId,
+          page_detail: page === 'projects' ? projectTab : null,
+          visit_source: source,
+          device_class: device,
+          navigation_kind: navigationKind,
+        })
+        if (error) throw error
         const { data: stats } = await supabase.rpc('get_public_visit_stats')
         const row = Array.isArray(stats) ? stats[0] : stats
         if (row) setVisitStats({ total: Number(row.total_unique || 0), today: Number(row.today_unique || 0) })
@@ -294,8 +338,8 @@ function App() {
         console.warn('Anonymous analytics unavailable:', error)
       }
     }
-    recordVisit()
-  }, [page])
+    void recordVisit()
+  }, [page, projectTab])
   const projectsPerPage = 6
   // Editorial previews for the two existing submissions. These changes are
   // presentation-only on this experiment branch; the submitted text remains
