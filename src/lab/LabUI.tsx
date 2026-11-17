@@ -7,8 +7,8 @@ import { UiBox, UiButton, UiSlider, UiStack, UiTab, UiTabs, UiText } from '../co
 export const labColors = { ink:'#10222e', accent:'#294b63', muted:'#465d70', border:'#d3dce2' }
 
 export function SectionHeading({eyebrow,title,description,actions,compact=false}:{eyebrow?:string;title:string;description:string;actions?:ReactNode;compact?:boolean}) {
-  // Compact simulator heading: retain the section eyebrow only, without
-  // the large page title or descriptive subtitle used on editorial pages.
+  // Compact project heading: one shared, accessible label without the oversized
+  // editorial title and subtitle. Tab-specific content supplies its own hierarchy.
   if (compact) return <UiBox sx={{display:'flex',alignItems:'center',flexWrap:'wrap',gap:1,mb:1}}>
     <UiText component="h1" sx={{m:0,fontSize:11,fontWeight:800,lineHeight:1.35,letterSpacing:'.09em',textTransform:'uppercase',color:labColors.muted}}>
       {eyebrow || title}
@@ -42,7 +42,7 @@ export function LabSlider({label,value,min,max,step=1,unit,onChange,disabled=fal
 }
 
 export function LabTabs({value,onChange}:{value:string;onChange:(value:string)=>void}) {
-  return <UiTabs value={value} onChange={(_,v)=>onChange(v)} variant="scrollable" scrollButtons="auto" aria-label="Engineering workspace sections" sx={{borderBottom:'1px solid '+labColors.border,mb:value === 'ideas' ? 0 : 3,'& .MuiTabs-indicator':{backgroundColor:labColors.accent},'& .Mui-selected':{color:labColors.ink+' !important',fontWeight:800}}}>
+  return <UiTabs value={value} onChange={(_,v)=>onChange(v)} variant="scrollable" scrollButtons="auto" aria-label="Engineering workspace sections" sx={{borderBottom:'1px solid '+labColors.border,mb:0,'& .MuiTabs-indicator':{backgroundColor:labColors.accent},'& .Mui-selected':{color:labColors.ink+' !important',fontWeight:800}}}>
     <UiTab value="ideas" label="Ideas"/><UiTab value="simulators" label="Simulators"/><UiTab value="hands-on" label="Hands-on"/>
   </UiTabs>
 }

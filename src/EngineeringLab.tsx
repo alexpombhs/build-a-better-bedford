@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import FunicularSimulator from './FunicularSimulator'
+import HandsOnPost from './components/HandsOnPost'
 import type { ReactNode } from 'react'
 import { UiBox, UiSurface, UiStack, UiText, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
 import { LabTabs, LabCard, LabSlider, SectionHeading, labColors } from './lab/LabUI'
@@ -27,14 +28,15 @@ const sectionCopy: Record<Tab,{eyebrow:string;title:string;description:string}> 
     description:'Make a prediction, change one variable, and compare the measurements.',
   },
   'hands-on':{
-    eyebrow:'BUILD CHALLENGES',
-    title:'Coming Soon',
-    description:'Hands-on projects are on the way.',
+    eyebrow:'FROM THE CLUB WORKSHOP',
+    title:'Hands-on engineering',
+    description:'Experiments, prototypes, and the ideas we try out together.',
   },
 }
 
 export function EngineeringSectionIntro({tab,actions}:{tab:Tab;actions?:ReactNode}) {
-  return <SectionHeading {...sectionCopy[tab]} actions={actions} compact={tab === 'simulators'}/>
+  // All project tabs share one compact section heading. Detailed context lives in each tab's content.
+  return <SectionHeading {...sectionCopy[tab]} actions={actions} compact/>
 }
 
 export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
@@ -47,7 +49,7 @@ export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
   const right=load*a/span
   const maxMoment=left*a
   if(tab==='lab') return <UiBox sx={{pb:4}}><UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',md:'repeat(3,minmax(0,1fr))'},gap:2}}><LabCard eyebrow="01 / QUESTION" title="Make a prediction">Choose a problem and decide what you expect before testing.</LabCard><LabCard eyebrow="02 / TEST" title="Change one variable">Keep the other conditions the same, record measurements, and repeat trials.</LabCard><LabCard eyebrow="03 / REVIEW" title="Check the results">Graph your results, explain unexpected behavior, and revise the design.</LabCard></UiBox></UiBox>
-  if(tab==='hands-on') return null
+  if(tab==='hands-on') return <HandsOnPost />
   // Keep the unfinished beam experiment in code, but hide it from visitors
   // until it has been reviewed and explicitly enabled.
   const showBeamForces = false
