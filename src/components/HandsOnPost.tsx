@@ -93,7 +93,7 @@ export default function HandsOnPost() {
     <UiBox className="bbb-hands-story">
       <UiBox className="bbb-hands-story-meta">
         <UiText component="span">CLUB WORKSHOP / 01</UiText>
-        <UiText component="time" dateTime="2026-11-16">NOV 16, 2026</UiText>
+        <UiText component="span">NOV 16, 2026</UiText>
       </UiBox>
       <UiText component="h2" id="bbb-hands-title" className="bbb-hands-story-title">
         Spaghetti, tape &amp; triangles
