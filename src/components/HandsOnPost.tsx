@@ -58,6 +58,20 @@ const slides = [
     title: 'Learning from earlier designs',
     description: 'Not every first attempt works—and that is part of engineering',
   },
+  {
+    key: 'activity-weight',
+    prefixes: ['activity1.'],
+    alt: 'Challenge slide: build a spaghetti and tape bridge spanning 15 centimeters and test how much weight it carries',
+    title: 'The bridge challenge',
+    description: 'Our activity prompt: build a 15 cm bridge using spaghetti, tape, and two supports, then test its load capacity',
+  },
+  {
+    key: 'activity-shapes',
+    prefixes: ['activity2.'],
+    alt: 'Challenge slide: compare the stability of spaghetti squares, triangles, and diagonal braces',
+    title: 'Squares versus triangles',
+    description: 'Our activity prompt: compare square and triangular frames, then add a diagonal brace',
+  },
 ]
 
 export default function HandsOnPost() {
@@ -73,7 +87,7 @@ export default function HandsOnPost() {
         className="bbb-hands-stage"
         role="region"
         aria-roledescription="carousel"
-        aria-label="Bridge-building meeting photo gallery"
+        aria-label="Bridge-building workshop images"
         tabIndex={0}
         onKeyDown={event => {
           if (event.key === 'ArrowLeft') { event.preventDefault(); advance(-1) }
@@ -91,21 +105,21 @@ export default function HandsOnPost() {
               <UiText className="bbb-hands-photo-placeholder-title">{slide.title}</UiText>
             </UiBox>}
         <UiBox className="bbb-hands-image-number">{String(active + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}</UiBox>
-        <UiIconButton className="bbb-hands-gallery-arrow bbb-hands-gallery-prev" onClick={() => advance(-1)} aria-label="Previous meeting photo" size="small">
+        <UiIconButton className="bbb-hands-gallery-arrow bbb-hands-gallery-prev" onClick={() => advance(-1)} aria-label="Previous workshop image" size="small">
           <ArrowBackRoundedIcon fontSize="small" />
         </UiIconButton>
-        <UiIconButton className="bbb-hands-gallery-arrow bbb-hands-gallery-next" onClick={() => advance(1)} aria-label="Next meeting photo" size="small">
+        <UiIconButton className="bbb-hands-gallery-arrow bbb-hands-gallery-next" onClick={() => advance(1)} aria-label="Next workshop image" size="small">
           <ArrowForwardRoundedIcon fontSize="small" />
         </UiIconButton>
       </UiBox>
       <UiBox className="bbb-hands-gallery-footer">
         <UiText className="bbb-hands-caption" aria-live="polite">{slide.description}</UiText>
-        <UiBox className="bbb-hands-gallery-dots" role="group" aria-label="Choose a meeting photo">
+        <UiBox className="bbb-hands-gallery-dots" role="group" aria-label="Choose a workshop image">
           {slides.map((item, index) => <UiIconButton
             key={item.key}
             className={index === active ? 'bbb-hands-dot is-active' : 'bbb-hands-dot'}
             onClick={() => setActive(index)}
-            aria-label={`Show photo ${index + 1}: ${item.title}`}
+            aria-label={`Show image ${index + 1}: ${item.title}`}
             aria-current={index === active ? 'true' : undefined}
             size="small"
           ><span /></UiIconButton>)}
