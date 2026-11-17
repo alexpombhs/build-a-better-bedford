@@ -1,8 +1,6 @@
 import { UiActionButton, UiBox, UiText } from './components/atoms/MuiPrimitives'
 import InstagramIcon from '@mui/icons-material/Instagram'
 import LinkedInIcon from '@mui/icons-material/LinkedIn'
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded'
-import NorthEastRoundedIcon from '@mui/icons-material/NorthEastRounded'
 import './about.css'
 import PageHeading from './components/PageHeading'
 import ProjectCard from './components/ProjectCard'
@@ -49,32 +47,25 @@ export default function AboutPage({onJoin,nextMeetingDate}:{onJoin:()=>void;next
     </UiBox>
     <UiBox className="bbb-about-connect" role="region" aria-label="Connect with Build a Better Bedford">
       <UiBox className="bbb-about-connect-copy">
-        <UiText className="bbb-about-connect-kicker">GET INVOLVED</UiText>
-        <UiText component="h2" className="bbb-about-connect-title">Keep building with us.</UiText>
+        <UiText component="h2" className="bbb-about-connect-title">Stay connected.</UiText>
         <UiText component="p" className="bbb-about-connect-description">
-          See our experiments, follow new projects, or come to a meeting.
+          See what we're building, or come build with us.
         </UiText>
       </UiBox>
       <UiBox className="bbb-about-connect-actions">
-        <UiActionButton className="bbb-about-connect-join" onClick={onJoin}>
-          <span>Join the club</span>
-          <ArrowForwardRoundedIcon aria-hidden="true" fontSize="small"/>
-        </UiActionButton>
-        <UiBox className="bbb-about-connect-follow">
-          <UiText className="bbb-about-connect-follow-label">FOLLOW THE CLUB</UiText>
-          <UiBox className="bbb-about-connect-links">
-            <a href="https://www.instagram.com/build_a_better_bedford_club/" target="_blank" rel="noopener noreferrer" className="bbb-about-connect-link" aria-label="Build a Better Bedford Instagram (opens in new tab)">
-              <InstagramIcon aria-hidden="true" fontSize="small"/>
-              Instagram
-              <NorthEastRoundedIcon aria-hidden="true" className="bbb-about-connect-link-arrow"/>
-            </a>
-            <a href="https://www.linkedin.com/company/build-a-better-bedford/posts/" target="_blank" rel="noopener noreferrer" className="bbb-about-connect-link" aria-label="Build a Better Bedford LinkedIn (opens in new tab)">
-              <LinkedInIcon aria-hidden="true" fontSize="small"/>
-              LinkedIn
-              <NorthEastRoundedIcon aria-hidden="true" className="bbb-about-connect-link-arrow"/>
-            </a>
-          </UiBox>
+        <UiBox className="bbb-about-connect-links">
+          <a href="https://www.instagram.com/build_a_better_bedford_club/" target="_blank" rel="noopener noreferrer" className="bbb-about-connect-link" aria-label="Build a Better Bedford on Instagram (opens in a new tab)">
+            <InstagramIcon aria-hidden="true" fontSize="small"/>
+            <span>Instagram</span>
+          </a>
+          <a href="https://www.linkedin.com/company/build-a-better-bedford/posts/" target="_blank" rel="noopener noreferrer" className="bbb-about-connect-link" aria-label="Build a Better Bedford on LinkedIn (opens in a new tab)">
+            <LinkedInIcon aria-hidden="true" fontSize="small"/>
+            <span>LinkedIn</span>
+          </a>
         </UiBox>
+        <UiActionButton className="bbb-about-connect-join" onClick={onJoin}>
+          Join the club
+        </UiActionButton>
       </UiBox>
     </UiBox>
     <UiText variant="body2" className="bbb-about-disclaimer">
