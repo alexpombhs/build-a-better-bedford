@@ -1,0 +1,96 @@
+/* A single project-workspace frame shared by Ideas, Simulators and Hands-On.
+   Keep tab navigation anchored independently of the selected tab's content height.
+   The desktop content area scrolls only when necessary; smaller/shorter screens
+   return to normal document scrolling so content and controls are never clipped. */
+
+#root .site-shell.site-shell--workspace > .projects-page {
+  box-sizing: border-box;
+  min-width: 0;
+  padding-top: clamp(12px, 2vh, 20px) !important;
+}
+
+#root .site-shell.site-shell--workspace > .projects-page > .projects-heading.projects-toolbar {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  margin: 0 !important;
+  padding: 0;
+  align-items: center;
+}
+
+#root .site-shell.site-shell--workspace .projects-toolbar .bbb-ui-tabs {
+  min-height: 48px;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0 !important;
+}
+
+@media (min-width: 1051px) and (min-height: 680px) {
+  /* The outer shell used to be viewport-sized only on Ideas. That caused both
+     the document scrollbar and top padding to change on every tab switch. */
+  html:has(.site-shell--workspace),
+  body:has(.site-shell--workspace),
+  #root:has(.site-shell--workspace) {
+    height: 100%;
+    overflow: hidden !important;
+  }
+
+  #root .site-shell.site-shell--workspace {
+    display: grid !important;
+    grid-template-rows: var(--bbb-shared-header, 76px) minmax(0, 1fr) auto !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  #root .site-shell.site-shell--workspace > .projects-page,
+  #root .site-shell.site-shell--workspace.site-shell--ideas > .projects-page.projects-page--ideas {
+    display: grid !important;
+    grid-template-rows: 48px 40px minmax(0, 1fr) !important;
+    gap: clamp(6px, 1vh, 10px) !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: clamp(4px, .8vh, 8px) 0 6px !important;
+    overflow: hidden !important;
+    align-self: stretch !important;
+    align-content: stretch;
+  }
+
+  #root .site-shell.site-shell--workspace > .projects-page > .projects-heading.projects-toolbar {
+    min-height: 0 !important;
+    height: 48px;
+  }
+
+  #root .site-shell.site-shell--workspace > .projects-page > .bbb-ui-box.bbb-ui-box {
+    box-sizing: border-box;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
+    overscroll-behavior: contain;
+  }
+
+  /* The Ideas grid already has a carefully tuned two-row viewport treatment.
+     Keep it intact while the other two tabs gain a non-clipping scroll region. */
+}
+
+@media (max-width: 760px) {
+  #root .site-shell.site-shell--workspace > .projects-page > .projects-heading.projects-toolbar {
+    width: 100%;
+  }
+  #root .site-shell.site-shell--workspace .projects-toolbar .bbb-ui-tabs {
+    width: 100%;
+  }
+}
+
+@media (max-height: 679px) {
+  /* Short screens and high zoom need page scrolling instead of a fixed workbench. */
+  #root .site-shell.site-shell--workspace > .projects-page {
+    height: auto;
+    overflow: visible !important;
+  }
+}
