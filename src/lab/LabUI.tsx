@@ -9,7 +9,7 @@ export const labColors = { ink:'#10222e', accent:'#294b63', muted:'#465d70', bor
 export function SectionHeading({eyebrow,title,description,actions,compact=false}:{eyebrow?:string;title:string;description:string;actions?:ReactNode;compact?:boolean}) {
   // Compact project heading: one shared, accessible label without the oversized
   // editorial title and subtitle. Tab-specific content supplies its own hierarchy.
-  if (compact) return <UiBox sx={{display:'flex',alignItems:'center',flexWrap:'wrap',gap:1,mb:1}}>
+  if (compact) return <UiBox sx={{display:'flex',alignItems:'center',flexWrap:'wrap',gap:1,mb:0,minHeight:40}}>
     <UiText component="h1" sx={{m:0,fontSize:11,fontWeight:800,lineHeight:1.35,letterSpacing:'.09em',textTransform:'uppercase',color:labColors.muted}}>
       {eyebrow || title}
     </UiText>
