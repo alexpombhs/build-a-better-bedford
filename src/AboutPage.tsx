@@ -58,7 +58,7 @@ export default function AboutPage({onJoin,nextMeetingDate}:{onJoin:()=>void;next
             <InstagramIcon aria-hidden="true" fontSize="small"/>
             <span>Instagram</span>
           </a>
-          <a href="https://www.linkedin.com/company/build-a-better-bedford/posts/" target="_blank" rel="noopener noreferrer" className="bbb-about-connect-link" aria-label="Build a Better Bedford on LinkedIn (opens in a new tab)">
+          <a href="https://www.linkedin.com/company/build-a-better-bedford/home/" target="_blank" rel="noopener noreferrer" className="bbb-about-connect-link" aria-label="Build a Better Bedford on LinkedIn (opens in a new tab)">
             <LinkedInIcon aria-hidden="true" fontSize="small"/>
             <span>LinkedIn</span>
           </a>
