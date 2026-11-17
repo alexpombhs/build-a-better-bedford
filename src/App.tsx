@@ -508,8 +508,8 @@ function App() {
     if (next === 'projects') setProjectTab(tab)
     else if (next === 'lab') setProjectTab('simulators')
     // Project-tab changes keep the shared tabs in the same on-screen position.
-    // Other site navigation starts at the top without a layout-shifting animation.
-    if (!preserveProjectPosition) window.scrollTo({ top: 0, behavior: 'auto' })
+    // Normal site navigation keeps its smooth scroll-to-top behavior.
+    if (!preserveProjectPosition) window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const projectWorkspaceOpen = page === 'projects' || page === 'lab'
