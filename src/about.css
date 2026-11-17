@@ -3,7 +3,7 @@
 .bbb-about-title{font-family:Georgia,"Times New Roman",serif!important;font-weight:500!important;font-size:clamp(40px,4.5vw,60px)!important;line-height:1.1!important;letter-spacing:-.035em!important;color:#173f2d}
 .bbb-about-description{margin-top:15px!important;font-size:16px!important;line-height:1.75!important;color:#607367}
 .bbb-about-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-.bbb-about-panel{border-color:#dbe4dd!important;border-radius:14px!important;box-shadow:none!important;background:#fff!important}
+.bbb-about-panel{border-color:#dbe4dd!important;box-shadow:none!important;background:#fff!important}
 .bbb-about-panel-content{padding:24px 28px!important}
 .bbb-about-panel-title{font-size:18px!important;font-weight:750!important;color:#173f2d;margin-bottom:12px!important}
 .bbb-about-row{display:grid;grid-template-columns:118px minmax(0,1fr);align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px solid #e7ece8}
@@ -29,7 +29,6 @@
 /* Alex voice: editorial, direct, and consistent with the site's UI typography. */
 .bbb-about-title{font-family:inherit!important;font-weight:780!important;letter-spacing:-.045em!important;font-size:clamp(34px,4vw,52px)!important}
 .bbb-about-description{max-width:670px;font-size:17px!important;line-height:1.55!important;color:#3b5446}
-.bbb-about-panel{border-radius:10px!important}
 .bbb-about-panel-title{font-size:16px!important}
 .bbb-about-cta{padding:18px 0}
 
@@ -39,7 +38,7 @@
 .bbb-about-intro{margin-bottom:22px}
 .bbb-about-grid{gap:24px;align-items:stretch}
 .bbb-about-grid .bbb-about-panel.bbb-project-card.bbb-ui-card{
-  background:#fff!important;border:1px solid #d3dce2!important;border-radius:12px!important;
+  background:#fff!important;border:1px solid #d3dce2!important;
   box-shadow:none!important;min-height:0!important;height:100%;
 }
 .bbb-about-grid .bbb-about-panel .bbb-project-card-content.bbb-ui-card-content{
