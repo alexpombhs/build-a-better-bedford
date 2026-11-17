@@ -35,7 +35,8 @@ const sectionCopy: Record<Tab,{eyebrow:string;title:string;description:string}> 
 }
 
 export function EngineeringSectionIntro({tab,actions}:{tab:Tab;actions?:ReactNode}) {
-  return <SectionHeading {...sectionCopy[tab]} actions={actions} compact={tab === 'simulators'}/>
+  // All project tabs share one compact section heading. Detailed context lives in each tab's content.
+  return <SectionHeading {...sectionCopy[tab]} actions={actions} compact/>
 }
 
 export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
