@@ -81,7 +81,7 @@ export default function HandsOnPost() {
   const advance = (direction: number) =>
     setActive(current => (current + direction + slides.length) % slides.length)
 
-  return <UiBox className="bbb-hands-post" component="article" aria-labelledby="bbb-hands-title">
+  return <UiBox className="bbb-hands-post" role="article" aria-labelledby="bbb-hands-title">
     <UiBox className="bbb-hands-gallery">
       <UiBox
         className="bbb-hands-stage"
