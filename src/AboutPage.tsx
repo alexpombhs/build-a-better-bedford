@@ -1,6 +1,8 @@
-import { UiBox, UiText } from './components/atoms/MuiPrimitives'
+import { UiActionButton, UiBox, UiText } from './components/atoms/MuiPrimitives'
 import InstagramIcon from '@mui/icons-material/Instagram'
 import LinkedInIcon from '@mui/icons-material/LinkedIn'
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded'
+import NorthEastRoundedIcon from '@mui/icons-material/NorthEastRounded'
 import './about.css'
 import PageHeading from './components/PageHeading'
 import ProjectCard from './components/ProjectCard'
@@ -45,27 +47,35 @@ export default function AboutPage({onJoin,nextMeetingDate}:{onJoin:()=>void;next
       <InfoPanel title="Club leadership" items={team}/>
       <InfoPanel title="Meetings" items={meetingDetails(nextMeetingDate)}/>
     </UiBox>
-    <UiBox className="bbb-about-social" aria-label="Club social media">
-      <UiBox className="bbb-about-social-copy">
-        <UiText component="h2" className="bbb-about-social-title">Follow our work</UiText>
-        <UiText variant="body2" className="bbb-about-social-description">Meeting photos, projects, and updates from the club.</UiText>
+    <UiBox className="bbb-about-connect" role="region" aria-label="Connect with Build a Better Bedford">
+      <UiBox className="bbb-about-connect-copy">
+        <UiText className="bbb-about-connect-kicker">GET INVOLVED</UiText>
+        <UiText component="h2" className="bbb-about-connect-title">Keep building with us.</UiText>
+        <UiText component="p" className="bbb-about-connect-description">
+          See our experiments, follow new projects, or come to a meeting.
+        </UiText>
       </UiBox>
-      <UiBox className="bbb-about-social-links">
-        <a className="bbb-about-social-link" href="https://www.instagram.com/build_a_better_bedford_club/" target="_blank" rel="noopener noreferrer" aria-label="Build a Better Bedford on Instagram (opens in a new tab)">
-          <InstagramIcon fontSize="small" aria-hidden="true"/>
-          <span>Instagram</span>
-          <span className="bbb-about-social-external" aria-hidden="true">↗</span>
-        </a>
-        <a className="bbb-about-social-link" href="https://www.linkedin.com/company/build-a-better-bedford/posts/" target="_blank" rel="noopener noreferrer" aria-label="Build a Better Bedford on LinkedIn (opens in a new tab)">
-          <LinkedInIcon fontSize="small" aria-hidden="true"/>
-          <span>LinkedIn</span>
-          <span className="bbb-about-social-external" aria-hidden="true">↗</span>
-        </a>
+      <UiBox className="bbb-about-connect-actions">
+        <UiActionButton className="bbb-about-connect-join" onClick={onJoin}>
+          <span>Join the club</span>
+          <ArrowForwardRoundedIcon aria-hidden="true" fontSize="small"/>
+        </UiActionButton>
+        <UiBox className="bbb-about-connect-follow">
+          <UiText className="bbb-about-connect-follow-label">FOLLOW THE CLUB</UiText>
+          <UiBox className="bbb-about-connect-links">
+            <a href="https://www.instagram.com/build_a_better_bedford_club/" target="_blank" rel="noopener noreferrer" className="bbb-about-connect-link" aria-label="Build a Better Bedford Instagram (opens in new tab)">
+              <InstagramIcon aria-hidden="true" fontSize="small"/>
+              Instagram
+              <NorthEastRoundedIcon aria-hidden="true" className="bbb-about-connect-link-arrow"/>
+            </a>
+            <a href="https://www.linkedin.com/company/build-a-better-bedford/posts/" target="_blank" rel="noopener noreferrer" className="bbb-about-connect-link" aria-label="Build a Better Bedford LinkedIn (opens in new tab)">
+              <LinkedInIcon aria-hidden="true" fontSize="small"/>
+              LinkedIn
+              <NorthEastRoundedIcon aria-hidden="true" className="bbb-about-connect-link-arrow"/>
+            </a>
+          </UiBox>
+        </UiBox>
       </UiBox>
-    </UiBox>
-    <UiBox className="bbb-about-cta">
-      <UiText variant="body1">Want to join?</UiText>
-      <button className="bbb-about-join" onClick={onJoin}>Join the club <span aria-hidden="true">→</span></button>
     </UiBox>
     <UiText variant="body2" className="bbb-about-disclaimer">
       Build a Better Bedford is an approved student club at Bedford High School. This website is created and maintained by students, rather than being an official Bedford Public Schools publication.
