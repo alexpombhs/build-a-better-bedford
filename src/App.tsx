@@ -24,6 +24,7 @@ import trailsIcon from './assets/trails.png'
 import './newsletter.css'
 import './editorial.css'
 import './portfolio.css'
+import './components/ProjectWorkspace.css'
 
 // Vite resolves these to hashed built assets when PNGs are in src/assets.
 // The glob also permits checking out this branch before the image commit lands.
@@ -494,7 +495,7 @@ function App() {
     window.open('https://forms.gle/ejjaRZzo5HMMtkVD7', '_blank', 'noopener,noreferrer')
   }
 
-  const go = (next: Page, tab: ProjectTab = 'ideas') => {
+  const go = (next: Page, tab: ProjectTab = 'ideas', preserveProjectPosition = false) => {
     const route = next === 'projects' ? projectTabPaths[tab] : pagePaths[next]
     const path = `${basePath}${route}`
     if (window.location.pathname.replace(/\/+$/, '') !== path || window.location.search) {
@@ -506,10 +507,13 @@ function App() {
     setPage(next)
     if (next === 'projects') setProjectTab(tab)
     else if (next === 'lab') setProjectTab('simulators')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Project-tab changes keep the shared tabs in the same on-screen position.
+    // Other site navigation starts at the top without a layout-shifting animation.
+    if (!preserveProjectPosition) window.scrollTo({ top: 0, behavior: 'auto' })
   }
 
-  return <main className={`site-shell${(page === 'projects' || page === 'lab') && projectTab === 'ideas' ? ' site-shell--ideas' : ''}`}>
+  const projectWorkspaceOpen = page === 'projects' || page === 'lab'
+  return <main className={`site-shell${projectWorkspaceOpen ? ' site-shell--workspace' : ''}${projectWorkspaceOpen && projectTab === 'ideas' ? ' site-shell--ideas' : ''}`}>
     <SiteHeader
       active={page === 'projects' || page === 'lab' ? 'projects' : page === 'newsletter' ? 'newsletter' : page === 'about' ? 'about' : 'home'}
       onNavigate={section => {
@@ -556,7 +560,7 @@ function App() {
 
     {(page === 'projects' || page === 'lab') && <section className={projectTab === 'ideas' ? 'projects-page projects-page--ideas' : 'projects-page'}>
       <div className="projects-heading projects-toolbar">
-        <EngineeringTabs active={projectTab} onChange={tab => go('projects', tab)} />
+        <EngineeringTabs active={projectTab} onChange={tab => go('projects', tab, true)} />
       </div>
       <EngineeringSectionIntro tab={projectTab} actions={projectTab === 'ideas' ? (
 <div className="ideas-toolbar"><div className="project-pagination" aria-label="Project pages">
