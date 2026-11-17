@@ -74,6 +74,13 @@
     overscroll-behavior: contain;
   }
 
+  /* Keep the workshop gallery substantial but avoid a tall, fixed-aspect
+     photo pushing the carousel controls below the desktop viewport. */
+  #root .site-shell.site-shell--workspace .bbb-hands-stage {
+    aspect-ratio: auto;
+    height: min(64dvh, calc(100dvh - 280px));
+  }
+
   /* The Ideas grid already has a carefully tuned two-row viewport treatment.
      Keep it intact while the other two tabs gain a non-clipping scroll region. */
 }
