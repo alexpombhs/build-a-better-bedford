@@ -1,4 +1,6 @@
 import { UiBox, UiText } from './components/atoms/MuiPrimitives'
+import InstagramIcon from '@mui/icons-material/Instagram'
+import LinkedInIcon from '@mui/icons-material/LinkedIn'
 import './about.css'
 import PageHeading from './components/PageHeading'
 import ProjectCard from './components/ProjectCard'
@@ -42,6 +44,24 @@ export default function AboutPage({onJoin,nextMeetingDate}:{onJoin:()=>void;next
     <UiBox className="bbb-about-grid">
       <InfoPanel title="Club leadership" items={team}/>
       <InfoPanel title="Meetings" items={meetingDetails(nextMeetingDate)}/>
+    </UiBox>
+    <UiBox className="bbb-about-social" aria-label="Club social media">
+      <UiBox className="bbb-about-social-copy">
+        <UiText component="h2" className="bbb-about-social-title">Follow our work</UiText>
+        <UiText variant="body2" className="bbb-about-social-description">Meeting photos, projects, and updates from the club.</UiText>
+      </UiBox>
+      <UiBox className="bbb-about-social-links">
+        <a className="bbb-about-social-link" href="https://www.instagram.com/build_a_better_bedford_club/" target="_blank" rel="noopener noreferrer" aria-label="Build a Better Bedford on Instagram (opens in a new tab)">
+          <InstagramIcon fontSize="small" aria-hidden="true"/>
+          <span>Instagram</span>
+          <span className="bbb-about-social-external" aria-hidden="true">↗</span>
+        </a>
+        <a className="bbb-about-social-link" href="https://www.linkedin.com/company/build-a-better-bedford/posts/" target="_blank" rel="noopener noreferrer" aria-label="Build a Better Bedford on LinkedIn (opens in a new tab)">
+          <LinkedInIcon fontSize="small" aria-hidden="true"/>
+          <span>LinkedIn</span>
+          <span className="bbb-about-social-external" aria-hidden="true">↗</span>
+        </a>
+      </UiBox>
     </UiBox>
     <UiBox className="bbb-about-cta">
       <UiText variant="body1">Want to join?</UiText>
