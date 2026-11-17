@@ -5,42 +5,65 @@ import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded'
 import { UiBox, UiIconButton, UiText } from './atoms/MuiPrimitives'
 import './HandsOnPost.css'
 
-// Add the meeting photos to src/assets/hands-on/ with these names.
-// Empty photo slots are intentionally labeled rather than showing unrelated stock imagery.
+// Match the photographed workshop filenames supplied in src/assets/hands-on/.
+// Prefix matching tolerates descriptive filename endings and .jpg/.jpeg/.png/.webp.
 const photoAssets = import.meta.glob('../assets/hands-on/*.{jpg,jpeg,png,webp}', {
   eager: true, query: '?url', import: 'default',
 }) as Record<string, string>
 
-const findPhoto = (fileName: string) =>
-  Object.entries(photoAssets).find(([path]) => path.toLowerCase().endsWith('/' + fileName))?.[1]
+const findPhoto = (filePrefixes: string[]) => {
+  const photos = Object.entries(photoAssets)
+  const match = photos.find(([path]) => {
+    const fileName = path.split('/').pop()?.toLowerCase() ?? ''
+    return filePrefixes.some(prefix => fileName.startsWith(prefix.toLowerCase()))
+  })
+  return match?.[1]
+}
 
 const slidesUrl = 'https://docs.google.com/presentation/d/1T-PsUqX7rKjlaH8VGB-sdETczR-S_ZzWc25VFytdNkU/edit'
 
 const slides = [
   {
-    file: '01-triangle-cardboard.jpg',
-    alt: 'Cardboard bridge structure reinforced with triangles during a club meeting',
-    title: 'Triangles make a difference',
-    description: 'A cardboard structure with triangular reinforcement',
+    key: 'cardboard',
+    prefixes: ['bbbcardboardstructure.'],
+    alt: 'Cardboard structure built during a club bridge-design activity',
+    title: 'The cardboard prototype',
+    description: 'Starting with a simple cardboard structure',
   },
   {
-    file: '02-spaghetti-load-test.jpg',
-    alt: 'Spaghetti bridge model being tested using a cup',
+    key: 'improved',
+    prefixes: ['bbbcardboardstructureimp'],
+    alt: 'Revised cardboard structure incorporating triangular reinforcement',
+    title: 'Adding triangles',
+    description: 'Revisiting the cardboard design with triangular supports',
+  },
+  {
+    key: 'spaghetti',
+    prefixes: ['bbbspaghettibridge'],
+    alt: 'Spaghetti bridge model built during a club meeting',
     title: 'The spaghetti challenge',
-    description: 'Building and testing structures with spaghetti and tape',
+    description: 'Testing what spaghetti and tape can do together',
   },
   {
-    file: '03-building-process.jpg',
-    alt: 'Club member working on a miniature bridge during the hands-on activity',
-    title: 'Ideas take shape',
-    description: 'Trying different connections, materials, and designs',
+    key: 'tape',
+    prefixes: ['bbbtapebridge'],
+    alt: 'Bridge model constructed from tape',
+    title: 'A tape-only bridge',
+    description: 'Exploring how a different material changes the design',
+  },
+  {
+    key: 'failed',
+    prefixes: ['bbbfailedcardboardstruct'],
+    alt: 'An earlier cardboard structure used to compare and revise bridge designs',
+    title: 'Learning from earlier designs',
+    description: 'Not every first attempt works—and that is part of engineering',
   },
 ]
 
 export default function HandsOnPost() {
   const [active, setActive] = useState(0)
   const slide = slides[active]
-  const photoUrl = findPhoto(slide.file)
+  const photoUrl = findPhoto(slide.prefixes)
   const advance = (direction: number) =>
     setActive(current => (current + direction + slides.length) % slides.length)
 
@@ -79,7 +102,7 @@ export default function HandsOnPost() {
         <UiText className="bbb-hands-caption" aria-live="polite">{slide.description}</UiText>
         <UiBox className="bbb-hands-gallery-dots" role="group" aria-label="Choose a meeting photo">
           {slides.map((item, index) => <UiIconButton
-            key={item.file}
+            key={item.key}
             className={index === active ? 'bbb-hands-dot is-active' : 'bbb-hands-dot'}
             onClick={() => setActive(index)}
             aria-label={`Show photo ${index + 1}: ${item.title}`}
