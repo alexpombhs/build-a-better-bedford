@@ -31,7 +31,7 @@ type CableSettings = {
 
 const defaultSettings: CableSettings = {
   span: 11, restLength: 13.5, stiffness: 120, breakingStrength: 20,
-  p1: 10, p2: 8, pos1: 45, pos2: 70,
+  p1: 10, p2: 8, pos1: 50, pos2: 70,
 }
 
 export default function FunicularSimulator() {
@@ -91,15 +91,19 @@ export default function FunicularSimulator() {
   const shownCapacity = broken?.capacity ?? capacity
   const displayedTotal = shownLoads.reduce((sum, point) => sum + point.load, 0)
   const displayedPeak = maxTension(displayed)
+  // Use the physical coordinates because the drawing scales x and y differently.
+  // The model measures y downward, so negate the rise for the signed angle.
+  const segmentAngles = displayed.tensions.map((_, i) => Math.atan2(
+    displayed.ys[i] - displayed.ys[i + 1],
+    displayed.xs[i + 1] - displayed.xs[i],
+  ) * 180 / Math.PI)
   const status = broken ? 'broken' : displayedPeak >= shownStrength * 0.85 ? 'warning' : 'intact'
 
-  // The 640 x 330 SVG matches the desktop panel's actual aspect ratio much
-  // more closely, eliminating the old side letterboxing caused by 'meet'.
-  // At 16 m the anchors reach x=32 and x=608 (nearly edge to edge).
+  // Leave space outside the anchor blocks for the horizontal force arrows.
   // Use fixed vertical scale for ordinary sag, compressing extreme deflection
   // only to preserve clearance for weight blocks, arrows and the span marker.
   const anchorY = 70
-  const pixelsPerMeter = 36
+  const pixelsPerMeter = 30
   const leftX = (640 - pixelsPerMeter * shownSpan) / 2
   const rightX = leftX + pixelsPerMeter * shownSpan
   const verticalScale = Math.min(14, 88 / Math.max(1, displayed.sag))
@@ -109,6 +113,18 @@ export default function FunicularSimulator() {
   ] as const)
   const polyline = screen.map(([x, y]) => x.toFixed(2) + ',' + y.toFixed(2)).join(' ')
   const sagY = Math.max(...screen.map(point => point[1]))
+  const angleInset = 28
+  const upperAngleInset = Math.min(86, (rightX - leftX) * 0.26)
+  const leftAngleX = leftX + upperAngleInset
+  const rightAngleX = rightX - upperAngleInset
+  const lastSegment = segmentAngles.length - 1
+  // Use the shallower cable edge to keep both labels above the cable on one row.
+  const angleClearanceX = upperAngleInset - 20
+  const upperAngleY = anchorY - 4 + Math.min(
+    22,
+    (screen[1][1] - anchorY) * Math.min(1, angleClearanceX / (screen[1][0] - leftX)),
+    (screen[lastSegment][1] - anchorY) * Math.min(1, angleClearanceX / (rightX - screen[lastSegment][0])),
+  )
 
   // Failure is determined by the highest T, not by total vertical weight.
   const breakIndex = broken?.segment ?? -1
@@ -240,22 +256,68 @@ export default function FunicularSimulator() {
               fill="#c05e3d" />
           </g>
         })}
-        <text x={Math.min(leftX, 185)} y="43" fill="#276957" fontSize="14">
-          A: {fmt(displayed.leftReaction)} kN ↑
-        </text>
-        <text x={Math.max(rightX, 455)} y="43" textAnchor="end" fill="#276957" fontSize="14">
-          B: {fmt(displayed.rightReaction)} kN ↑
-        </text>
+        {([
+          { x: leftX, outward: -1, name: 'A', reaction: displayed.leftReaction, angle: segmentAngles[0] },
+          { x: rightX, outward: 1, name: 'B', reaction: displayed.rightReaction, angle: segmentAngles[segmentAngles.length - 1] },
+        ] as const).map(({ x, outward, name, reaction, angle }) => {
+          const supportCenter = x + outward * 12
+          const horizontalTip = x + outward * 68
+          return <g key={name}>
+            <path d={`M${supportCenter} ${anchorY - 17}V25m-5 7l5-7 5 7`}
+              fill="none" stroke="#276957" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <text x={supportCenter} y="17" textAnchor="middle" fill="#276957" fontSize="13">
+              {name}: {fmt(reaction)} kN
+            </text>
+            <path d={`M${x + outward * 29} ${anchorY}H${horizontalTip}m${-outward * 7}-5l${outward * 7} 5 ${-outward * 7} 5`}
+              fill="none" stroke="#2e6492" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <text x={x - outward * angleInset} y={anchorY + 45} textAnchor="middle"
+              fill={labColors.ink} fontSize="13" fontWeight="700"
+              stroke="#f5f8fa" strokeWidth="4" paintOrder="stroke">
+              {fmt(90 - Math.abs(angle))}°
+            </text>
+          </g>
+        })}
+        {segmentAngles.map((angle, i) => {
+          const [fromX, fromY] = screen[i]
+          const [toX, toY] = screen[i + 1]
+          const x = i === 0 ? leftAngleX : i === lastSegment ? rightAngleX : (fromX + toX) / 2
+          const middle = i > 0 && i < lastSegment
+          const cableY = (fromY + toY) / 2
+          const nearOuterLabel = Math.min(Math.abs(x - leftAngleX), Math.abs(x - rightAngleX)) < 48
+          const y = middle
+            ? Math.min(cableY - 17, nearOuterLabel ? upperAngleY - 18 : Infinity)
+            : upperAngleY
+          const magnitude = fmt(Math.abs(angle))
+          const direction = middle && magnitude !== '0.0' ? (angle > 0 ? ' ↑' : ' ↓') : ''
+          if (middle) return <g key={i}>
+            <line x1={x} x2={x} y1={y + 4} y2={cableY - 4} stroke={labColors.muted} />
+            <text x={x} y={y} textAnchor="middle" fill={labColors.ink} fontSize="13" fontWeight="700"
+              stroke="#f5f8fa" strokeWidth="4" paintOrder="stroke">
+              {magnitude}°{direction}
+            </text>
+          </g>
+          return <text key={i} x={x} y={y}
+            textAnchor="middle" fill={labColors.ink} fontSize="13" fontWeight="700"
+            stroke="#f5f8fa" strokeWidth="4" paintOrder="stroke">
+            {magnitude}°
+          </text>
+        })}
         <path d={'M' + leftX + ' 307H' + rightX + ' M' + leftX + ' 299v16 M' + rightX + ' 299v16'}
           fill="none" stroke="#8197a5" strokeWidth="1.5" />
         <text x="320" y="324" textAnchor="middle" fontSize="15" fill="#465d70">{shownSpan} m span</text>
         <line x1="635" y1={anchorY} x2="635" y2={sagY}
           stroke="#657f90" strokeDasharray="3 4" />
-        <text x="627" y={(anchorY + sagY) / 2 + 4} textAnchor="end"
+        <text x="627" y={Math.max(anchorY + 19, (anchorY + sagY) / 2 + 4)} textAnchor="end"
           fill="#465d70" fontSize="13">{fmt(displayed.sag)} m sag</text>
       </svg>
-      <UiText variant="caption" sx={{ display: 'block', color: labColors.muted, mt: 'auto', pt: 0.5, fontSize: 11.5, lineHeight: 1.4 }}>
-        Weights scale with load; orange arrows indicate downward force. Cable failure is a static illustration.
+      <UiBox sx={{ mt: 'auto', pt: 0.5 }}>
+        <UiText variant="caption" sx={{ color: '#2e6492' }}>Horizontal tension (all segments)</UiText>
+        <UiText sx={{ fontSize: 14, fontWeight: 700 }}>{fmt(displayed.horizontal)} kN</UiText>
+      </UiBox>
+      <UiText variant="caption" sx={{ display: 'block', color: labColors.muted, pt: 0.5, fontSize: 11.5, lineHeight: 1.4 }}>
+        The angles above the cable are measured from horizontal. The angles below the supports are measured from vertical.
+        {count === 2 && ' The middle reading shows how much the cable rises or falls from P1 to P2.'}
+        {broken && ' Force and angle readings show the cable just before it snapped.'}
       </UiText>
       </UiSurface>
     </UiBox>
