@@ -142,16 +142,37 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), difference.normalize())
       group.add(mesh)
     }
-    // Exactly two simple supports. Their bases always extend below the
-    // lowest calculated point of the cable (including extreme slider values).
-    const pillarHeight = Math.max(4.7, solution.sag + 1.5)
+    // Two standalone bridge-inspired concrete pylons, not a bridge/deck.
+    // Keep the bases below every cable point, with clearance for the
+    // illustrative droop of a broken segment.
+    const pillarHeight = Math.max(5, solution.sag + 2.3)
+    const concrete = new THREE.MeshStandardMaterial({ color: '#aebbc5', roughness: 0.92 })
+    const trim = new THREE.MeshStandardMaterial({ color: '#8193a1', roughness: 0.75 })
     for (const x of [-span / 2, span / 2]) {
-      const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.5, pillarHeight, 0.75), steel)
+      // Slight taper, square profile, and a wider foundation evoke real
+      // suspension-bridge pylons without adding a roadway or bridge frame.
+      const shape = new THREE.BoxGeometry(0.88, pillarHeight, 1.06)
+      const positions = shape.attributes.position
+      for (let v = 0; v < positions.count; v++) {
+        if (positions.getY(v) > 0) {
+          positions.setX(v, positions.getX(v) * 0.70)
+          positions.setZ(v, positions.getZ(v) * 0.78)
+        }
+      }
+      shape.computeVertexNormals()
+      const pillar = new THREE.Mesh(shape, concrete)
       pillar.position.set(x, -pillarHeight / 2, 0)
       group.add(pillar)
-      const anchor = new THREE.Mesh(new THREE.SphereGeometry(0.19, 14, 10), blue)
-      anchor.position.set(x, 0, 0)
-      group.add(anchor)
+      const foundation = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.36, 1.5), concrete)
+      foundation.position.set(x, -pillarHeight - 0.18, 0)
+      group.add(foundation)
+      const topCap = new THREE.Mesh(new THREE.BoxGeometry(0.83, 0.22, 0.94), trim)
+      topCap.position.set(x, 0.1, 0)
+      group.add(topCap)
+      const bearing = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.2, 16), blue)
+      bearing.rotation.x = Math.PI / 2
+      bearing.position.set(x, 0.25, 0)
+      group.add(bearing)
     }
     for (let i = 0; i < solution.xs.length - 1; i++) {
       const start = point(i)
