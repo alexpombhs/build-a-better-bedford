@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import CableThreeView from './CableThreeView'
 import { UiBox, UiSurface, UiText, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
 import { CableStatusBar, LabDetails, LabSlider, labColors } from './lab/LabUI'
 import { maxSupportedTotalLoad, solveElasticCable } from './lab/funicularPhysics'
@@ -36,6 +37,7 @@ const defaultSettings: CableSettings = {
 
 export default function FunicularSimulator() {
   const [count, setCount] = useState<1 | 2>(1)
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d')
 
   // Each load tab is its own experiment. Changing tabs cannot change the
   // failed geometry, load values, or controls of the other experiment.
@@ -176,10 +178,18 @@ export default function FunicularSimulator() {
         onReset={replaceCable}
       />
       <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, bgcolor: '#f5f8fa', borderColor: labColors.border, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <UiText sx={{ fontSize: 14, fontWeight: 700, color: labColors.ink, mb: 0.5 }}>
-        Elastic cable under {count === 1 ? 'one load' : 'two loads'}
-      </UiText>
-      <svg viewBox="0 0 640 330" width="100%" style={{height:'min(43vh,405px)',display:'block'}} role="img"
+      <UiBox sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 0.5 }}>
+        <UiText sx={{ fontSize: 14, fontWeight: 700, color: labColors.ink }}>
+          Elastic cable under {count === 1 ? 'one load' : 'two loads'}
+        </UiText>
+        <UiTabs value={viewMode} onChange={(_, value) => setViewMode(value as '2d' | '3d')}
+          aria-label="Cable visualization mode" sx={{ minHeight: 30 }}>
+          <UiTab value="2d" label="2D" sx={{ minHeight: 30, minWidth: 48, py: 0, px: 1, textTransform: 'none' }} />
+          <UiTab value="3d" label="3D" sx={{ minHeight: 30, minWidth: 48, py: 0, px: 1, textTransform: 'none' }} />
+        </UiTabs>
+      </UiBox>
+      {viewMode === '3d' ? <CableThreeView solution={displayed} loads={shownLoads} span={shownSpan}
+        brokenSegment={broken ? breakIndex : undefined} /> : <svg viewBox="0 0 640 330" width="100%" style={{height:'min(43vh,405px)',display:'block'}} role="img"
         aria-label={broken
           ? 'Cable snapped in segment ' + (breakIndex + 1) + ' under ' + fmt(displayedTotal) + ' kilonewtons of applied load. The weights are falling.'
           : 'Elastic cable across ' + shownSpan + ' meters with ' + fmt(displayed.sag) + ' meters calculated sag and ' + shownLoads.length + ' hanging weights.'}>
@@ -253,9 +263,9 @@ export default function FunicularSimulator() {
           stroke="#657f90" strokeDasharray="3 4" />
         <text x="627" y={(anchorY + sagY) / 2 + 4} textAnchor="end"
           fill="#465d70" fontSize="13">{fmt(displayed.sag)} m sag</text>
-      </svg>
+      </svg>}
       <UiText variant="caption" sx={{ display: 'block', color: labColors.muted, mt: 'auto', pt: 0.5, fontSize: 11.5, lineHeight: 1.4 }}>
-        Weights scale with load; orange arrows indicate downward force. Cable failure is a static illustration.
+        Weights scale with load; orange arrows indicate downward force. Cable failure is a static illustration. In 3D, drag to rotate and scroll to zoom.
       </UiText>
       </UiSurface>
     </UiBox>
