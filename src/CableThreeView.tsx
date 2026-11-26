@@ -142,45 +142,16 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), difference.normalize())
       group.add(mesh)
     }
-    // Portal-style bridge towers give structural context while the modeled
-    // cable still carries the independent point loads (no deck forces solved).
-    const towerHeight = Math.max(4.7, solution.sag + 1.7)
-    const towerBase = -towerHeight
+    // Exactly two simple supports. Their bases always extend below the
+    // lowest calculated point of the cable (including extreme slider values).
+    const pillarHeight = Math.max(4.7, solution.sag + 1.5)
     for (const x of [-span / 2, span / 2]) {
-      for (const z of [-0.65, 0.65]) {
-        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.34, towerHeight, 0.34), steel)
-        leg.position.set(x, towerBase / 2, z)
-        group.add(leg)
-        const foot = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.28, 0.95), steel)
-        foot.position.set(x, towerBase - 0.12, z)
-        group.add(foot)
-      }
-      const cap = new THREE.Mesh(new THREE.BoxGeometry(1.08, 0.24, 1.9), blue)
-      cap.position.set(x, 0.13, 0)
-      group.add(cap)
-      const beam = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.28, 1.65), blue)
-      beam.position.set(x, -towerHeight * 0.47, 0)
-      group.add(beam)
-      // Diagonal cross-bracing is architectural context, not a force result.
-      addRod(new THREE.Vector3(x, -0.4, -0.65), new THREE.Vector3(x, -towerHeight * 0.47, 0.65), 0.045, blue)
-      addRod(new THREE.Vector3(x, -0.4, 0.65), new THREE.Vector3(x, -towerHeight * 0.47, -0.65), 0.045, blue)
-    }
-    // A simplified roadway deck sits behind/below the cable experiment.
-    // It is a visual reference only, not coupled to the cable solver.
-    const deckY = Math.min(-3.5, -solution.sag - 1.5)
-    const deck = new THREE.Mesh(new THREE.BoxGeometry(span + 0.65, 0.25, 2.1),
-      new THREE.MeshStandardMaterial({ color: '#9caeb9', metalness: 0.13, roughness: 0.8 }))
-    deck.position.set(0, deckY, -1.65)
-    group.add(deck)
-    for (const side of [-2.65, -0.65]) {
-      const rail = new THREE.Mesh(new THREE.BoxGeometry(span + 0.5, 0.09, 0.09), blue)
-      rail.position.set(0, deckY + 0.72, side)
-      group.add(rail)
-      for (let i = 0; i <= 8; i++) {
-        const post = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.68, 0.07), blue)
-        post.position.set(-span / 2 + span * i / 8, deckY + 0.4, side)
-        group.add(post)
-      }
+      const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.5, pillarHeight, 0.75), steel)
+      pillar.position.set(x, -pillarHeight / 2, 0)
+      group.add(pillar)
+      const anchor = new THREE.Mesh(new THREE.SphereGeometry(0.19, 14, 10), blue)
+      anchor.position.set(x, 0, 0)
+      group.add(anchor)
     }
     for (let i = 0; i < solution.xs.length - 1; i++) {
       const start = point(i)
@@ -220,7 +191,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
 
   return <UiBox sx={{ position: 'relative', width: '100%', height: 'min(43vh,405px)', minHeight: 250 }}>
     <div ref={mount} role="img"
-      aria-label={`Rotatable three-dimensional view of a ${span} meter cable with ${loads.length} point loads and ${solution.sag.toFixed(1)} meters of calculated sag. The deck and towers are illustrative.`}
+      aria-label={`Rotatable three-dimensional view of a ${span} meter cable with ${loads.length} point loads and ${solution.sag.toFixed(1)} meters of calculated sag. The two supports extend below the cable's lowest point.`}
       style={{ width: '100%', height: '100%', touchAction: 'none' }} />
     <UiBox sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', flexDirection: 'column',
       gap: 0.5, p: 0.5, bgcolor: 'rgba(255,255,255,.92)', border: '1px solid #d3dce2',
@@ -234,7 +205,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     </UiBox>
     <UiText variant="caption" sx={{ position: 'absolute', bottom: 5, left: 8,
       color: '#465d70', fontSize: 10, pointerEvents: 'none' }}>
-      Drag to orbit · scroll or pinch to zoom · deck is illustrative
+      Drag to orbit · scroll or pinch to zoom
     </UiText>
   </UiBox>
 }
