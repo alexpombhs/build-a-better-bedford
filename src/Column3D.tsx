@@ -154,6 +154,13 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     renderer.toneMappingExposure=1.45
     renderer.shadowMap.enabled=true
     renderer.shadowMap.type=THREE.PCFSoftShadowMap
+    // Keep the drawing buffer independent of the canvas CSS box. Without
+    // explicit CSS dimensions the buffer's intrinsic width can expand a flex
+    // child and shift the rendered column outside the clipped viewport.
+    renderer.domElement.style.display='block'
+    renderer.domElement.style.width='100%'
+    renderer.domElement.style.height='100%'
+    renderer.domElement.style.maxWidth='100%'
     el.appendChild(renderer.domElement)
 
     const scene=new THREE.Scene()
@@ -309,7 +316,9 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     }
 
     const resize=()=>{
-      const w=Math.max(1,el.clientWidth),h=Math.max(1,el.clientHeight)
+      const rect=el.getBoundingClientRect()
+      const w=Math.max(1,Math.round(rect.width))
+      const h=Math.max(1,Math.round(rect.height))
       renderer.setSize(w,h,false)
       camera.aspect=w/h
       camera.updateProjectionMatrix()
@@ -380,9 +389,10 @@ export default function Column3D({material,section,width,length,failure}:Props) 
       renderer.domElement.remove()
     }
   },[material,section,width,length,failure])
-  return <div style={{height:'100%',width:'100%',minHeight:0,position:'relative',touchAction:'none'}}>
+  return <div style={{height:'100%',width:'100%',minHeight:0,minWidth:0,maxWidth:'100%',
+    position:'relative',overflow:'hidden',flex:'1 1 0%',touchAction:'none'}}>
     <div ref={host} role="img"
       aria-label={failure==='buckling'?'3D column bending sideways under the modeled buckling limit':failure==='compression'?'3D column at its compression limit':'3D column before failure'}
-      style={{height:'100%',width:'100%'}}/>
+      style={{position:'absolute',inset:0,width:'100%',height:'100%',overflow:'hidden'}}/>
   </div>
 }
