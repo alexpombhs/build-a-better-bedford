@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { MenuItem, TextField } from '@mui/material'
-import { UiBox, UiButton, UiSurface, UiText } from './components/atoms/MuiPrimitives'
+import { UiBox, UiButton, UiSelect, UiText } from './components/atoms/MuiPrimitives'
 import { LabDetails, LabSlider, labColors } from './lab/LabUI'
 import { SimulatorWorkspace, SimulatorStatus, SimulatorVisual, SimulatorControls } from './lab/SimulatorLayout'
 
@@ -247,7 +246,6 @@ export default function ColumnSimulator() {
   const changeWidth = (value: number) => { setWidth(value); setAppliedLoad(0); setResult(null) }
   const changeLength = (value: number) => { setLength(value); setAppliedLoad(0); setResult(null) }
   const changeLoad = (value: number) => { setAppliedLoad(value); setResult(null) }
-  const selectSx = { '& .MuiOutlinedInput-root': { bgcolor: '#fff' } }
 
   return <SimulatorWorkspace
     status={<SimulatorStatus
@@ -264,17 +262,15 @@ export default function ColumnSimulator() {
     </SimulatorVisual>}
     controls={<SimulatorControls>
       <UiText sx={{ fontWeight: 700, fontSize: 14, color: labColors.ink }}>Column configuration</UiText>
-      <TextField select label="Material" size="small" fullWidth value={material}
-        onChange={e => changeMaterial(e.target.value as Material)} sx={selectSx}>
-        {(Object.keys(materials) as Material[]).map(name=><MenuItem key={name} value={name}>{name}</MenuItem>)}
-      </TextField>
-      <TextField select label="Cross-section" size="small" fullWidth value={section}
-        onChange={e => changeSection(e.target.value as Section)} sx={selectSx}>
-        <MenuItem value="square">Square</MenuItem>
-        <MenuItem value="hollow-square">Hollow square</MenuItem>
-        <MenuItem value="pipe">Pipe</MenuItem>
-        <MenuItem value="hollow-pipe">Hollow pipe</MenuItem>
-      </TextField>
+      <UiSelect label="Material" value={material} onValueChange={value => changeMaterial(value as Material)}
+        options={(Object.keys(materials) as Material[]).map(name => ({value:name,label:name}))}/>
+      <UiSelect label="Cross-section" value={section} onValueChange={value => changeSection(value as Section)}
+        options={[
+          {value:'square',label:'Square'},
+          {value:'hollow-square',label:'Hollow square'},
+          {value:'pipe',label:'Pipe'},
+          {value:'hollow-pipe',label:'Hollow pipe'},
+        ]}/>
       <UiBox sx={{ display: 'flex', flexDirection: 'column', gap: .25 }}>
         <LabSlider compact label={section.includes('pipe') ? 'Base diameter' : 'Base width'}
           value={width} min={.05} max={.6} step={.01} unit="m" onChange={changeWidth}/>
