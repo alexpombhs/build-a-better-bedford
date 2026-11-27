@@ -258,8 +258,8 @@ export default function Column3D({material,section,width,length,failure}:Props) 
       const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
       const baseChipGeometry=new THREE.TetrahedronGeometry(1,0)
       const chipMaterial=new THREE.MeshStandardMaterial({
-        color:chipColor, metalness:material==='Steel'||material==='Copper'?.55:0,roughness:.7,
-        transparent:material==='Glass',opacity:material==='Glass'?.72:1,side:THREE.DoubleSide,
+        color:chipColor, metalness:(material==='Steel'||material==='Copper') ? .55 : 0,roughness:.7,
+        transparent:material==='Glass',opacity:material==='Glass' ? .72 : 1,side:THREE.DoubleSide,
       })
       const dustGeometry=new THREE.SphereGeometry(1,8,6)
       const dustMaterial=new THREE.MeshBasicMaterial({
@@ -270,16 +270,16 @@ export default function Column3D({material,section,width,length,failure}:Props) 
         const dust=i>=chipCount
         const mesh=new THREE.Mesh(dust?dustGeometry:baseChipGeometry,dust?dustMaterial:chipMaterial)
         const angle=rand()*Math.PI*2
-        const radius=(dust?.14:.07)+rand()*.13
+        const radius=(dust ? .14 : .07)+rand()*.13
         const startY=1.35+rand()*.32
         mesh.position.set(Math.cos(angle)*radius,startY,Math.sin(angle)*radius)
-        const size=(dust?.065:.025)+(dust?rand()*.09:rand()*.052)
+        const size=(dust ? .065 : .025)+(dust ? rand()*.09 : rand()*.052)
         mesh.scale.set(size*(.65+rand()),size*(.6+rand()),size*(.65+rand()))
         mesh.visible=false
         scene.add(mesh)
         particles.push({
           mesh, dust,startY,
-          velocity:new THREE.Vector3(Math.cos(angle)*(.9+rand()*1.2),(dust?.2:.7)+rand()*(dust?.55:1.1),Math.sin(angle)*(.9+rand()*1.2)),
+          velocity:new THREE.Vector3(Math.cos(angle)*(.9+rand()*1.2),(dust ? .2 : .7)+rand()*(dust ? .55 : 1.1),Math.sin(angle)*(.9+rand()*1.2)),
           spin:new THREE.Vector3(rand()*5-2.5,rand()*6-3,rand()*5-2.5),
         })
       }
@@ -311,7 +311,7 @@ export default function Column3D({material,section,width,length,failure}:Props) 
           if(!particle.mesh.visible)continue
           particle.mesh.position.set(
             particle.velocity.x*t*.5,
-            Math.max(particle.dust?.06:.035,particle.startY+particle.velocity.y*t-2.3*t*t),
+            Math.max(particle.dust ? .06 : .035,particle.startY+particle.velocity.y*t-2.3*t*t),
             particle.velocity.z*t*.5,
           )
           particle.mesh.rotation.set(particle.spin.x*t,particle.spin.y*t,particle.spin.z*t)
