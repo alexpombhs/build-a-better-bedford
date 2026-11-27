@@ -166,8 +166,10 @@ export default function ColumnSimulator() {
       </UiBox>
       <LabDetails title="Load calculations">
         <UiText sx={{ fontSize: 12, color: labColors.muted, mt: 1, mb: 1 }}>
-          Model: pinned-end Euler buckling and axial compression. Illustrations are schematic.
-          Fracture and post-buckling behavior are not calculated.
+          Model: pinned-end Euler buckling and axial compression. Deformation is illustrative, not
+          a computed strain or post-failure prediction. Solid metal sections show broad barreling;
+          hollow metal sections show possible local wall folding. Actual response depends on geometry,
+          end restraint, imperfections, and material behavior.
           {result?.failed && ' ' + responseDescription(material, result.governing)}
         </UiText>
         <UiBox sx={{ p: 1.25, mt: .5, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)',
