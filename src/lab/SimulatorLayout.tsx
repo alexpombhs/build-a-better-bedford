@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { UiBox, UiSurface, UiText } from '../components/atoms/MuiPrimitives'
+import { UiBox, UiButton, UiSurface, UiText } from '../components/atoms/MuiPrimitives'
 import { labColors } from './LabUI'
 
 // Shared engineering simulator organisms: the same composition, spacing,
@@ -22,11 +22,12 @@ export function SimulatorWorkspace({ status, visual, controls }: {
   </UiBox>
 }
 
-export function SimulatorStatus({ title, detail, tone = 'neutral', action }: {
+export function SimulatorStatus({ title, detail, tone = 'neutral', actionLabel, onAction }: {
   title: ReactNode
   detail: ReactNode
   tone?: 'neutral' | 'success' | 'warning' | 'failure'
-  action?: ReactNode
+  actionLabel?: string
+  onAction?: () => void
 }) {
   const palette = {
     neutral: { bg:'#f2f6f8', border:labColors.border, ink:labColors.ink },
@@ -44,7 +45,11 @@ export function SimulatorStatus({ title, detail, tone = 'neutral', action }: {
       <UiText sx={{fontSize:14,fontWeight:800,color:palette.ink}}>{title}</UiText>
       <UiText variant="body2" sx={{fontSize:12,lineHeight:1.5,color:labColors.muted}}>{detail}</UiText>
     </UiBox>
-    {action}
+    {actionLabel && onAction && <UiButton variant="contained" size="small" onClick={onAction}
+      sx={{bgcolor:labColors.accent,whiteSpace:'nowrap',textTransform:'none',
+        alignSelf:{xs:'flex-start',sm:'center'},'&:hover':{bgcolor:labColors.ink}}}>
+      {actionLabel}
+    </UiButton>}
   </UiBox>
 }
 
