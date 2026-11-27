@@ -64,7 +64,7 @@ export function SimulatorVisual({ title, children, height }: {
     display:'flex', flexDirection:'column', minHeight:0,
   }}>
     <UiText sx={{fontSize:14,fontWeight:700,color:labColors.ink,mb:.5}}>{title}</UiText>
-    <UiBox sx={{flex:1,minHeight:0,width:'100%',display:'flex',flexDirection:'column',justifyContent:'center'}}>
+    <UiBox sx={{flex:'1 1 0%',minHeight:0,minWidth:0,maxWidth:'100%',width:'100%',display:'flex',flexDirection:'column',justifyContent:'center',overflow:'hidden'}}>
       {children}
     </UiBox>
   </UiSurface>
