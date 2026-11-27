@@ -74,7 +74,7 @@ function createFinish(name: ColumnMaterial, texture: THREE.CanvasTexture | null)
 
 // Sweep a proper square or circular cross-section along a slightly curved
 // centerline. The inside wall and open annular ends are true geometry.
-function buildColumn(section: ColumnSection, width: number, length: number) {
+function buildColumn(section: ColumnSection, width: number, length: number, startFraction=0, endFraction=1) {
   const circular=section.includes('pipe')
   const hollow=section.startsWith('hollow')
   const count=circular?48:4
@@ -94,7 +94,7 @@ function buildColumn(section: ColumnSection, width: number, length: number) {
   // Store local x/y/z and fraction along the column, for animated bending.
   const origin:number[]=[], along:number[]=[]
   for(let k=0;k<=steps;k++){
-    const u=k/steps
+    const u=startFraction+(endFraction-startFraction)*k/steps
     for(let wall=0;wall<ringCount;wall++){
       const r=wall===0?outer:inner
       for(let i=0;i<count;i++){
@@ -120,9 +120,10 @@ function buildColumn(section: ColumnSection, width: number, length: number) {
       }
     }else{
       const center=vertices.length/3
-      origin.push(0,height*k/steps,0)
-      along.push(k/steps)
-      vertices.push(0,height*k/steps,0)
+      const u=k===0?startFraction:endFraction
+      origin.push(0,height*u,0)
+      along.push(u)
+      vertices.push(0,height*u,0)
       uvs.push(.5,k===steps?1:0)
       for(let i=0;i<count;i++){
         if(k===steps)indexes.push(center,vi(k,0,i),vi(k,0,i+1))
@@ -199,7 +200,29 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     column.receiveShadow=true
     scene.add(column)
 
-    const failureBend=failure==='buckling'
+    // Wood and glass can lose continuity following a limiting event.
+    // Model two independently moving sections, not a whole-column rubber bend.
+    // The fracture plane and motion are illustrative, never predicted.
+    const splitting=(material==='Wood'||material==='Glass') && failure!==null
+    const breakHeight=1.48
+    const lowerGroup=new THREE.Group()
+    const upperGroup=new THREE.Group()
+    if(splitting){
+      const lowerGeometry=buildColumn(section,width,length,0,breakHeight/3).geometry
+      const upperGeometry=buildColumn(section,width,length,breakHeight/3,1).geometry
+      const lower=new THREE.Mesh(lowerGeometry,finish)
+      const upper=new THREE.Mesh(upperGeometry,finish)
+      lower.castShadow=true;upper.castShadow=true
+      lower.receiveShadow=true;upper.receiveShadow=true
+      lowerGroup.add(lower)
+      upper.position.y=-breakHeight
+      upperGroup.position.y=breakHeight
+      upperGroup.add(upper)
+      lowerGroup.visible=false;upperGroup.visible=false
+      scene.add(lowerGroup,upperGroup)
+    }
+
+    const failureBend=failure==='buckling' && !splitting
     const brittle=material==='Glass'||material==='Concrete'||material==='Granite / Stone'
     const bend=failureBend?(brittle?.12:material==='Wood'?.32:.55):0
     const position=geometry.getAttribute('position') as THREE.BufferAttribute
@@ -230,7 +253,7 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     }
 
     // Material-specific, intentionally qualitative surface crack marks.
-    if(failure && brittle){
+    if(failure && brittle && !splitting){
       const crackPoints=[
         [-.28,1.3],[.08,1.4],[-.1,1.54],[.24,1.66],[-.16,1.81],
       ].map(([x,y])=>new THREE.Vector3(x*diameter, y,diameter*.51))
@@ -242,12 +265,12 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     // Animated, non-explosive material failure cue: small surface fragments
     // and a brief dust puff, rather than a flat comic-book overlay.
     // This is intentionally illustrative, not an impact/fracture solver.
-    const compressionFailure=failure==='compression'
+    const compressionFailure=failure==='compression' || splitting
     const brittleFragments=brittle || material==='Wood'
     const particles: { mesh:THREE.Mesh; velocity:THREE.Vector3; spin:THREE.Vector3; dust:boolean; startY:number }[]=[]
     if(compressionFailure){
-      const chipCount=brittleFragments?30:12
-      const dustCount=brittleFragments?20:9
+      const chipCount=splitting ? (material==='Glass'?62:42) : brittleFragments?30:12
+      const dustCount=splitting ? 34 : brittleFragments?20:9
       const chipColor=material==='Glass'?'#a6dce9'
         :material==='Concrete'?'#b4b7b9'
         :material==='Granite / Stone'?'#828c96'
@@ -301,24 +324,38 @@ export default function Column3D({material,section,width,length,failure}:Props) 
         const progress=Math.min(1,elapsed/.8)
         updateBend(1-Math.pow(1-progress,3))
       }
+      if(splitting){
+        // Short anticipation, then an obvious separation and tipping section.
+        const p=Math.min(1,Math.max(0,(elapsed-.16)/.85))
+        const ease=1-Math.pow(1-p,3)
+        column.visible=elapsed<.16
+        lowerGroup.visible=elapsed>=.16
+        upperGroup.visible=elapsed>=.16
+        upperGroup.rotation.z=-(material==='Glass' ? .84 : .66)*ease
+        upperGroup.rotation.x=.13*ease
+        upperGroup.position.set(.22*ease,breakHeight-.12*ease,0)
+        lowerGroup.rotation.z=.025*ease
+      }
       if(compressionFailure){
-        // A short visible axial shortening accompanies the particle cue.
-        const p=Math.min(1,elapsed/.36)
-        column.scale.y=1-.045*(1-Math.pow(1-p,3))
+        // Ductile materials shorten; glass and wood split instead.
+        if(!splitting){
+          const p=Math.min(1,elapsed/.36)
+          column.scale.y=1-.045*(1-Math.pow(1-p,3))
+        }
         for(const particle of particles){
-          const t=Math.max(0,elapsed-.10)
-          particle.mesh.visible=t>0 && t<2.7
+          const t=Math.max(0,elapsed-(splitting ? .18 : .10))
+          particle.mesh.visible=t>0 && t<3.4
           if(!particle.mesh.visible)continue
           particle.mesh.position.set(
             particle.velocity.x*t*.5,
-            Math.max(particle.dust ? .06 : .035,particle.startY+particle.velocity.y*t-2.3*t*t),
+            Math.max(particle.dust ? .06 : .035,particle.startY+particle.velocity.y*t-(splitting?1.2:2.3)*t*t),
             particle.velocity.z*t*.5,
           )
           particle.mesh.rotation.set(particle.spin.x*t,particle.spin.y*t,particle.spin.z*t)
           if(particle.dust){
             const expansion=1+Math.min(2,t*1.5)
             particle.mesh.scale.setScalar(.08*expansion)
-            ;(particle.mesh.material as THREE.MeshBasicMaterial).opacity=Math.max(0,.25*(1-t/2.7))
+            ;(particle.mesh.material as THREE.MeshBasicMaterial).opacity=Math.max(0,.25*(1-t/3.4))
           }
         }
       }
