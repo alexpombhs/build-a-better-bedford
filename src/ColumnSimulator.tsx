@@ -134,7 +134,7 @@ function ColumnIllustration({ material, section, width, length, result }: {
     return `${cx + dx / 3 + Math.cos(angle) * r},${y0 + h * .54 + Math.sin(angle) * r}`
   }).join(' ')
 
-  return <svg viewBox="0 0 640 350" width="100%" style={{ display: 'block', height: 'min(44vh,390px)', minHeight: 290 }}
+  return <svg viewBox="0 0 640 350" width="100%" style={{ display: 'block', width: '100%', height: '100%' }}
     role="img" aria-label={buckled
       ? brittle ? 'Slightly bent brittle column with illustrative surface cracks after theoretical buckling' : 'Column bent sideways at the theoretical buckling limit'
       : compression ? showCrack ? 'Column with schematic cracks at the compressive limit' : 'Column with schematic yielding at the compressive limit'
@@ -249,30 +249,31 @@ export default function ColumnSimulator() {
   const selectSx = { '& .MuiOutlinedInput-root': { bgcolor: '#fff' } }
 
   return <UiBox sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0,1.27fr) minmax(335px,.73fr)' },
-    columnGap: 2, rowGap: 1.25, pb: 2, alignItems: 'stretch' }}>
+    columnGap: 2, rowGap: 1.25, pb: 2, alignItems: 'start' }}>
     <UiBox sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, minWidth: 0 }}>
-      <UiBox role="status" sx={{ p: 1.5, border: '1px solid '+(result?.failed ? '#df9e89' : labColors.border),
-        borderRadius: 'var(--bbb-card-radius, 4px)', bgcolor: result?.failed ? '#fff0eb' : result ? '#edf5f1' : '#f2f6f8' }}>
+      <UiBox role="status" aria-live="polite" sx={{ p: 1.5, border: '1px solid '+(result?.failed ? '#df9e89' : labColors.border),
+        borderRadius: 'var(--bbb-card-radius, 4px)', bgcolor: result?.failed ? '#fff0eb' : result ? '#edf5f1' : '#f2f6f8',
+        height: {xs: 142, sm: 122}, boxSizing: 'border-box', overflowY: 'auto' }}>
         <UiText sx={{ fontSize: 14, fontWeight: 800, color: result?.failed ? '#9b3825' : labColors.ink }}>
           {result?.failed ? `Limit exceeded: ${result.governing === 'buckling' ? 'Buckling' : 'Compression'}`
             : result ? 'Column supports the applied load' : 'Column ready for analysis'}
         </UiText>
         <UiText sx={{ fontSize: 12, color: labColors.muted }}>
-          {result ? `Applied: ${formatLoad(result.appliedLoad)} kN · Theoretical limit: ${formatLoad(result.capacity)} kN`
+          {result
+            ? `Applied: ${formatLoad(result.appliedLoad)} kN · Theoretical limit: ${formatLoad(result.capacity)} kN. ${result.failed
+              ? responseDescription(material, result.governing)
+              : 'The column stays straight below this limit.'}`
             : 'Choose a load on the right, then select Calculate load.'}
         </UiText>
       </UiBox>
       <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, borderColor: labColors.border,
-        bgcolor: '#f5f8fa', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        bgcolor: '#f5f8fa', display: 'flex', flexDirection: 'column', height: 450, boxSizing: 'border-box', overflow: 'hidden' }}>
         <UiText sx={{ fontWeight: 700, fontSize: 14, color: labColors.ink }}>Column response</UiText>
-        <UiBox sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+        <UiBox sx={{ flex: 1, minHeight: 0, width: '100%', display: 'flex', alignItems: 'center' }}>
           <ColumnIllustration material={material} section={section} width={width} length={length} result={result}/>
         </UiBox>
         <UiText sx={{ fontSize: 11.5, color: labColors.muted }}>
-          {result?.failed
-            ? responseDescription(material, result.governing)
-            : result ? 'The applied load is below the theoretical limit, so the column remains straight.'
-              : 'Select a load and calculate to test whether this column stays straight.'}
+          Illustrative column geometry · Failure indicators appear after applying a load.
         </UiText>
       </UiSurface>
     </UiBox>
@@ -296,13 +297,10 @@ export default function ColumnSimulator() {
         <LabSlider compact label="Length" value={length} min={1} max={5} step={.05} unit="m" onChange={changeLength}/>
         <LabSlider compact label="Applied load" value={Math.min(appliedLoad,sliderMaximum)} min={0} max={sliderMaximum}
           step={1} unit="kN" onChange={changeLoad}/>
-        <UiText sx={{ fontSize: 11.5, color: labColors.muted }}>
-          Estimated limit: {formatLoad(theoretical.capacity)} kN. Increase the load and recalculate to compare.
-        </UiText>
+ 
       </UiBox>
       <UiText sx={{ fontSize: 11.5, color: labColors.muted }}>
         Elastic modulus: {materials[material].E} GPa · Material limit: {materials[material].strength} MPa
-        {section.startsWith('hollow') ? ' · Wall thickness assumed to be 1/6 of outer width.' : ''}
       </UiText>
       <UiBox sx={{ display: 'flex', gap: 1, mt: .5, flexWrap: 'wrap' }}>
         <UiButton variant="contained" size="small" onClick={() => setResult(calculate(material,section,width,length,appliedLoad))}
@@ -316,9 +314,9 @@ export default function ColumnSimulator() {
       <UiBox sx={{ p: 1.1, mt: .75, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)',
         display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.25 }}>
         <UiBox>
-          <UiText variant="caption" sx={{ color:labColors.muted, fontSize:11.5 }}>Governing load</UiText>
+          <UiText variant="caption" sx={{ color:labColors.muted, fontSize:11.5 }}>Theoretical load limit</UiText>
           <UiText sx={{ fontSize:15, fontWeight:800, color:labColors.ink }}>
-            {result ? formatLoad(result.capacity)+' kN' : '—'}
+            {formatLoad(theoretical.capacity)+' kN'}
           </UiText>
         </UiBox>
         <UiBox>
@@ -328,20 +326,20 @@ export default function ColumnSimulator() {
           </UiText>
         </UiBox>
       </UiBox>
-      {result && <LabDetails title="Load calculations">
+      <LabDetails title="Load calculations">
         <UiBox sx={{ p: 1.25, mt: .5, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)',
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
           {([
-            ['Compressive limit', formatLoad(result.compression)+' kN'],
-            ['Euler buckling', formatLoad(result.buckling)+' kN'],
-            ['Area', result.area.toExponential(3)+' m²'],
-            ['Second moment', result.inertia.toExponential(3)+' m⁴'],
+            ['Compressive limit', formatLoad(theoretical.compression)+' kN'],
+            ['Euler buckling', formatLoad(theoretical.buckling)+' kN'],
+            ['Area', theoretical.area.toExponential(3)+' m²'],
+            ['Second moment', theoretical.inertia.toExponential(3)+' m⁴'],
           ] as const).map(([name,value])=><UiBox key={name}>
             <UiText variant="caption" sx={{ color:labColors.muted }}>{name}</UiText>
             <UiText sx={{ fontSize:12.5, fontWeight:700 }}>{value}</UiText>
           </UiBox>)}
         </UiBox>
-      </LabDetails>}
+      </LabDetails>
       <UiText variant="caption" sx={{ fontSize:11, color:labColors.muted, lineHeight:1.4, mt:'auto', pt:1 }}>
         Simplified pinned-end Euler buckling and axial compression model. The displayed cracks and bends illustrate
         possible material responses only when the applied load reaches the model's limit, not predicted fracture, deflection or post-buckling behavior.
