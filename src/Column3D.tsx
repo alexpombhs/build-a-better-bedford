@@ -13,7 +13,6 @@ type Props = {
   length: number
   failure: ColumnFailure
   load: number
-  loadApplied: boolean
 }
 
 function makeSurfaceTexture(material: ColumnMaterial): THREE.CanvasTexture | null {
@@ -64,8 +63,11 @@ function createFinish(name: ColumnMaterial, texture: THREE.CanvasTexture | null)
   const settings: Record<ColumnMaterial, THREE.MeshPhysicalMaterialParameters> = {
     Steel: {color:'#8696a6',metalness:.45,roughness:.37,clearcoat:.16},
     Copper: {color:'#ae6846',metalness:.45,roughness:.38,clearcoat:.18},
-    Glass: {color:'#70a8c3',metalness:0,roughness:.17,transparent:true,opacity:.83,
-      transmission:.08,thickness:.28,ior:1.45,depthWrite:false,side:THREE.DoubleSide},
+    // Surface transparency is deliberately used instead of glass transmission:
+    // it keeps the hollow interior and rear edges legible without a dark,
+    // opaque-looking refractive volume against the shared light lab canvas.
+    Glass: {color:'#c2e9f2',metalness:0,roughness:.12,transparent:true,opacity:.43,
+      transmission:0,thickness:.12,ior:1.45,depthWrite:false,side:THREE.DoubleSide},
     Wood: {color:'#fff4e4',map:texture,metalness:0,roughness:.82},
     Concrete: {color:'#fff',map:texture,metalness:0,roughness:.95},
     'Granite / Stone': {color:'#fff',map:texture,metalness:.04,roughness:.69},
@@ -142,7 +144,7 @@ function buildColumn(section: ColumnSection, width: number, length: number, star
   return {geometry,origin,along,diameter}
 }
 
-export default function Column3D({material,section,width,length,failure,load,loadApplied}:Props) {
+export default function Column3D({material,section,width,length,failure,load}:Props) {
   const host=useRef<HTMLDivElement>(null)
   useEffect(()=>{
     const el=host.current
@@ -213,6 +215,18 @@ export default function Column3D({material,section,width,length,failure,load,loa
     column.castShadow=true
     column.receiveShadow=true
     scene.add(column)
+
+    // A subtle edge silhouette distinguishes transparent glass from the
+    // unchanged light background. For solid/unfailed glass the original
+    // geometry provides correct top/rim edges with no opaque body fill.
+    if(material==='Glass' && failure===null){
+      const edges=new THREE.LineSegments(
+        new THREE.EdgesGeometry(geometry,24),
+        new THREE.LineBasicMaterial({color:'#477d96',transparent:true,opacity:.72,depthTest:false}),
+      )
+      edges.renderOrder=2
+      scene.add(edges)
+    }
 
     // The force vector follows the same axial load represented in the control
     // panel, with its tip just above the column's top surface (y = 3 m).
@@ -431,13 +445,6 @@ export default function Column3D({material,section,width,length,failure,load,loa
   },[material,section,width,length,failure,load])
   return <div style={{width:'100%',height:'100%',minWidth:0,minHeight:0,maxWidth:'100%',
     position:'relative',display:'block',overflow:'hidden',contain:'layout size paint',touchAction:'none'}}>
-    <div aria-live="polite" style={{
-      position:'absolute',left:12,top:10,zIndex:2,padding:'5px 8px',
-      fontSize:12,fontWeight:700,color:'#8c3d28',pointerEvents:'none',
-      background:'rgba(245,248,250,.93)',borderRadius:4,
-    }}>
-      {load>0 ? `${loadApplied?'Applied':'Selected'} downward force: ${Math.round(load).toLocaleString('en-US')} kN` : 'No axial force selected'}
-    </div>
     <div ref={host} role="img"
       aria-label={failure==='buckling'?'3D column bending sideways under the modeled buckling limit':failure==='compression'?'3D column at its compression limit':'3D column before failure'}
       style={{position:'absolute',top:0,right:0,bottom:0,left:0,overflow:'hidden',contain:'strict'}}/>
