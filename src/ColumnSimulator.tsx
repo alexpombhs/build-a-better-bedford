@@ -90,6 +90,15 @@ export default function ColumnSimulator() {
   const changeLength = (value: number) => { setLength(value); setAppliedLoad(0); setResult(null) }
   const changeLoad = (value: number) => { setAppliedLoad(value); setResult(null) }
 
+  const resetExperiment = () => {
+    setMaterial('Steel')
+    setSection('pipe')
+    setWidth(.6)
+    setLength(3.7)
+    setAppliedLoad(0)
+    setResult(null)
+  }
+
   return <SimulatorWorkspace
     status={<SimulatorStatus
       tone={result?.failed ? 'failure' : result ? 'success' : 'neutral'}
@@ -99,6 +108,8 @@ export default function ColumnSimulator() {
       detail={result
         ? `Applied ${formatLoad(result.appliedLoad)} kN / limit ${formatLoad(result.capacity)} kN`
         : 'Set a load, then select Calculate load.'}
+      actionLabel="Reset"
+      onAction={resetExperiment}
     />}
     visual={<SimulatorVisual title="Column response">
       <Column3D material={material} section={section} width={width} length={length} failure={result?.failed ? result.governing : null}/>
@@ -130,9 +141,6 @@ export default function ColumnSimulator() {
           sx={{ bgcolor:labColors.accent, textTransform:'none', '&:hover': { bgcolor:labColors.ink } }}>
           Calculate load
         </UiButton>
-        <UiButton size="small" sx={{ textTransform:'none', color:labColors.accent }} onClick={() => {
-          setMaterial('Steel'); setSection('pipe'); setWidth(.6); setLength(3.7); setAppliedLoad(0); setResult(null)
-        }}>Reset</UiButton>
       </UiBox>
       <UiBox sx={{ p: 1.1, mt: .75, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)',
         display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.25 }}>
