@@ -251,19 +251,16 @@ export default function ColumnSimulator() {
   return <UiBox sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0,1.27fr) minmax(335px,.73fr)' },
     columnGap: 2, rowGap: 1.25, pb: 2, alignItems: 'start' }}>
     <UiBox sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, minWidth: 0 }}>
-      <UiBox role="status" aria-live="polite" sx={{ p: 1.5, border: '1px solid '+(result?.failed ? '#df9e89' : labColors.border),
-        borderRadius: 'var(--bbb-card-radius, 4px)', bgcolor: result?.failed ? '#fff0eb' : result ? '#edf5f1' : '#f2f6f8',
-        height: {xs: 142, sm: 122}, boxSizing: 'border-box', overflowY: 'auto' }}>
+      <UiBox role="status" aria-live="polite" sx={{ px: 2, py: 0.75, border: '1px solid '+(result?.failed ? '#df9e89' : labColors.border),
+        borderRadius: 'var(--bbb-card-radius, 4px)', bgcolor: result?.failed ? '#fff0eb' : result ? '#edf5f1' : '#f2f6f8' }}>
         <UiText sx={{ fontSize: 14, fontWeight: 800, color: result?.failed ? '#9b3825' : labColors.ink }}>
           {result?.failed ? `Limit exceeded: ${result.governing === 'buckling' ? 'Buckling' : 'Compression'}`
             : result ? 'Column supports the applied load' : 'Column ready for analysis'}
         </UiText>
         <UiText sx={{ fontSize: 12, color: labColors.muted }}>
           {result
-            ? `Applied: ${formatLoad(result.appliedLoad)} kN · Theoretical limit: ${formatLoad(result.capacity)} kN. ${result.failed
-              ? responseDescription(material, result.governing)
-              : 'The column stays straight below this limit.'}`
-            : 'Choose a load on the right, then select Calculate load.'}
+            ? `Applied ${formatLoad(result.appliedLoad)} kN / limit ${formatLoad(result.capacity)} kN`
+            : 'Set a load, then select Calculate load.'}
         </UiText>
       </UiBox>
       <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, borderColor: labColors.border,
@@ -328,6 +325,7 @@ export default function ColumnSimulator() {
         <UiText sx={{ fontSize: 12, color: labColors.muted, mt: 1, mb: 1 }}>
           Model: pinned-end Euler buckling and axial compression. Illustrations are schematic.
           Fracture and post-buckling behavior are not calculated.
+          {result?.failed && ' ' + responseDescription(material, result.governing)}
         </UiText>
         <UiBox sx={{ p: 1.25, mt: .5, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)',
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
