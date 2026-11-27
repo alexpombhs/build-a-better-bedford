@@ -272,9 +272,7 @@ export default function ColumnSimulator() {
         <UiBox sx={{ flex: 1, minHeight: 0, width: '100%', display: 'flex', alignItems: 'center' }}>
           <ColumnIllustration material={material} section={section} width={width} length={length} result={result}/>
         </UiBox>
-        <UiText sx={{ fontSize: 11.5, color: labColors.muted }}>
-          Illustrative column geometry · Failure indicators appear after applying a load.
-        </UiText>
+
       </UiSurface>
     </UiBox>
     <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, borderColor: labColors.border,
@@ -327,6 +325,10 @@ export default function ColumnSimulator() {
         </UiBox>
       </UiBox>
       <LabDetails title="Load calculations">
+        <UiText sx={{ fontSize: 12, color: labColors.muted, mt: 1, mb: 1 }}>
+          Model: pinned-end Euler buckling and axial compression. Illustrations are schematic.
+          Fracture and post-buckling behavior are not calculated.
+        </UiText>
         <UiBox sx={{ p: 1.25, mt: .5, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)',
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
           {([
@@ -340,12 +342,7 @@ export default function ColumnSimulator() {
           </UiBox>)}
         </UiBox>
       </LabDetails>
-      <UiText variant="caption" sx={{ fontSize:11, color:labColors.muted, lineHeight:1.4, mt:'auto', pt:1 }}>
-        Simplified pinned-end Euler buckling and axial compression model. The displayed cracks and bends illustrate
-        possible material responses only when the applied load reaches the model's limit, not predicted fracture, deflection or post-buckling behavior.
-        Local buckling, tensile fracture, imperfections and safety factors are not calculated. Not for structural design.
-        Material properties adapted from Dartmouth’s The Engineering of Structures Around Us (CC BY-NC-SA 4.0).
-      </UiText>
+
     </UiSurface>
   </UiBox>
 }
