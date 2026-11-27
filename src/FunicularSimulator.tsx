@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { UiBox, UiSurface, UiText, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
-import { CableStatusBar, LabDetails, LabSlider, labColors } from './lab/LabUI'
+import { UiBox, UiText, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
+import { LabDetails, LabSlider, labColors } from './lab/LabUI'
+import { SimulatorWorkspace, SimulatorStatus, SimulatorVisual, SimulatorControls } from './lab/SimulatorLayout'
 import { maxSupportedTotalLoad, solveElasticCable } from './lab/funicularPhysics'
 import type { CableLoad, CableSolution } from './lab/funicularPhysics'
 
@@ -182,20 +183,18 @@ export default function FunicularSimulator() {
     setFailures(previous => ({ ...previous, [count]: null }))
   }
 
-  return <UiBox sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0,1.27fr) minmax(335px,.73fr)' }, columnGap: 2, rowGap: 1.25, pb: 2, alignItems: 'stretch' }}>
-    <UiBox sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, minWidth: 0, height: '100%' }}>
-      <CableStatusBar
-        status={status}
-        tension={displayedPeak}
-        strength={shownStrength}
-        segment={broken ? breakIndex + 1 : undefined}
-        onReset={replaceCable}
-      />
-      <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, bgcolor: '#f5f8fa', borderColor: labColors.border, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <UiText sx={{ fontSize: 14, fontWeight: 700, color: labColors.ink, mb: 0.5 }}>
-        Elastic cable under {count === 1 ? 'one load' : 'two loads'}
-      </UiText>
-      <svg viewBox="0 0 640 330" width="100%" style={{height:'min(43vh,405px)',display:'block'}} role="img"
+  return <SimulatorWorkspace
+    status={<SimulatorStatus
+      tone={status === 'broken' ? 'failure' : status === 'warning' ? 'warning' : 'success'}
+      title={broken ? 'Cable broken · segment ' + (breakIndex + 1) : status === 'warning' ? 'Approaching breaking strength' : 'Cable intact'}
+      detail={`Peak tension ${fmt(displayedPeak)} kN / limit ${fmt(shownStrength)} kN`}
+      actionLabel={broken ? 'Replace cable' : undefined}
+      onAction={broken ? replaceCable : undefined}
+    />}
+    visual={<SimulatorVisual title={<>Elastic cable under {count === 1 ? 'one load' : 'two loads'}</>}>
+
+
+      <svg viewBox="0 0 640 330" width="100%" style={{height:'min(34vh,330px)',display:'block',flexShrink:0}} role="img"
         aria-label={broken
           ? 'Cable snapped in segment ' + (breakIndex + 1) + ' under ' + fmt(displayedTotal) + ' kilonewtons of applied load. The weights are falling.'
           : 'Elastic cable across ' + shownSpan + ' meters with ' + fmt(displayed.sag) + ' meters calculated sag and ' + shownLoads.length + ' hanging weights.'}>
@@ -319,10 +318,8 @@ export default function FunicularSimulator() {
         {count === 2 && ' The middle reading shows how much the cable rises or falls from P1 to P2.'}
         {broken && ' Force and angle readings show the cable just before it snapped.'}
       </UiText>
-      </UiSurface>
-    </UiBox>
-
-    <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, borderColor: labColors.border, height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+    </SimulatorVisual>}
+    controls={<SimulatorControls>
       <UiBox sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
         <UiText sx={{ fontWeight: 700, fontSize: 14 }}>Point loads</UiText>
         <UiTabs value={count} onChange={(_, value) => changeCount(value as 1 | 2)}
@@ -343,9 +340,6 @@ export default function FunicularSimulator() {
           <LabSlider label="Load 2 position" value={pos2} min={pos1 + 10} max={85} step={5} unit="%" onChange={value => updateSettings({ pos2: value })} disabled={Boolean(broken)} compact />
         </>}
       </UiBox>
-      {broken && <UiText variant="caption" sx={{ display: 'block', mt: 1.5, color: labColors.muted }}>
-        This experiment is frozen. Use “Replace cable” above the drawing to restart it.
-      </UiText>}
 
       <UiBox sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, p: 1.1, mt: 0.75, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)' }}>
         <UiBox>
@@ -363,6 +357,8 @@ export default function FunicularSimulator() {
         <UiBox sx={{ p: 1.5, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)' }}>
           <UiText variant="caption" sx={{display:'block',color:labColors.muted,mb:1}}>
             Maximum supported load assumes the same load positions and proportions.
+            This idealized model excludes fatigue, cable weight and falling dynamics.
+            {displayed.maxStrainPercent > 12 && ' Modeled stretch is high (' + fmt(displayed.maxStrainPercent) + '%); it is not representative of typical structural cable.'}
           </UiText>
           <UiBox sx={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:1.5}}>
             <UiBox><UiText variant="caption">Peak segment tension</UiText><UiText sx={{fontWeight:700}}>{fmt(displayedPeak)} kN</UiText></UiBox>
@@ -378,14 +374,7 @@ export default function FunicularSimulator() {
           </UiBox>
         </UiBox>
       </LabDetails>
-      {displayed.maxStrainPercent > 12 && <UiText role="status" variant="body2" sx={{ mt: 2, color: '#97501c', lineHeight: 1.5 }}>
-        High modeled stretch ({fmt(displayed.maxStrainPercent)}%). This educational elastic cord
-        is much more stretchable than a typical structural cable; do not treat these values as bridge design limits.
-      </UiText>}
 
-      <UiText variant="caption" sx={{ display: 'block', mt: 1, fontSize: 11, color: labColors.muted, lineHeight: 1.35 }}>
-        Idealized static model for learning, not structural design. It does not model material fatigue, supports, cable weight, or falling dynamics.
-      </UiText>
-    </UiSurface>
-  </UiBox>
+    </SimulatorControls>}
+  />
 }
