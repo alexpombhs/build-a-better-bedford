@@ -19,13 +19,15 @@ type Section = 'square' | 'hollow-square' | 'pipe' | 'hollow-pipe'
 type Result = {
   governing: 'compression' | 'buckling'
   capacity: number
+  appliedLoad: number
+  failed: boolean
   compression: number
   buckling: number
   area: number
   inertia: number
 }
 
-function calculate(material: Material, section: Section, width: number, length: number): Result {
+function calculate(material: Material, section: Section, width: number, length: number, appliedLoad: number): Result {
   // SI units. For hollow sections the assumed wall is 1/6 of the outer width.
   const inside = section.startsWith('hollow') ? width * (2 / 3) : 0
   const round = section.includes('pipe')
@@ -36,6 +38,8 @@ function calculate(material: Material, section: Section, width: number, length: 
   return {
     governing: compression <= buckling ? 'compression' : 'buckling',
     capacity: Math.min(compression, buckling),
+    appliedLoad,
+    failed: appliedLoad >= Math.min(compression, buckling),
     compression, buckling, area, inertia,
   }
 }
@@ -77,8 +81,8 @@ function ColumnIllustration({ material, section, width, length, result }: {
 }) {
   const round = section.includes('pipe')
   const hollow = section.startsWith('hollow')
-  const buckled = result?.governing === 'buckling'
-  const compression = result?.governing === 'compression'
+  const buckled = !!result?.failed && result.governing === 'buckling'
+  const compression = !!result?.failed && result.governing === 'compression'
   const h = 158 + (length - 1) / 4 * 97
   const y0 = 308 - h
   const y1 = 308
@@ -87,8 +91,8 @@ function ColumnIllustration({ material, section, width, length, result }: {
   const behavior = responseStyle[material]
   const brittle = behavior === 'brittle'
   const bend = buckled ? (brittle ? 9 : behavior === 'wood' ? 23 : behavior === 'variable' ? 30 : 42) : 0
-  const showCrack = !!result && (brittle || behavior === 'wood')
-  const showYield = !!result && !buckled && (behavior === 'ductile' || behavior === 'variable')
+  const showCrack = !!result?.failed && (brittle || behavior === 'wood')
+  const showYield = !!result?.failed && !buckled && (behavior === 'ductile' || behavior === 'variable')
   // Keep each material visually recognizable even in the failed state.
   // SVG gradients and vector patterns need no external image assets.
   const appearance: Record<Material, {front:string; side:string; top:string; edge:string}> = {
@@ -231,24 +235,31 @@ export default function ColumnSimulator() {
   const [section, setSection] = useState<Section>('pipe')
   const [width, setWidth] = useState(.6)
   const [length, setLength] = useState(3.7)
+  const [appliedLoad, setAppliedLoad] = useState(0)
   const [result, setResult] = useState<Result | null>(null)
+  const theoretical = calculate(material, section, width, length, 0)
+  // The upper range follows the selected section, so even very strong or
+  // very slender columns can be taken from zero through their failure limit.
+  const sliderMaximum = Math.max(10, Math.ceil(theoretical.capacity * 1.5 / 10) * 10)
   const changeMaterial = (value: Material) => { setMaterial(value); setResult(null) }
   const changeSection = (value: Section) => { setSection(value); setResult(null) }
   const changeWidth = (value: number) => { setWidth(value); setResult(null) }
   const changeLength = (value: number) => { setLength(value); setResult(null) }
+  const changeLoad = (value: number) => { setAppliedLoad(value); setResult(null) }
   const selectSx = { '& .MuiOutlinedInput-root': { bgcolor: '#fff' } }
 
   return <UiBox sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0,1.27fr) minmax(335px,.73fr)' },
     columnGap: 2, rowGap: 1.25, pb: 2, alignItems: 'stretch' }}>
     <UiBox sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, minWidth: 0 }}>
-      <UiBox role="status" sx={{ p: 1.5, border: '1px solid '+(result ? '#df9e89' : labColors.border),
-        borderRadius: 'var(--bbb-card-radius, 4px)', bgcolor: result ? '#fff0eb' : '#f2f6f8' }}>
-        <UiText sx={{ fontSize: 14, fontWeight: 800, color: result ? '#9b3825' : labColors.ink }}>
-          {result ? `Failure mode: ${result.governing === 'buckling' ? 'Buckling' : 'Compression'}` : 'Column ready for analysis'}
+      <UiBox role="status" sx={{ p: 1.5, border: '1px solid '+(result?.failed ? '#df9e89' : labColors.border),
+        borderRadius: 'var(--bbb-card-radius, 4px)', bgcolor: result?.failed ? '#fff0eb' : result ? '#edf5f1' : '#f2f6f8' }}>
+        <UiText sx={{ fontSize: 14, fontWeight: 800, color: result?.failed ? '#9b3825' : labColors.ink }}>
+          {result?.failed ? `Limit exceeded: ${result.governing === 'buckling' ? 'Buckling' : 'Compression'}`
+            : result ? 'Column supports the applied load' : 'Column ready for analysis'}
         </UiText>
         <UiText sx={{ fontSize: 12, color: labColors.muted }}>
-          {result ? `${result.governing === 'buckling' ? 'Buckling' : 'Compressive'} load: ${formatLoad(result.capacity)} kN`
-            : 'Select material and dimensions, then calculate the limiting load.'}
+          {result ? `Applied: ${formatLoad(result.appliedLoad)} kN · Theoretical limit: ${formatLoad(result.capacity)} kN`
+            : 'Choose a load on the right, then select Calculate load.'}
         </UiText>
       </UiBox>
       <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, borderColor: labColors.border,
@@ -258,9 +269,10 @@ export default function ColumnSimulator() {
           <ColumnIllustration material={material} section={section} width={width} length={length} result={result}/>
         </UiBox>
         <UiText sx={{ fontSize: 11.5, color: labColors.muted }}>
-          {result
+          {result?.failed
             ? responseDescription(material, result.governing)
-            : 'The column remains straight until the theoretical load is calculated.'}
+            : result ? 'The applied load is below the theoretical limit, so the column remains straight.'
+              : 'Select a load and calculate to test whether this column stays straight.'}
         </UiText>
       </UiSurface>
     </UiBox>
@@ -282,18 +294,23 @@ export default function ColumnSimulator() {
         <LabSlider compact label={section.includes('pipe') ? 'Base diameter' : 'Base width'}
           value={width} min={.05} max={.6} step={.01} unit="m" onChange={changeWidth}/>
         <LabSlider compact label="Length" value={length} min={1} max={5} step={.05} unit="m" onChange={changeLength}/>
+        <LabSlider compact label="Applied load" value={Math.min(appliedLoad,sliderMaximum)} min={0} max={sliderMaximum}
+          step={1} unit="kN" onChange={changeLoad}/>
+        <UiText sx={{ fontSize: 11.5, color: labColors.muted }}>
+          Estimated limit: {formatLoad(theoretical.capacity)} kN. Increase the load and recalculate to compare.
+        </UiText>
       </UiBox>
       <UiText sx={{ fontSize: 11.5, color: labColors.muted }}>
         Elastic modulus: {materials[material].E} GPa · Material limit: {materials[material].strength} MPa
         {section.startsWith('hollow') ? ' · Wall thickness assumed to be 1/6 of outer width.' : ''}
       </UiText>
       <UiBox sx={{ display: 'flex', gap: 1, mt: .5, flexWrap: 'wrap' }}>
-        <UiButton variant="contained" size="small" onClick={() => setResult(calculate(material,section,width,length))}
+        <UiButton variant="contained" size="small" onClick={() => setResult(calculate(material,section,width,length,appliedLoad))}
           sx={{ bgcolor:labColors.accent, textTransform:'none', '&:hover': { bgcolor:labColors.ink } }}>
           Calculate load
         </UiButton>
         <UiButton size="small" sx={{ textTransform:'none', color:labColors.accent }} onClick={() => {
-          setMaterial('Steel'); setSection('pipe'); setWidth(.6); setLength(3.7); setResult(null)
+          setMaterial('Steel'); setSection('pipe'); setWidth(.6); setLength(3.7); setAppliedLoad(0); setResult(null)
         }}>Reset</UiButton>
       </UiBox>
       <UiBox sx={{ p: 1.1, mt: .75, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)',
@@ -305,9 +322,9 @@ export default function ColumnSimulator() {
           </UiText>
         </UiBox>
         <UiBox>
-          <UiText variant="caption" sx={{ color:labColors.muted, fontSize:11.5 }}>Failure mechanism</UiText>
+          <UiText variant="caption" sx={{ color:labColors.muted, fontSize:11.5 }}>Applied load</UiText>
           <UiText sx={{ fontSize:15, fontWeight:800, color:labColors.ink }}>
-            {result ? (result.governing === 'buckling' ? 'Buckling' : 'Compression') : '—'}
+            {result ? formatLoad(result.appliedLoad)+' kN' : '—'}
           </UiText>
         </UiBox>
       </UiBox>
@@ -327,7 +344,7 @@ export default function ColumnSimulator() {
       </LabDetails>}
       <UiText variant="caption" sx={{ fontSize:11, color:labColors.muted, lineHeight:1.4, mt:'auto', pt:1 }}>
         Simplified pinned-end Euler buckling and axial compression model. The displayed cracks and bends illustrate
-        possible material responses, not predicted fracture, deflection or post-buckling behavior.
+        possible material responses only when the applied load reaches the model's limit, not predicted fracture, deflection or post-buckling behavior.
         Local buckling, tensile fracture, imperfections and safety factors are not calculated. Not for structural design.
         Material properties adapted from Dartmouth’s The Engineering of Structures Around Us (CC BY-NC-SA 4.0).
       </UiText>
