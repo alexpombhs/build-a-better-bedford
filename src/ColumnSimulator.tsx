@@ -133,7 +133,7 @@ export default function ColumnSimulator() {
         ]}/>
       <UiBox sx={{ display: 'flex', flexDirection: 'column', gap: .25 }}>
         <LabSlider compact label={section.includes('pipe') ? 'Base diameter' : 'Base width'}
-          value={width} min={.05} max={.6} step={.01} unit="m" onChange={changeWidth}/>
+          value={width} min={.05} max={1.5} step={.01} unit="m" onChange={changeWidth}/>
         <LabSlider compact label="Length" value={length} min={1} max={5} step={.05} unit="m" onChange={changeLength}/>
         <LabSlider compact label="Applied load" value={Math.min(appliedLoad,sliderMaximum)} min={0} max={sliderMaximum}
           step={1} unit="kN" onChange={changeLoad}/>
