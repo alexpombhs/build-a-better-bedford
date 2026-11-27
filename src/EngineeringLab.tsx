@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import FunicularSimulator from './FunicularSimulator'
+import ColumnSimulator from './ColumnSimulator'
 import HandsOnPost from './components/HandsOnPost'
 import type { ReactNode } from 'react'
 import { UiBox, UiSurface, UiStack, UiText, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
@@ -40,7 +41,7 @@ export function EngineeringSectionIntro({tab,actions}:{tab:Tab;actions?:ReactNod
 }
 
 export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
-  const [simulator,setSimulator] = useState<'beam'|'funicular'>('funicular')
+  const [simulator,setSimulator] = useState<'beam'|'funicular'|'column'>('funicular')
   const [load,setLoad]=useState(10)
   const [position,setPosition]=useState(50)
   const [span,setSpan]=useState(6)
@@ -54,12 +55,13 @@ export function EngineeringWorkspace({tab}:{tab:Exclude<Tab,'ideas'>}) {
   // until it has been reviewed and explicitly enabled.
   const showBeamForces = false
   return <UiBox sx={{pb:2}}>
-    {showBeamForces && <UiTabs value={simulator} onChange={(_,value) => setSimulator(value as 'beam'|'funicular')} aria-label="Choose a force simulator"
+    {<UiTabs value={simulator} onChange={(_,value) => setSimulator(value as 'beam'|'funicular'|'column')} aria-label="Choose a force simulator"
       sx={{mb:1.5,minHeight:34,'& .MuiTabs-indicator':{backgroundColor:labColors.ink}}}>
       <UiTab value="funicular" label="Funicular cable" sx={{textTransform:'none',minHeight:34,py:0.5}}/>
-      <UiTab value="beam" label="Beam forces" sx={{textTransform:'none',minHeight:34,py:0.5}}/>
+      <UiTab value="column" label="Columns" sx={{textTransform:'none',minHeight:34,py:0.5}}/>
+      {showBeamForces && <UiTab value="beam" label="Beam forces" sx={{textTransform:'none',minHeight:34,py:0.5}}/>}
     </UiTabs>}
-    {!showBeamForces || simulator === 'funicular' ? <FunicularSimulator/> :
+    {simulator === 'column' ? <ColumnSimulator/> : !showBeamForces || simulator === 'funicular' ? <FunicularSimulator/> :
     <UiBox sx={{display:'grid',gridTemplateColumns:{xs:'1fr',lg:'minmax(0,1.35fr) minmax(320px,.65fr)'},gap:3}}>
       <UiSurface variant="outlined" sx={{p:3,bgcolor:"#f5f8f6",borderColor:labColors.border,borderRadius:3}}>
         <svg viewBox="0 0 640 310" role="img" aria-label="A simply supported beam with an adjustable point load and reactions at both ends">
