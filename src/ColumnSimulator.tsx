@@ -42,6 +42,32 @@ function calculate(material: Material, section: Section, width: number, length: 
 
 const formatLoad = (value: number) => Math.round(value).toLocaleString('en-US')
 
+// These describe typical qualitative responses, NOT additional calculated
+// strength limits. Fracture requires tensile strength and flaw information
+// that the simplified course material table does not provide.
+const responseStyle: Record<Material, 'ductile' | 'brittle' | 'wood' | 'variable'> = {
+  Steel: 'ductile',
+  Copper: 'ductile',
+  Plastic: 'variable',
+  Wood: 'wood',
+  Glass: 'brittle',
+  Concrete: 'brittle',
+  'Granite / Stone': 'brittle',
+}
+function responseDescription(material: Material, governing: Result['governing']) {
+  const style = responseStyle[material]
+  if (governing === 'buckling') {
+    if (style === 'brittle') return 'Euler buckling governs this idealized model. A brittle column may fracture as bending creates tensile stress; the small bend and crack are illustrative, not a predicted fracture load.'
+    if (style === 'wood') return 'Buckling governs. Wood may bend or split depending on grain, defects and loading; splitting is not calculated here.'
+    if (style === 'variable') return 'Buckling governs. Different plastics may bend, yield or crack depending on their formulation.'
+    return 'Buckling governs. Large bending is an exaggerated illustration of instability, not a calculated deflection.'
+  }
+  if (style === 'brittle') return 'The material compression limit governs. Cracking or crushing is illustrated schematically; actual fracture depends on defects and stress distribution.'
+  if (style === 'wood') return 'The compression limit governs. Local crushing and grain-dependent splitting are possible.'
+  if (style === 'variable') return 'The compression limit governs. Plastic may yield or crack depending on its type.'
+  return 'The material compression limit governs. Yielding or local deformation is illustrated, not a predicted shape.'
+}
+
 function ColumnIllustration({ material, section, width, length, result }: {
   material: Material
   section: Section
@@ -58,7 +84,11 @@ function ColumnIllustration({ material, section, width, length, result }: {
   const y1 = 308
   const cx = 335
   const halfWidth = 15 + (width - .05) / .55 * 21
-  const bend = buckled ? 42 : 0
+  const behavior = responseStyle[material]
+  const brittle = behavior === 'brittle'
+  const bend = buckled ? (brittle ? 9 : behavior === 'wood' ? 23 : behavior === 'variable' ? 30 : 42) : 0
+  const showCrack = !!result && (brittle || behavior === 'wood')
+  const showYield = !!result && !buckled && (behavior === 'ductile' || behavior === 'variable')
   // Keep each material visually recognizable even in the failed state.
   // SVG gradients and vector patterns need no external image assets.
   const appearance: Record<Material, {front:string; side:string; top:string; edge:string}> = {
@@ -102,8 +132,8 @@ function ColumnIllustration({ material, section, width, length, result }: {
 
   return <svg viewBox="0 0 640 350" width="100%" style={{ display: 'block', height: 'min(44vh,390px)', minHeight: 290 }}
     role="img" aria-label={buckled
-      ? `A ${hollow ? 'hollow ' : ''}${round ? 'circular' : 'square'} column bent sideways due to buckling`
-      : compression ? 'Compression is the governing failure mode, illustrated with a burst on the straight column'
+      ? brittle ? 'Slightly bent brittle column with illustrative surface cracks after theoretical buckling' : 'Column bent sideways at the theoretical buckling limit'
+      : compression ? showCrack ? 'Column with schematic cracks at the compressive limit' : 'Column with schematic yielding at the compressive limit'
         : `Straight ${hollow ? 'hollow ' : ''}${round ? 'circular' : 'square'} column`}>
     <defs>
       <linearGradient id="column-steel" x1="0" y1="0" x2="1" y2="0">
@@ -173,8 +203,18 @@ function ColumnIllustration({ material, section, width, length, result }: {
         stroke={edge} strokeWidth="1.7"/>
       {hollow && <path d={innerPath} fill="none" stroke={edge} strokeWidth="1.2"/>}
     </>}
-    {compression && <polygon points={burst} fill="#f5d24b" stroke="#8d4a24" strokeWidth="1.6"/>}
-    {buckled && <path d={`M ${cx+bend*1.6} ${y0+h*.55} h 38`} stroke="#a04c35" strokeWidth="2" strokeLinecap="round"/>}
+    {/* Material-dependent educational annotations, independent of the two limit calculations. */}
+    {showCrack && <g fill="none" stroke={material === 'Glass' ? '#477d9e' : '#583f36'} strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round">
+      <path d={`M ${L+3+bend*.9} ${y0+h*.42} l 9 10 -6 12 12 10 -8 14`}/>
+      <path d={`M ${R-4+bend*.9} ${y0+h*.48} l -9 8 6 11 -9 11`}/>
+      {material === 'Glass' && <path d={`M ${L+12+bend*.9} ${y0+h*.48} l 12 -7 10 12 M ${R-13+bend*.9} ${y0+h*.56} l -12 13`}/>}
+    </g>}
+    {showYield && <g fill="none" stroke="#a66a38" strokeWidth="2.4" strokeDasharray="5 3" opacity=".85">
+      <path d={`M ${L-5} ${y0+h*.63} h ${halfWidth*2+10}`}/>
+      <path d={`M ${L-5} ${y0+h*.68} h ${halfWidth*2+10}`}/>
+    </g>}
+    {compression && !showCrack && !showYield && <polygon points={burst} fill="#f5d24b" stroke="#8d4a24" strokeWidth="1.6"/>}
+    {buckled && !brittle && <path d={`M ${cx+bend*1.6} ${y0+h*.55} h 38`} stroke="#a04c35" strokeWidth="2" strokeLinecap="round"/>}
   </svg>
 }
 
@@ -210,11 +250,9 @@ export default function ColumnSimulator() {
           <ColumnIllustration material={material} section={section} width={width} length={length} result={result}/>
         </UiBox>
         <UiText sx={{ fontSize: 11.5, color: labColors.muted }}>
-          {result?.governing === 'buckling'
-            ? 'Exaggerated lateral deformation; dashed line shows the original position.'
-            : result?.governing === 'compression'
-              ? 'Compression governs. The failure marker is schematic, not a fracture prediction.'
-              : 'The column remains straight until the theoretical load is calculated.'}
+          {result
+            ? responseDescription(material, result.governing)
+            : 'The column remains straight until the theoretical load is calculated.'}
         </UiText>
       </UiSurface>
     </UiBox>
@@ -280,8 +318,9 @@ export default function ColumnSimulator() {
         </UiBox>
       </LabDetails>}
       <UiText variant="caption" sx={{ fontSize:11, color:labColors.muted, lineHeight:1.4, mt:'auto', pt:1 }}>
-        Simplified pinned-end Euler buckling and compression model. Deformation is illustrative, not calculated;
-        local buckling, imperfections and safety factors are excluded. Not for structural design.
+        Simplified pinned-end Euler buckling and axial compression model. The displayed cracks and bends illustrate
+        possible material responses, not predicted fracture, deflection or post-buckling behavior.
+        Local buckling, tensile fracture, imperfections and safety factors are not calculated. Not for structural design.
         Material properties adapted from Dartmouth’s The Engineering of Structures Around Us (CC BY-NC-SA 4.0).
       </UiText>
     </UiSurface>
