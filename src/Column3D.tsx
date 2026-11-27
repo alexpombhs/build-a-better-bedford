@@ -161,6 +161,9 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     renderer.domElement.style.width='100%'
     renderer.domElement.style.height='100%'
     renderer.domElement.style.maxWidth='100%'
+    renderer.domElement.style.position='absolute'
+    renderer.domElement.style.inset='0'
+    renderer.domElement.style.boxSizing='border-box'
     el.appendChild(renderer.domElement)
 
     const scene=new THREE.Scene()
@@ -318,16 +321,30 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     }
 
     const resize=()=>{
+      // Measure the containing view, not the WebGL canvas: a canvas has an
+      // intrinsic 300x150 size and can otherwise feed its own size back into
+      // responsive layout calculations.
       const rect=el.getBoundingClientRect()
       const w=Math.max(1,Math.round(rect.width))
       const h=Math.max(1,Math.round(rect.height))
       renderer.setSize(w,h,false)
-      const halfHeight=2.2
-      camera.left=-halfHeight*w/h
-      camera.right=halfHeight*w/h
+      // Force CSS size after every drawing-buffer resize; device pixel ratio
+      // must affect only buffer resolution, never the physical canvas box.
+      const canvas=renderer.domElement
+      canvas.style.width=w+'px'
+      canvas.style.height=h+'px'
+      canvas.style.maxWidth='100%'
+      canvas.style.maxHeight='100%'
+      const halfHeight=2.18
+      const aspect=w/h
+      camera.left=-halfHeight*aspect
+      camera.right=halfHeight*aspect
       camera.top=halfHeight
       camera.bottom=-halfHeight
+      camera.position.set(5.8,3.8,9.4)
+      camera.lookAt(controls.target)
       camera.updateProjectionMatrix()
+      controls.update()
     }
     const observer=new ResizeObserver(resize)
     observer.observe(el)
@@ -395,10 +412,10 @@ export default function Column3D({material,section,width,length,failure}:Props) 
       renderer.domElement.remove()
     }
   },[material,section,width,length,failure])
-  return <div style={{height:'100%',width:'100%',minHeight:0,minWidth:0,maxWidth:'100%',
-    position:'relative',overflow:'hidden',flex:'1 1 0%',touchAction:'none'}}>
+  return <div style={{width:'100%',height:'100%',minWidth:0,minHeight:0,maxWidth:'100%',
+    position:'relative',display:'block',overflow:'hidden',contain:'layout size paint',touchAction:'none'}}>
     <div ref={host} role="img"
       aria-label={failure==='buckling'?'3D column bending sideways under the modeled buckling limit':failure==='compression'?'3D column at its compression limit':'3D column before failure'}
-      style={{position:'absolute',inset:0,width:'100%',height:'100%',overflow:'hidden'}}/>
+      style={{position:'absolute',top:0,right:0,bottom:0,left:0,overflow:'hidden',contain:'strict'}}/>
   </div>
 }
