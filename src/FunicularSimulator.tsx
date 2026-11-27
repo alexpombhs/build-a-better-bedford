@@ -340,9 +340,6 @@ export default function FunicularSimulator() {
           <LabSlider label="Load 2 position" value={pos2} min={pos1 + 10} max={85} step={5} unit="%" onChange={value => updateSettings({ pos2: value })} disabled={Boolean(broken)} compact />
         </>}
       </UiBox>
-      {broken && <UiText variant="caption" sx={{ display: 'block', mt: 1.5, color: labColors.muted }}>
-        This experiment is frozen. Use “Replace cable” above the drawing to restart it.
-      </UiText>}
 
       <UiBox sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, p: 1.1, mt: 0.75, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)' }}>
         <UiBox>
@@ -360,6 +357,8 @@ export default function FunicularSimulator() {
         <UiBox sx={{ p: 1.5, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)' }}>
           <UiText variant="caption" sx={{display:'block',color:labColors.muted,mb:1}}>
             Maximum supported load assumes the same load positions and proportions.
+            This idealized model excludes fatigue, cable weight and falling dynamics.
+            {displayed.maxStrainPercent > 12 && ' Modeled stretch is high (' + fmt(displayed.maxStrainPercent) + '%); it is not representative of typical structural cable.'}
           </UiText>
           <UiBox sx={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:1.5}}>
             <UiBox><UiText variant="caption">Peak segment tension</UiText><UiText sx={{fontWeight:700}}>{fmt(displayedPeak)} kN</UiText></UiBox>
@@ -375,14 +374,7 @@ export default function FunicularSimulator() {
           </UiBox>
         </UiBox>
       </LabDetails>
-      {displayed.maxStrainPercent > 12 && <UiText role="status" variant="body2" sx={{ mt: 2, color: '#97501c', lineHeight: 1.5 }}>
-        High modeled stretch ({fmt(displayed.maxStrainPercent)}%). This educational elastic cord
-        is much more stretchable than a typical structural cable; do not treat these values as bridge design limits.
-      </UiText>}
 
-      <UiText variant="caption" sx={{ display: 'block', mt: 1, fontSize: 11, color: labColors.muted, lineHeight: 1.35 }}>
-        Idealized static model for learning, not structural design. It does not model material fatigue, supports, cable weight, or falling dynamics.
-      </UiText>
     </SimulatorControls>}
   />
 }
