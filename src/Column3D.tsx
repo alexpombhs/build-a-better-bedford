@@ -83,7 +83,7 @@ function createFinish(name: ColumnMaterial, texture: THREE.CanvasTexture | null)
 function buildColumn(
   section: ColumnSection, width: number, length: number,
   startFraction=0, endFraction=1,
-  fracture?: {edge:'start'|'end';material:'Wood'|'Glass'},
+  fracture?: {edge:'start'|'end';material:'Wood'|'Glass'|'Concrete'|'Granite / Stone'},
 ) {
   const circular=section.includes('pipe')
   const hollow=section.startsWith('hollow')
@@ -119,7 +119,7 @@ function buildColumn(
         // Variation is schematic, not a simulated fracture propagation.
         const onBreak=fracture &&
           ((fracture.edge==='end'&&k===steps)||(fracture.edge==='start'&&k===0))
-        const amplitude=fracture?.material==='Wood'?.125:.055
+        const amplitude=fracture?.material==='Wood'?.125:fracture?.material==='Glass'?.055:.095
         const rough=amplitude*(.56*Math.sin(i*2.37)+.3*Math.cos(i*5.13)+.14*Math.sin(i*8.41))
         const y=height*u+(onBreak?rough:0)
         origin.push(x,y,z)
@@ -280,12 +280,13 @@ export default function Column3D({material,section,width,length,failure,load,loa
     // Wood and glass can lose continuity following a limiting event.
     // Model two independently moving sections, not a whole-column rubber bend.
     // The fracture plane and motion are illustrative, never predicted.
-    const splitting=(material==='Wood'||material==='Glass') && failure!==null
+    const stoneFracture=(material==='Concrete'||material==='Granite / Stone') && failure!==null
+    const splitting=(material==='Wood'||material==='Glass'||stoneFracture) && failure!==null
     const breakHeight=1.48
     const lowerGroup=new THREE.Group()
     const upperGroup=new THREE.Group()
     if(splitting){
-      const fractureMaterial=material as 'Glass'|'Wood'
+      const fractureMaterial=material as 'Glass'|'Wood'|'Concrete'|'Granite / Stone'
       const lowerGeometry=buildColumn(section,width,length,0,breakHeight/3,
         {edge:'end',material:fractureMaterial}).geometry
       const upperGeometry=buildColumn(section,width,length,breakHeight/3,1,
@@ -347,6 +348,50 @@ export default function Column3D({material,section,width,length,failure,load,loa
           new THREE.Vector3(radius*.08,.27,frontZ),
           new THREE.Vector3(radius*.4,.38,frontZ),
         ],upperGroup)
+      }
+
+      if(stoneFracture){
+        // Permanent chipped fracture at a localized compression damage zone.
+        // Keep the body texture, but interrupt the load path visibly. The
+        // chips and break are illustrative, not a fracture calculation.
+        const r=diameter/2
+        const chipFinish=new THREE.MeshStandardMaterial({
+          color:material==='Concrete'?'#87949d':'#647583',
+          roughness:1,side:THREE.DoubleSide,
+        })
+        const darkSeam=new THREE.LineBasicMaterial({color:'#354650',depthTest:false})
+        const count=section.includes('pipe')?32:24
+        const rim:THREE.Vector3[]=[]
+        for(let i=0;i<count;i++){
+          const theta=i*2*Math.PI/count
+          const radius=r*(.91+.08*Math.sin(i*4.7))
+          rim.push(new THREE.Vector3(
+            Math.cos(theta)*radius,
+            breakHeight + .065*Math.sin(i*2.37)+.024*Math.cos(i*5.3),
+            Math.sin(theta)*radius,
+          ))
+          if(i%2===0){
+            const chip=new THREE.Mesh(new THREE.TetrahedronGeometry(
+              Math.max(.025,Math.min(.085,diameter*.09))*(.75+.15*(i%3)),0,
+            ),chipFinish)
+            chip.position.copy(rim[i])
+            chip.rotation.set(i*.42,i*.67,i*.23)
+            lowerGroup.add(chip)
+          }
+        }
+        const rimLine=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(rim),darkSeam)
+        rimLine.renderOrder=5
+        lowerGroup.add(rimLine)
+        // Branches read clearly on solid textured surfaces and stay visible.
+        const branch=new THREE.Line(new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(-r*.56,breakHeight-.42,r+.014),
+          new THREE.Vector3(-r*.26,breakHeight-.30,r+.014),
+          new THREE.Vector3(-r*.43,breakHeight-.17,r+.014),
+          new THREE.Vector3(.0,breakHeight-.04,r+.014),
+          new THREE.Vector3(r*.32,breakHeight-.19,r+.014),
+        ]),darkSeam)
+        branch.renderOrder=5
+        lowerGroup.add(branch)
       }
 
       if(material==='Wood'){
@@ -449,8 +494,8 @@ export default function Column3D({material,section,width,length,failure,load,loa
     if(foldMarker){foldMarker.renderOrder=4;scene.add(foldMarker)}
     const particles: { mesh:THREE.Mesh; velocity:THREE.Vector3; spin:THREE.Vector3; dust:boolean; startY:number }[]=[]
     if(compressionFailure && !ductileCompression){
-      const chipCount=splitting ? (material==='Glass'?42:42) : brittleFragments?30:12
-      const dustCount=splitting ? (material==='Glass'?12:34) : brittleFragments?20:9
+      const chipCount=splitting ? (material==='Glass'?42:stoneFracture?26:42) : brittleFragments?30:12
+      const dustCount=splitting ? (material==='Glass'?12:stoneFracture?22:34) : brittleFragments?20:9
       const chipColor=material==='Glass'?'#a6dce9'
         :material==='Concrete'?'#b4b7b9'
         :material==='Granite / Stone'?'#828c96'
@@ -534,17 +579,17 @@ export default function Column3D({material,section,width,length,failure,load,loa
         // separated but mostly straight upper member. The motion is a
         // schematic illustration, not a fracture mechanics simulation.
         const glass=material==='Glass'
-        const startTime=glass?.26:.16
-        const duration=glass?.72:.85
+        const startTime=glass?.26:stoneFracture?.22:.16
+        const duration=glass?.72:stoneFracture?.65:.85
         const p=Math.min(1,Math.max(0,(elapsed-startTime)/duration))
         const ease=1-Math.pow(1-p,3)
         column.visible=elapsed<startTime
         lowerGroup.visible=elapsed>=startTime
         upperGroup.visible=elapsed>=startTime
-        upperGroup.rotation.z=-(glass ? (failure==='buckling'?.26:.12) : .66)*ease
-        upperGroup.rotation.x=(glass?.055:.13)*ease
-        upperGroup.position.set((glass?.14:.22)*ease,breakHeight-(glass?.07:.12)*ease,0)
-        lowerGroup.rotation.z=(glass?.006:.025)*ease
+        upperGroup.rotation.z=-(glass ? (failure==='buckling'?.26:.12) : stoneFracture ? .19 : .66)*ease
+        upperGroup.rotation.x=(glass?.055:stoneFracture?.045:.13)*ease
+        upperGroup.position.set((glass?.14:stoneFracture?.13:.22)*ease,breakHeight-(glass?.07:stoneFracture?.12:.12)*ease,0)
+        lowerGroup.rotation.z=(glass?.006:stoneFracture?.012:.025)*ease
       }
       if(compressionFailure){
         // Wood and glass retain their separate fracture animations. Steel,
