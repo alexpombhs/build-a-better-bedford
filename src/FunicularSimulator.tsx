@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UiBox, UiText, UiTabs, UiTab, UiButton } from './components/atoms/MuiPrimitives'
+import { UiBox, UiText, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
 import { LabDetails, LabSlider, labColors } from './lab/LabUI'
 import { SimulatorWorkspace, SimulatorStatus, SimulatorVisual, SimulatorControls } from './lab/SimulatorLayout'
 import { maxSupportedTotalLoad, solveElasticCable } from './lab/funicularPhysics'
@@ -188,8 +188,8 @@ export default function FunicularSimulator() {
       tone={status === 'broken' ? 'failure' : status === 'warning' ? 'warning' : 'success'}
       title={broken ? 'Cable broken · segment ' + (breakIndex + 1) : status === 'warning' ? 'Approaching breaking strength' : 'Cable intact'}
       detail={`Peak tension ${fmt(displayedPeak)} kN / limit ${fmt(shownStrength)} kN`}
-      action={broken ? <UiButton variant="contained" size="small" onClick={replaceCable}
-        sx={{bgcolor:labColors.accent,textTransform:'none','&:hover':{bgcolor:labColors.ink}}}>Replace cable</UiButton> : undefined}
+      actionLabel={broken ? 'Replace cable' : undefined}
+      onAction={broken ? replaceCable : undefined}
     />}
     visual={<SimulatorVisual title={<>Elastic cable under {count === 1 ? 'one load' : 'two loads'}</>}>
 
