@@ -112,13 +112,13 @@ export default function ColumnSimulator() {
         : result ? 'Column supports the applied load' : 'Column ready for analysis'}
       detail={result
         ? `Applied ${formatLoad(result.appliedLoad)} kN / limit ${formatLoad(result.capacity)} kN`
-        : 'Set a load, then select Calculate load.'}
+        : appliedLoad>0 ? `Selected downward force: ${formatLoad(appliedLoad)} kN. Select Calculate load to test.` : 'Set a load, then select Calculate load.'}
       actionLabel="Reset"
       onAction={resetExperiment}
     />}
     visual={<SimulatorVisual title="Column response">
       <Column3D key={simulationRun} material={material} section={section} width={width} length={length}
-        load={appliedLoad} loadApplied={Boolean(result)} failure={result?.failed ? result.governing : null}/>
+        load={appliedLoad} failure={result?.failed ? result.governing : null}/>
     </SimulatorVisual>}
     controls={<SimulatorControls>
       <UiText sx={{ fontWeight: 700, fontSize: 14, color: labColors.ink }}>Column configuration</UiText>
