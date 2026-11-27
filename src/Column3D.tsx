@@ -223,8 +223,8 @@ export default function Column3D({material,section,width,length,failure,load,loa
         new THREE.Vector3(0,3.88,0),
         .73,0xa84c2e,.19,.13,
       )
-      downward.line.material.depthTest=false
-      downward.cone.material.depthTest=false
+      ;(downward.line.material as THREE.LineBasicMaterial).depthTest=false
+      ;(downward.cone.material as THREE.MeshBasicMaterial).depthTest=false
       downward.renderOrder=10
       scene.add(downward)
     }
