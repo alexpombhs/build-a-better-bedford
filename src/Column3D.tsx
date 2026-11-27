@@ -13,6 +13,7 @@ type Props = {
   length: number
   failure: ColumnFailure
   load: number
+  loadLimit: number
   replay: number
 }
 
@@ -79,10 +80,16 @@ function createFinish(name: ColumnMaterial, texture: THREE.CanvasTexture | null)
 
 // Sweep a proper square or circular cross-section along a slightly curved
 // centerline. The inside wall and open annular ends are true geometry.
-function buildColumn(section: ColumnSection, width: number, length: number, startFraction=0, endFraction=1) {
+function buildColumn(
+  section: ColumnSection, width: number, length: number,
+  startFraction=0, endFraction=1,
+  fracture?: {edge:'start'|'end';material:'Wood'|'Glass'},
+) {
   const circular=section.includes('pipe')
   const hollow=section.startsWith('hollow')
-  const count=circular?48:4
+  // Subdivide square faces too. A four-vertex square cannot show a
+  // jagged fracture edge between its corners.
+  const count=circular?48:24
   const steps=64
   const height=3
   // Preserve the actual width-to-length ratio, including the larger sections.
@@ -94,8 +101,11 @@ function buildColumn(section: ColumnSection, width: number, length: number, star
   const positionsPerRing=count*ringCount
   const sectionPoint=(i:number,r:number):[number,number]=>{
     if(circular){const a=2*Math.PI*i/count;return [r*Math.cos(a),r*Math.sin(a)]}
-    const square:[number,number][]=[[-r,-r],[r,-r],[r,r],[-r,r]]
-    return square[i]
+    const corners:[number,number][]=[[-r,-r],[r,-r],[r,r],[-r,r]]
+    const side=Math.floor(i/6)
+    const t=(i%6)/6
+    const a=corners[side],b=corners[(side+1)%4]
+    return [a[0]*(1-t)+b[0]*t,a[1]*(1-t)+b[1]*t]
   }
   // Store local x/y/z and fraction along the column, for animated bending.
   const origin:number[]=[], along:number[]=[]
@@ -105,9 +115,16 @@ function buildColumn(section: ColumnSection, width: number, length: number, star
       const r=wall===0?outer:inner
       for(let i=0;i<count;i++){
         const [x,z]=sectionPoint(i,r)
-        origin.push(x,height*u,z)
+        // Matching irregular cut profiles on both sides of the fracture.
+        // Variation is schematic, not a simulated fracture propagation.
+        const onBreak=fracture &&
+          ((fracture.edge==='end'&&k===steps)||(fracture.edge==='start'&&k===0))
+        const amplitude=fracture?.material==='Wood'?.125:.055
+        const rough=amplitude*(.56*Math.sin(i*2.37)+.3*Math.cos(i*5.13)+.14*Math.sin(i*8.41))
+        const y=height*u+(onBreak?rough:0)
+        origin.push(x,y,z)
         along.push(u)
-        vertices.push(x,height*u,z)
+        vertices.push(x,y,z)
         uvs.push(i/count,u*2)
       }
     }
@@ -146,7 +163,7 @@ function buildColumn(section: ColumnSection, width: number, length: number, star
   return {geometry,origin,along,diameter}
 }
 
-export default function Column3D({material,section,width,length,failure,load,replay}:Props) {
+export default function Column3D({material,section,width,length,failure,load,loadLimit,replay}:Props) {
   const host=useRef<HTMLDivElement>(null)
   // Preserve the user's orbit across scene rebuilds and repeated load tests.
   const view=useRef<{position:THREE.Vector3;target:THREE.Vector3;zoom:number}|null>(null)
@@ -242,15 +259,22 @@ export default function Column3D({material,section,width,length,failure,load,rep
     // panel, with its tip just above the column's top surface (y = 3 m).
     // It is not a force application point inside the member.
     if(load>0){
-      const downward=new THREE.ArrowHelper(
-        new THREE.Vector3(0,-1,0),
-        new THREE.Vector3(0,3.88,0),
-        .73,0xa84c2e,.19,.13,
-      )
-      ;(downward.line.material as THREE.LineBasicMaterial).depthTest=false
-      ;(downward.cone.material as THREE.MeshBasicMaterial).depthTest=false
-      downward.renderOrder=10
-      scene.add(downward)
+      // WebGL lineWidth is effectively fixed at one pixel. Use a solid
+      // cylinder plus cone, so force magnitude actually changes thickness.
+      const fraction=Math.min(1.5,Math.max(0,load/Math.max(1,loadLimit)))
+      const shaftRadius=.012+.038*fraction
+      const headRadius=.060+.040*fraction
+      const arrow=new THREE.Group()
+      const ink=new THREE.MeshBasicMaterial({color:'#a84c2e',depthTest:false})
+      const shaft=new THREE.Mesh(new THREE.CylinderGeometry(shaftRadius,shaftRadius,.62,14),ink)
+      shaft.position.y=3.59
+      const head=new THREE.Mesh(new THREE.ConeGeometry(headRadius,.25,18),ink)
+      head.rotation.z=Math.PI
+      head.position.y=3.23
+      arrow.add(shaft,head)
+      arrow.renderOrder=10
+      shaft.renderOrder=10;head.renderOrder=10
+      scene.add(arrow)
     }
 
     // Wood and glass can lose continuity following a limiting event.
@@ -261,8 +285,11 @@ export default function Column3D({material,section,width,length,failure,load,rep
     const lowerGroup=new THREE.Group()
     const upperGroup=new THREE.Group()
     if(splitting){
-      const lowerGeometry=buildColumn(section,width,length,0,breakHeight/3).geometry
-      const upperGeometry=buildColumn(section,width,length,breakHeight/3,1).geometry
+      const fractureMaterial=material as 'Glass'|'Wood'
+      const lowerGeometry=buildColumn(section,width,length,0,breakHeight/3,
+        {edge:'end',material:fractureMaterial}).geometry
+      const upperGeometry=buildColumn(section,width,length,breakHeight/3,1,
+        {edge:'start',material:fractureMaterial}).geometry
       const lower=new THREE.Mesh(lowerGeometry,finish)
       const upper=new THREE.Mesh(upperGeometry,finish)
       lower.castShadow=true;upper.castShadow=true
@@ -276,19 +303,19 @@ export default function Column3D({material,section,width,length,failure,load,rep
         // The tube separates across a localized, irregular fracture plane.
         // Keep the two parts nearly straight; the broken edges and crack
         // branches make the brittle failure clear without a ductile elbow.
-        const perimeter=section.includes('pipe')?32:4
         const radius=diameter/2
-        const ringPoints:THREE.Vector3[]=[]
-        for(let i=0;i<perimeter;i++){
-          const theta=i*2*Math.PI/perimeter
-          const x=section.includes('pipe')?radius*Math.cos(theta):(i===0||i===3?-radius:radius)
-          const z=section.includes('pipe')?radius*Math.sin(theta):(i<2?-radius:radius)
-          ringPoints.push(new THREE.Vector3(x,breakHeight + .025*Math.sin(3*theta)+.016*Math.cos(5*theta),z))
+        // Irregular mesh ends replace the former perfectly planar cut ring.
+        // Small translucent chips at the crack's edge catch the light.
+        const edgeChipMaterial=new THREE.MeshStandardMaterial({
+          color:'#9ed2e2',transparent:true,opacity:.73,side:THREE.DoubleSide,roughness:.22,
+        })
+        for(let i=0;i<12;i++){
+          const theta=i*Math.PI*2/12
+          const chip=new THREE.Mesh(new THREE.TetrahedronGeometry(.035+(i%3)*.011),edgeChipMaterial)
+          chip.position.set(Math.cos(theta)*radius,breakHeight+.036*Math.sin(i*2.37),Math.sin(theta)*radius)
+          chip.rotation.set(i*.4,i*.8,i*.3)
+          lowerGroup.add(chip)
         }
-        const ring=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(ringPoints),
-          new THREE.LineBasicMaterial({color:'#497f98',transparent:true,opacity:.95,depthTest:false}))
-        ring.renderOrder=4
-        lowerGroup.add(ring)
         // Distinct branching surface cracks follow the outside of the tube.
         const crackMaterial=new THREE.LineBasicMaterial({color:'#427e9d',transparent:true,opacity:.86,depthTest:false})
         const makeCrack=(points:THREE.Vector3[], parent:THREE.Group)=>{
@@ -320,6 +347,32 @@ export default function Column3D({material,section,width,length,failure,load,rep
           new THREE.Vector3(radius*.08,.27,frontZ),
           new THREE.Vector3(radius*.4,.38,frontZ),
         ],upperGroup)
+      }
+
+      if(material==='Wood'){
+        // Tapered splinters bridge the break visually. They follow the same
+        // general grain direction but vary in length and angle.
+        const r=diameter/2
+        const splinterMaterial=new THREE.MeshStandardMaterial({
+          color:'#c18b57',roughness:.9,side:THREE.DoubleSide,
+        })
+        for(let i=0;i<16;i++){
+          const angle=i*2*Math.PI/16
+          const x=Math.cos(angle)*r*.91
+          const z=Math.sin(angle)*r*.91
+          const tall=.08+.18*(.5+.5*Math.sin(i*4.31))
+          const radius=Math.max(.009,Math.min(.035,diameter*.043))
+          const spike=new THREE.Mesh(new THREE.ConeGeometry(radius,tall,3),splinterMaterial)
+          spike.position.set(x,breakHeight+tall/2-.01,z)
+          spike.rotation.z=.12*Math.sin(i*2.2)
+          lowerGroup.add(spike)
+          if(i%2===0){
+            const hanging=new THREE.Mesh(new THREE.ConeGeometry(radius*.8,tall*.8,3),splinterMaterial)
+            hanging.rotation.z=Math.PI+.12*Math.cos(i)
+            hanging.position.set(x,tall*.4-.015,z)
+            upperGroup.add(hanging)
+          }
+        }
       }
 
       lowerGroup.visible=false;upperGroup.visible=false
@@ -515,7 +568,7 @@ export default function Column3D({material,section,width,length,failure,load,rep
       renderer.dispose()
       renderer.domElement.remove()
     }
-  },[material,section,width,length,failure,load,replay])
+  },[material,section,width,length,failure,load,loadLimit,replay])
   return <div style={{width:'100%',height:'100%',minWidth:0,minHeight:0,maxWidth:'100%',
     position:'relative',display:'block',overflow:'hidden',contain:'layout size paint',touchAction:'none'}}>
     <div ref={host} role="img"
