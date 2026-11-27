@@ -213,7 +213,15 @@ function ColumnIllustration({ material, section, width, length, result }: {
       <path d={`M ${L-5} ${y0+h*.63} h ${halfWidth*2+10}`}/>
       <path d={`M ${L-5} ${y0+h*.68} h ${halfWidth*2+10}`}/>
     </g>}
-    {compression && !showCrack && !showYield && <polygon points={burst} fill="#f5d24b" stroke="#8d4a24" strokeWidth="1.6"/>}
+    {/* Restore the original comic-style burst for ALL compression failures,
+        including brittle materials. Draw it over the texture and alongside
+        the material-specific cracks/yield marks. It is illustrative only. */}
+    {compression && <g aria-hidden="true">
+      <polygon points={burst} fill="#f5d24b" stroke="#8d4a24" strokeWidth="1.6" opacity=".91"/>
+      <text x={cx+dx/3} y={y0+h*.54+6} textAnchor="middle"
+        fontSize="17" fontWeight="900" fill="#753b23" stroke="#fff6cc"
+        strokeWidth="2.4" paintOrder="stroke">BOOM!</text>
+    </g>}
     {buckled && !brittle && <path d={`M ${cx+bend*1.6} ${y0+h*.55} h 38`} stroke="#a04c35" strokeWidth="2" strokeLinecap="round"/>}
   </svg>
 }
