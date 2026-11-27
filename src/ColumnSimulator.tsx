@@ -241,10 +241,10 @@ export default function ColumnSimulator() {
   // The upper range follows the selected section, so even very strong or
   // very slender columns can be taken from zero through their failure limit.
   const sliderMaximum = Math.max(10, Math.ceil(theoretical.capacity * 1.5 / 10) * 10)
-  const changeMaterial = (value: Material) => { setMaterial(value); setResult(null) }
-  const changeSection = (value: Section) => { setSection(value); setResult(null) }
-  const changeWidth = (value: number) => { setWidth(value); setResult(null) }
-  const changeLength = (value: number) => { setLength(value); setResult(null) }
+  const changeMaterial = (value: Material) => { setMaterial(value); setAppliedLoad(0); setResult(null) }
+  const changeSection = (value: Section) => { setSection(value); setAppliedLoad(0); setResult(null) }
+  const changeWidth = (value: number) => { setWidth(value); setAppliedLoad(0); setResult(null) }
+  const changeLength = (value: number) => { setLength(value); setAppliedLoad(0); setResult(null) }
   const changeLoad = (value: number) => { setAppliedLoad(value); setResult(null) }
   const selectSx = { '& .MuiOutlinedInput-root': { bgcolor: '#fff' } }
 
