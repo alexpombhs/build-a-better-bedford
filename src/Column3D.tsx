@@ -427,20 +427,26 @@ export default function Column3D({material,section,width,length,failure,load,loa
     const ductileCompression=failure==='compression' && (
       material==='Steel'||material==='Copper'||material==='Plastic'
     )
-    // Localized, non-destructive schematic yielding cue for ductile materials.
-    // A narrow outer shell follows the column's section instead of looking
-    // like glass cracks or wooden splinters. Its swelling is exaggerated.
-    const yieldBand=ductileCompression ? new THREE.Mesh(
-      buildColumn(section,width*1.065,length,.43,.57).geometry,
-      new THREE.MeshBasicMaterial({
-        color:material==='Copper'?'#db5a33':'#da4934',
-        transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,
-      }),
-    ) : null
-    if(yieldBand){
-      yieldBand.renderOrder=3
-      scene.add(yieldBand)
-    }
+    // Solid specimens can barrel under friction-restrained compression;
+    // hollow tubes instead tend to develop local wall folds. These are
+    // qualitative post-limit illustrations, not load-displacement predictions.
+    const hollowCompression=section.startsWith('hollow')
+    const foldCount=section.includes('pipe')?2:1
+    // This translucent line follows the local fold, without suggesting
+    // a red blister is part of the metal's physical geometry.
+    const foldMarker=ductileCompression && hollowCompression
+      ? new THREE.LineLoop(
+          new THREE.BufferGeometry().setFromPoints(
+            Array.from({length:48},(_,i)=>{
+              const theta=i*Math.PI*2/48
+              const r=diameter/2*1.07
+              return new THREE.Vector3(r*Math.cos(theta),1.48,r*Math.sin(theta))
+            }),
+          ),
+          new THREE.LineBasicMaterial({color:'#b46a42',transparent:true,opacity:0,depthTest:false}),
+        )
+      : null
+    if(foldMarker){foldMarker.renderOrder=4;scene.add(foldMarker)}
     const particles: { mesh:THREE.Mesh; velocity:THREE.Vector3; spin:THREE.Vector3; dust:boolean; startY:number }[]=[]
     if(compressionFailure && !ductileCompression){
       const chipCount=splitting ? (material==='Glass'?42:42) : brittleFragments?30:12
@@ -544,21 +550,35 @@ export default function Column3D({material,section,width,length,failure,load,loa
         // Wood and glass retain their separate fracture animations. Steel,
         // copper and plastic instead show localized swelling under crushing.
         if(ductileCompression){
-          const p=Math.min(1,elapsed/.85)
+          const p=Math.min(1,elapsed/1.1)
           const ease=1-Math.pow(1-p,3)
-          const pulse=1+.065*Math.sin(elapsed*12)*Math.exp(-elapsed*2)
-          const shell=yieldBand!
-          shell.visible=p>0
-          shell.scale.set(pulse,1,pulse)
-          ;(shell.material as THREE.MeshBasicMaterial).opacity=.55*ease
+          // A modest shortening illustrates compression. Without a plasticity
+          // model, the selected load cannot determine actual axial strain.
+          const shortening=(hollowCompression?.095:.12)*ease
           for(let i=0;i<along.length;i++){
             const u=along[i]
-            const local=Math.exp(-Math.pow((u-.50)/.105,2))
-            const radial=1+.22*ease*local
+            let radial:number
+            if(hollowCompression){
+              // Thin-walled shell: an outward/inward fold is more useful than
+              // the solid-cylinder 'inflated ring' drawn previously.
+              const envelope=Math.exp(-Math.pow((u-.49)/.23,2))
+              const fold=Math.cos((u-.49)*Math.PI*2*foldCount/.37)
+              radial=1+.14*ease*envelope*fold
+            }else{
+              // Approximate volume conservation of a solid compressible-test
+              // specimen, with restrained end faces and a broad mid-barrel.
+              const profile=Math.pow(Math.sin(Math.PI*u),1.35)
+              radial=1+(.075*ease)*profile
+            }
             const j=i*3
             position.array[j]=origin[j]*radial
-            position.array[j+1]=origin[j+1]-.11*ease*u
+            position.array[j+1]=origin[j+1]*(1-shortening)
             position.array[j+2]=origin[j+2]*radial
+          }
+          if(foldMarker){
+            const amount=Math.min(1,elapsed/.9)
+            ;(foldMarker.material as THREE.LineBasicMaterial).opacity=.55*amount
+            foldMarker.position.y=1.48*(1-shortening)
           }
           position.needsUpdate=true
           geometry.computeVertexNormals()
