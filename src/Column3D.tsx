@@ -239,6 +239,52 @@ export default function Column3D({material,section,width,length,failure}:Props) 
       scene.add(crack)
     }
 
+    // Animated, non-explosive material failure cue: small surface fragments
+    // and a brief dust puff, rather than a flat comic-book overlay.
+    // This is intentionally illustrative, not an impact/fracture solver.
+    const compressionFailure=failure==='compression'
+    const brittleFragments=brittle || material==='Wood'
+    const particles: { mesh:THREE.Mesh; velocity:THREE.Vector3; spin:THREE.Vector3; dust:boolean; startY:number }[]=[]
+    if(compressionFailure){
+      const chipCount=brittleFragments?30:12
+      const dustCount=brittleFragments?20:9
+      const chipColor=material==='Glass'?'#a6dce9'
+        :material==='Concrete'?'#b4b7b9'
+        :material==='Granite / Stone'?'#828c96'
+        :material==='Wood'?'#bd8756'
+        :material==='Copper'?'#c58a64'
+        :material==='Steel'?'#aebfca':'#7db3b6'
+      let seed=73
+      const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
+      const baseChipGeometry=new THREE.TetrahedronGeometry(1,0)
+      const chipMaterial=new THREE.MeshStandardMaterial({
+        color:chipColor, metalness:material==='Steel'||material==='Copper'?.55:0,roughness:.7,
+        transparent:material==='Glass',opacity:material==='Glass'?.72:1,side:THREE.DoubleSide,
+      })
+      const dustGeometry=new THREE.SphereGeometry(1,8,6)
+      const dustMaterial=new THREE.MeshBasicMaterial({
+        color:material==='Wood'?'#bda084':material==='Glass'?'#c3edf6':'#a9afb2',
+        transparent:true,opacity:.27,depthWrite:false,
+      })
+      for(let i=0;i<chipCount+dustCount;i++){
+        const dust=i>=chipCount
+        const mesh=new THREE.Mesh(dust?dustGeometry:baseChipGeometry,dust?dustMaterial:chipMaterial)
+        const angle=rand()*Math.PI*2
+        const radius=(dust?.14:.07)+rand()*.13
+        const startY=1.35+rand()*.32
+        mesh.position.set(Math.cos(angle)*radius,startY,Math.sin(angle)*radius)
+        const size=(dust?.065:.025)+(dust?rand()*.09:rand()*.052)
+        mesh.scale.set(size*(.65+rand()),size*(.6+rand()),size*(.65+rand()))
+        mesh.visible=false
+        scene.add(mesh)
+        particles.push({
+          mesh, dust,startY,
+          velocity:new THREE.Vector3(Math.cos(angle)*(.9+rand()*1.2),(dust?.2:.7)+rand()*(dust?.55:1.1),Math.sin(angle)*(.9+rand()*1.2)),
+          spin:new THREE.Vector3(rand()*5-2.5,rand()*6-3,rand()*5-2.5),
+        })
+      }
+    }
+
     const resize=()=>{
       const w=Math.max(1,el.clientWidth),h=Math.max(1,el.clientHeight)
       renderer.setSize(w,h,false)
@@ -250,9 +296,31 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     resize()
     let frame=0
     const render=(now:number)=>{
-      if(failureBend && now-start<=800){
-        const progress=Math.min(1,(now-start)/800)
+      const elapsed=Math.max(0,(now-start)/1000)
+      if(failureBend && elapsed<=.8){
+        const progress=Math.min(1,elapsed/.8)
         updateBend(1-Math.pow(1-progress,3))
+      }
+      if(compressionFailure){
+        // A short visible axial shortening accompanies the particle cue.
+        const p=Math.min(1,elapsed/.36)
+        column.scale.y=1-.045*(1-Math.pow(1-p,3))
+        for(const particle of particles){
+          const t=Math.max(0,elapsed-.10)
+          particle.mesh.visible=t>0 && t<2.7
+          if(!particle.mesh.visible)continue
+          particle.mesh.position.set(
+            particle.velocity.x*t*.5,
+            Math.max(particle.dust?.06:.035,particle.startY+particle.velocity.y*t-2.3*t*t),
+            particle.velocity.z*t*.5,
+          )
+          particle.mesh.rotation.set(particle.spin.x*t,particle.spin.y*t,particle.spin.z*t)
+          if(particle.dust){
+            const expansion=1+Math.min(2,t*1.5)
+            particle.mesh.scale.setScalar(.08*expansion)
+            ;(particle.mesh.material as THREE.MeshBasicMaterial).opacity=Math.max(0,.25*(1-t/2.7))
+          }
+        }
       }
       controls.update()
       renderer.render(scene,camera)
@@ -279,13 +347,5 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     <div ref={host} role="img"
       aria-label={failure==='buckling'?'3D column bending sideways under the modeled buckling limit':failure==='compression'?'3D column at its compression limit':'3D column before failure'}
       style={{height:'100%',width:'100%'}}/>
-    {failure==='compression' && <svg aria-hidden="true" viewBox="0 0 100 100"
-      style={{position:'absolute',left:'52%',top:'44%',width:92,height:92,transform:'translate(-50%,-50%)',pointerEvents:'none'}}>
-      <polygon points={Array.from({length:20},(_,i)=>{
-        const a=i*Math.PI/10-Math.PI/2,r=i%2===0?49:25
-        return `${50+Math.cos(a)*r},${50+Math.sin(a)*r}`
-      }).join(' ')} fill="#f6da51" stroke="#99552c" strokeWidth="1.8"/>
-      <text x="50" y="55" textAnchor="middle" fontSize="15" fontWeight="900" fill="#573e2c">BOOM!</text>
-    </svg>}
   </div>
 }
