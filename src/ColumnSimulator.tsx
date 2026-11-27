@@ -100,7 +100,7 @@ export default function ColumnSimulator(){
    <UiSurface variant="outlined" sx={{p:{xs:1.5,md:2},borderColor:labColors.border,bgcolor:'#f5f8fa',flex:1,position:'relative',overflow:'hidden'}}>
     <UiBox sx={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:1}}>
      <UiText sx={{fontSize:14,fontWeight:700}}>Axially loaded column</UiText>
-     <UiButton size="small" onClick={()=>setAnimate(v=>!v)} sx={{textTransform:'none',fontSize:12,color:labColors.accent}}>{animate?'Show straight reference':'Hide straight reference'}</UiButton>
+     <UiButton size="small" onClick={()=>setAnimate(v=>!v)} sx={{textTransform:'none',fontSize:12,color:labColors.accent}}>{animate?'Hide deformation':'Show deformation'}</UiButton>
     </UiBox>
     <UiBox sx={{position:'relative'}}>
      <ColumnView key={stage+'-'+(animate?1:0)} length={length} width={width} thickness={thickness} section={section} buckled={shapeFailed&&buckled&&animate} load={load}/>
