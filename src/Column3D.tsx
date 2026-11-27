@@ -85,7 +85,8 @@ function buildColumn(section: ColumnSection, width: number, length: number, star
   const count=circular?48:4
   const steps=64
   const height=3
-  const diameter=Math.max(.105,Math.min(1.05,width/length*height))
+  // Preserve the actual width-to-length ratio, including the larger sections.
+  const diameter=Math.max(.05,width/length*height)
   const outer=diameter/2
   const inner=hollow?outer*(2/3):0
   const vertices:number[]=[],uvs:number[]=[],indexes:number[]=[]
@@ -375,7 +376,10 @@ export default function Column3D({material,section,width,length,failure,load,rep
       canvas.style.height=h+'px'
       canvas.style.maxWidth='100%'
       canvas.style.maxHeight='100%'
-      const halfHeight=2.42
+      // Fit the entire member at extreme width/length ratios while retaining
+      // the user's orbit orientation and zoom. The 3D model is 3 units tall.
+      const displayDiameter=Math.max(.05,width/length*3)
+      const halfHeight=Math.max(2.42,1.7+displayDiameter*.85)
       const aspect=w/h
       camera.left=-halfHeight*aspect
       camera.right=halfHeight*aspect
