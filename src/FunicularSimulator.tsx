@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UiBox, UiSurface, UiText, UiTabs, UiTab, UiButton } from './components/atoms/MuiPrimitives'
+import { UiBox, UiText, UiTabs, UiTab, UiButton } from './components/atoms/MuiPrimitives'
 import { LabDetails, LabSlider, labColors } from './lab/LabUI'
 import { SimulatorWorkspace, SimulatorStatus, SimulatorVisual, SimulatorControls } from './lab/SimulatorLayout'
 import { maxSupportedTotalLoad, solveElasticCable } from './lab/funicularPhysics'
@@ -194,7 +194,7 @@ export default function FunicularSimulator() {
     visual={<SimulatorVisual title={<>Elastic cable under {count === 1 ? 'one load' : 'two loads'}</>}>
 
 
-      <svg viewBox="0 0 640 330" width="100%" style={{height:'min(43vh,405px)',display:'block'}} role="img"
+      <svg viewBox="0 0 640 330" width="100%" style={{height:'min(34vh,330px)',display:'block',flexShrink:0}} role="img"
         aria-label={broken
           ? 'Cable snapped in segment ' + (breakIndex + 1) + ' under ' + fmt(displayedTotal) + ' kilonewtons of applied load. The weights are falling.'
           : 'Elastic cable across ' + shownSpan + ' meters with ' + fmt(displayed.sag) + ' meters calculated sag and ' + shownLoads.length + ' hanging weights.'}>
