@@ -118,7 +118,8 @@ export default function ColumnSimulator() {
     />}
     visual={<SimulatorVisual title="Column response">
       <Column3D material={material} section={section} width={width} length={length}
-        load={appliedLoad} replay={simulationRun} failure={result?.failed ? result.governing : null}/>
+        load={appliedLoad} loadLimit={theoretical.capacity} replay={simulationRun}
+        failure={result?.failed ? result.governing : null}/>
     </SimulatorVisual>}
     controls={<SimulatorControls>
       <UiText sx={{ fontWeight: 700, fontSize: 14, color: labColors.ink }}>Column configuration</UiText>
