@@ -271,6 +271,57 @@ export default function Column3D({material,section,width,length,failure,load,rep
       upper.position.y=-breakHeight
       upperGroup.position.y=breakHeight
       upperGroup.add(upper)
+
+      if(material==='Glass'){
+        // The tube separates across a localized, irregular fracture plane.
+        // Keep the two parts nearly straight; the broken edges and crack
+        // branches make the brittle failure clear without a ductile elbow.
+        const perimeter=section.includes('pipe')?32:4
+        const radius=diameter/2
+        const ringPoints:THREE.Vector3[]=[]
+        for(let i=0;i<perimeter;i++){
+          const theta=i*2*Math.PI/perimeter
+          const x=section.includes('pipe')?radius*Math.cos(theta):(i===0||i===3?-radius:radius)
+          const z=section.includes('pipe')?radius*Math.sin(theta):(i<2?-radius:radius)
+          ringPoints.push(new THREE.Vector3(x,breakHeight + .025*Math.sin(3*theta)+.016*Math.cos(5*theta),z))
+        }
+        const ring=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(ringPoints),
+          new THREE.LineBasicMaterial({color:'#497f98',transparent:true,opacity:.95,depthTest:false}))
+        ring.renderOrder=4
+        lowerGroup.add(ring)
+        // Distinct branching surface cracks follow the outside of the tube.
+        const crackMaterial=new THREE.LineBasicMaterial({color:'#427e9d',transparent:true,opacity:.86,depthTest:false})
+        const makeCrack=(points:THREE.Vector3[], parent:THREE.Group)=>{
+          const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),crackMaterial)
+          line.renderOrder=5
+          parent.add(line)
+        }
+        const frontZ=section.includes('pipe')?radius*.90:radius+.004
+        makeCrack([
+          new THREE.Vector3(-radius*.35,breakHeight-.38,frontZ),
+          new THREE.Vector3(-radius*.12,breakHeight-.23,frontZ),
+          new THREE.Vector3(-radius*.28,breakHeight-.10,frontZ),
+          new THREE.Vector3(radius*.06,breakHeight,frontZ),
+        ],lowerGroup)
+        makeCrack([
+          new THREE.Vector3(radius*.06,breakHeight,frontZ),
+          new THREE.Vector3(radius*.26,breakHeight-.14,frontZ),
+          new THREE.Vector3(radius*.48,breakHeight-.21,frontZ),
+        ],lowerGroup)
+        // Upper section is modeled in a group whose origin is the seam, so
+        // these points use coordinates relative to that group.
+        makeCrack([
+          new THREE.Vector3(radius*.17,0,frontZ),
+          new THREE.Vector3(-radius*.13,.13,frontZ),
+          new THREE.Vector3(radius*.08,.27,frontZ),
+          new THREE.Vector3(-radius*.2,.44,frontZ),
+        ],upperGroup)
+        makeCrack([
+          new THREE.Vector3(radius*.08,.27,frontZ),
+          new THREE.Vector3(radius*.4,.38,frontZ),
+        ],upperGroup)
+      }
+
       lowerGroup.visible=false;upperGroup.visible=false
       scene.add(lowerGroup,upperGroup)
     }
@@ -322,8 +373,8 @@ export default function Column3D({material,section,width,length,failure,load,rep
     const brittleFragments=brittle || material==='Wood'
     const particles: { mesh:THREE.Mesh; velocity:THREE.Vector3; spin:THREE.Vector3; dust:boolean; startY:number }[]=[]
     if(compressionFailure){
-      const chipCount=splitting ? (material==='Glass'?62:42) : brittleFragments?30:12
-      const dustCount=splitting ? 34 : brittleFragments?20:9
+      const chipCount=splitting ? (material==='Glass'?42:42) : brittleFragments?30:12
+      const dustCount=splitting ? (material==='Glass'?12:34) : brittleFragments?20:9
       const chipColor=material==='Glass'?'#a6dce9'
         :material==='Concrete'?'#b4b7b9'
         :material==='Granite / Stone'?'#828c96'
@@ -350,7 +401,10 @@ export default function Column3D({material,section,width,length,failure,load,rep
         const startY=1.35+rand()*.32
         mesh.position.set(Math.cos(angle)*radius,startY,Math.sin(angle)*radius)
         const size=(dust ? .065 : .025)+(dust ? rand()*.09 : rand()*.052)
-        mesh.scale.set(size*(.65+rand()),size*(.6+rand()),size*(.65+rand()))
+        if(material==='Glass' && !dust){
+          // Thin, irregular glass chips catch the light instead of resembling dust.
+          mesh.scale.set(size*(.7+rand()),size*(1.4+rand()),size*.24)
+        }else mesh.scale.set(size*(.65+rand()),size*(.6+rand()),size*(.65+rand()))
         mesh.visible=false
         scene.add(mesh)
         particles.push({
@@ -400,16 +454,21 @@ export default function Column3D({material,section,width,length,failure,load,rep
         updateBend(1-Math.pow(1-progress,3))
       }
       if(splitting){
-        // Short anticipation, then an obvious separation and tipping section.
-        const p=Math.min(1,Math.max(0,(elapsed-.16)/.85))
+        // Brittle fracture: a short anticipation, a visible crack, then a
+        // separated but mostly straight upper member. The motion is a
+        // schematic illustration, not a fracture mechanics simulation.
+        const glass=material==='Glass'
+        const startTime=glass?.26:.16
+        const duration=glass?.72:.85
+        const p=Math.min(1,Math.max(0,(elapsed-startTime)/duration))
         const ease=1-Math.pow(1-p,3)
-        column.visible=elapsed<.16
-        lowerGroup.visible=elapsed>=.16
-        upperGroup.visible=elapsed>=.16
-        upperGroup.rotation.z=-(material==='Glass' ? .84 : .66)*ease
-        upperGroup.rotation.x=.13*ease
-        upperGroup.position.set(.22*ease,breakHeight-.12*ease,0)
-        lowerGroup.rotation.z=.025*ease
+        column.visible=elapsed<startTime
+        lowerGroup.visible=elapsed>=startTime
+        upperGroup.visible=elapsed>=startTime
+        upperGroup.rotation.z=-(glass ? (failure==='buckling'?.26:.12) : .66)*ease
+        upperGroup.rotation.x=(glass?.055:.13)*ease
+        upperGroup.position.set((glass?.14:.22)*ease,breakHeight-(glass?.07:.12)*ease,0)
+        lowerGroup.rotation.z=(glass?.006:.025)*ease
       }
       if(compressionFailure){
         // Ductile materials shorten; glass and wood split instead.
@@ -418,7 +477,7 @@ export default function Column3D({material,section,width,length,failure,load,rep
           column.scale.y=1-.045*(1-Math.pow(1-p,3))
         }
         for(const particle of particles){
-          const t=Math.max(0,elapsed-(splitting ? .18 : .10))
+          const t=Math.max(0,elapsed-(splitting ? (material==='Glass'?.27:.18) : .10))
           particle.mesh.visible=t>0 && t<3.4
           if(!particle.mesh.visible)continue
           particle.mesh.position.set(
