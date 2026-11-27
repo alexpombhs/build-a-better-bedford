@@ -42,7 +42,8 @@ function calculate(material: Material, section: Section, width: number, length: 
 
 const formatLoad = (value: number) => Math.round(value).toLocaleString('en-US')
 
-function ColumnIllustration({ section, width, length, result }: {
+function ColumnIllustration({ material, section, width, length, result }: {
+  material: Material
   section: Section
   width: number
   length: number
@@ -58,10 +59,22 @@ function ColumnIllustration({ section, width, length, result }: {
   const cx = 335
   const halfWidth = 15 + (width - .05) / .55 * 21
   const bend = buckled ? 42 : 0
-  const front = buckled ? '#b76a49' : '#b1c8df'
-  const side = buckled ? '#995336' : '#839fbe'
-  const topFill = buckled ? '#c48262' : '#c3d7e9'
-  const edge = '#253645'
+  // Keep each material visually recognizable even in the failed state.
+  // SVG gradients and vector patterns need no external image assets.
+  const appearance: Record<Material, {front:string; side:string; top:string; edge:string}> = {
+    Plastic: {front:'url(#column-plastic)',side:'#609ca4',top:'#a4d9d8',edge:'#426e7b'},
+    Glass: {front:'url(#column-glass)',side:'url(#column-glass-side)',top:'#e2f6fa',edge:'#7096ad'},
+    Steel: {front:'url(#column-steel)',side:'#728597',top:'#c6d1da',edge:'#4b5b6c'},
+    Wood: {front:'url(#column-wood)',side:'#93613e',top:'#d8ad77',edge:'#68452e'},
+    Copper: {front:'url(#column-copper)',side:'#99543b',top:'#e7aa7e',edge:'#7b4839'},
+    Concrete: {front:'url(#column-concrete)',side:'#929b9f',top:'#c4c8c9',edge:'#707e83'},
+    'Granite / Stone': {front:'url(#column-stone)',side:'#666f78',top:'#b2b6b9',edge:'#505b64'},
+  }
+  const finish = appearance[material]
+  const front = finish.front
+  const side = finish.side
+  const topFill = finish.top
+  const edge = finish.edge
   const L = cx - halfWidth
   const R = cx + halfWidth
   const dx = Math.max(8, halfWidth * .55)
@@ -92,6 +105,54 @@ function ColumnIllustration({ section, width, length, result }: {
       ? `A ${hollow ? 'hollow ' : ''}${round ? 'circular' : 'square'} column bent sideways due to buckling`
       : compression ? 'Compression is the governing failure mode, illustrated with a burst on the straight column'
         : `Straight ${hollow ? 'hollow ' : ''}${round ? 'circular' : 'square'} column`}>
+    <defs>
+      <linearGradient id="column-steel" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#708394"/><stop offset=".22" stopColor="#e1e9ee"/>
+        <stop offset=".43" stopColor="#9eafbc"/><stop offset=".78" stopColor="#d2dce3"/>
+        <stop offset="1" stopColor="#748798"/>
+      </linearGradient>
+      <linearGradient id="column-copper" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#945138"/><stop offset=".28" stopColor="#d38858"/>
+        <stop offset=".5" stopColor="#f3c294"/><stop offset=".77" stopColor="#b66b49"/>
+        <stop offset="1" stopColor="#864c3a"/>
+      </linearGradient>
+      <linearGradient id="column-plastic" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#6daeb5"/><stop offset=".35" stopColor="#b6e0dd"/>
+        <stop offset=".77" stopColor="#92c9c9"/><stop offset="1" stopColor="#679ea7"/>
+      </linearGradient>
+      <linearGradient id="column-glass" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#8fc1d9" stopOpacity=".55"/>
+        <stop offset=".22" stopColor="#e8fbff" stopOpacity=".82"/>
+        <stop offset=".45" stopColor="#b3e3f0" stopOpacity=".35"/>
+        <stop offset=".72" stopColor="#f8ffff" stopOpacity=".75"/>
+        <stop offset="1" stopColor="#89b8d1" stopOpacity=".58"/>
+      </linearGradient>
+      <linearGradient id="column-glass-side" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#79a9c7" stopOpacity=".4"/>
+        <stop offset="1" stopColor="#b1e1ed" stopOpacity=".8"/>
+      </linearGradient>
+      <pattern id="column-wood" patternUnits="userSpaceOnUse" width="23" height="55">
+        <rect width="23" height="55" fill="#c28b58"/>
+        <path d="M4 -5 Q0 15 5 35 T3 60 M13 -4 Q19 10 14 27 T16 60 M21 -5 Q17 18 21 37 T19 60"
+          fill="none" stroke="#8e5938" strokeWidth="1.2" opacity=".55"/>
+        <path d="M9 2 Q13 18 9 33 T11 52" fill="none" stroke="#e5b98a" strokeWidth="1.1" opacity=".7"/>
+      </pattern>
+      <pattern id="column-concrete" patternUnits="userSpaceOnUse" width="24" height="24">
+        <rect width="24" height="24" fill="#b1b9bd"/>
+        <circle cx="4" cy="5" r="1" fill="#71828a" opacity=".45"/>
+        <circle cx="19" cy="11" r="1.5" fill="#e0e3e3"/>
+        <circle cx="9" cy="20" r=".9" fill="#788b91" opacity=".6"/>
+        <path d="M12 3h2M1 14h3M20 22h2" stroke="#e3e5e5" strokeWidth=".8"/>
+      </pattern>
+      <pattern id="column-stone" patternUnits="userSpaceOnUse" width="27" height="25">
+        <rect width="27" height="25" fill="#8e989f"/>
+        <path d="M2 5l4 -2 3 4 -3 2z M15 3l5 -1 2 5 -5 2z M6 17l4 -3 3 6 -5 2z M19 16l5 2 -2 5 -5 -2z"
+          fill="#5d6c75" opacity=".48"/>
+        <circle cx="14" cy="13" r="1.9" fill="#e0e1dd"/>
+        <circle cx="25" cy="8" r="1.2" fill="#c4c4c0"/>
+        <path d="M1 13l3 1M12 23l4 -2M23 13l3 1" stroke="#d4d6d4" strokeWidth=".9"/>
+      </pattern>
+    </defs>
     {buckled && <path d={`M ${cx} ${y0} V ${y1}`} stroke="#a3b5c1" strokeWidth="1.5" strokeDasharray="5 6" />}
     {round ? <>
       <path d={`M ${L} ${y0} C ${L + bend * 1.7} ${y0+h*.32}, ${L+bend*1.7} ${y0+h*.64}, ${L} ${y1}
@@ -100,14 +161,14 @@ function ColumnIllustration({ section, width, length, result }: {
         fill={front} stroke={edge} strokeWidth="1.7"/>
       <ellipse cx={cx} cy={y0} rx={halfWidth} ry={halfWidth*.28} fill={topFill} stroke={edge} strokeWidth="1.7" />
       {hollow && <>
-        <ellipse cx={cx} cy={y0} rx={halfWidth*2/3} ry={halfWidth*.28*2/3} fill="#52697b" stroke={edge} strokeWidth="1" />
+        <ellipse cx={cx} cy={y0} rx={halfWidth*2/3} ry={halfWidth*.28*2/3} fill={material === 'Glass' ? '#d1f2f8' : '#52697b'} stroke={edge} strokeWidth="1" />
         <path d={`M ${cx-halfWidth*2/3} ${y0} Q ${cx} ${y0+halfWidth*.28*2/3} ${cx+halfWidth*2/3} ${y0}`}
           stroke="#dee8f0" strokeWidth="1.2" fill="none"/>
       </>}
     </> : <>
       <path d={sideFace} fill={side} stroke={edge} strokeWidth="1.5"/>
       <path d={frontFace} fill={front} stroke={edge} strokeWidth="1.7"/>
-      {hollow && <path d={innerPath} fill="#52697b" stroke={edge} strokeWidth="1" />}
+      {hollow && <path d={innerPath} fill={material === 'Glass' ? '#d1f2f8' : '#52697b'} stroke={edge} strokeWidth="1" />}
       <path d={hollow ? outerTop+' '+innerPath : outerTop} fill={topFill} fillRule="evenodd"
         stroke={edge} strokeWidth="1.7"/>
       {hollow && <path d={innerPath} fill="none" stroke={edge} strokeWidth="1.2"/>}
@@ -146,7 +207,7 @@ export default function ColumnSimulator() {
         bgcolor: '#f5f8fa', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <UiText sx={{ fontWeight: 700, fontSize: 14, color: labColors.ink }}>Column response</UiText>
         <UiBox sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <ColumnIllustration section={section} width={width} length={length} result={result}/>
+          <ColumnIllustration material={material} section={section} width={width} length={length} result={result}/>
         </UiBox>
         <UiText sx={{ fontSize: 11.5, color: labColors.muted }}>
           {result?.governing === 'buckling'
