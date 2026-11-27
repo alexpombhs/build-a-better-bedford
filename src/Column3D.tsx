@@ -13,6 +13,7 @@ type Props = {
   length: number
   failure: ColumnFailure
   load: number
+  replay: number
 }
 
 function makeSurfaceTexture(material: ColumnMaterial): THREE.CanvasTexture | null {
@@ -144,8 +145,10 @@ function buildColumn(section: ColumnSection, width: number, length: number, star
   return {geometry,origin,along,diameter}
 }
 
-export default function Column3D({material,section,width,length,failure,load}:Props) {
+export default function Column3D({material,section,width,length,failure,load,replay}:Props) {
   const host=useRef<HTMLDivElement>(null)
+  // Preserve the user's orbit across scene rebuilds and repeated load tests.
+  const view=useRef<{position:THREE.Vector3;target:THREE.Vector3;zoom:number}|null>(null)
   useEffect(()=>{
     const el=host.current
     if(!el) return
@@ -183,6 +186,12 @@ export default function Column3D({material,section,width,length,failure,load}:Pr
     controls.maxPolarAngle=Math.PI*.85
     controls.enableDamping=true
     controls.dampingFactor=.08
+    if(view.current){
+      camera.position.copy(view.current.position)
+      controls.target.copy(view.current.target)
+      camera.zoom=view.current.zoom
+      camera.updateProjectionMatrix()
+    }
     controls.update()
 
     scene.add(new THREE.HemisphereLight('#edf6ff','#75818c',1.65))
@@ -372,8 +381,7 @@ export default function Column3D({material,section,width,length,failure,load}:Pr
       camera.right=halfHeight*aspect
       camera.top=halfHeight
       camera.bottom=-halfHeight
-      camera.position.set(5.8,3.8,9.4)
-      camera.lookAt(controls.target)
+      // Never reset camera pose on resize, material changes or load tests.
       camera.updateProjectionMatrix()
       controls.update()
     }
@@ -430,6 +438,8 @@ export default function Column3D({material,section,width,length,failure,load}:Pr
     return ()=>{
       cancelAnimationFrame(frame)
       observer.disconnect()
+      // Read the current orbit BEFORE disposing the controller.
+      view.current={position:camera.position.clone(),target:controls.target.clone(),zoom:camera.zoom}
       controls.dispose()
       scene.traverse(obj=>{
         if(obj instanceof THREE.Mesh||obj instanceof THREE.Line||obj instanceof THREE.GridHelper){
@@ -442,7 +452,7 @@ export default function Column3D({material,section,width,length,failure,load}:Pr
       renderer.dispose()
       renderer.domElement.remove()
     }
-  },[material,section,width,length,failure,load])
+  },[material,section,width,length,failure,load,replay])
   return <div style={{width:'100%',height:'100%',minWidth:0,minHeight:0,maxWidth:'100%',
     position:'relative',display:'block',overflow:'hidden',contain:'layout size paint',touchAction:'none'}}>
     <div ref={host} role="img"
