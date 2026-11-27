@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { MenuItem, TextField } from '@mui/material'
 import { UiBox, UiButton, UiSurface, UiText } from './components/atoms/MuiPrimitives'
 import { LabDetails, LabSlider, labColors } from './lab/LabUI'
+import { SimulatorWorkspace, SimulatorStatus, SimulatorVisual, SimulatorControls } from './lab/SimulatorLayout'
 
 // Dartmouth: The Engineering of Structures Around Us (CC BY-NC-SA 4.0).
 const materials = {
@@ -248,32 +249,20 @@ export default function ColumnSimulator() {
   const changeLoad = (value: number) => { setAppliedLoad(value); setResult(null) }
   const selectSx = { '& .MuiOutlinedInput-root': { bgcolor: '#fff' } }
 
-  return <UiBox sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0,1.27fr) minmax(335px,.73fr)' },
-    columnGap: 2, rowGap: 1.25, pb: 2, alignItems: 'start' }}>
-    <UiBox sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, minWidth: 0 }}>
-      <UiBox role="status" aria-live="polite" sx={{ px: 2, py: 0.75, border: '1px solid '+(result?.failed ? '#df9e89' : labColors.border),
-        borderRadius: 'var(--bbb-card-radius, 4px)', bgcolor: result?.failed ? '#fff0eb' : result ? '#edf5f1' : '#f2f6f8' }}>
-        <UiText sx={{ fontSize: 14, fontWeight: 800, color: result?.failed ? '#9b3825' : labColors.ink }}>
-          {result?.failed ? `Limit exceeded: ${result.governing === 'buckling' ? 'Buckling' : 'Compression'}`
-            : result ? 'Column supports the applied load' : 'Column ready for analysis'}
-        </UiText>
-        <UiText sx={{ fontSize: 12, color: labColors.muted }}>
-          {result
-            ? `Applied ${formatLoad(result.appliedLoad)} kN / limit ${formatLoad(result.capacity)} kN`
-            : 'Set a load, then select Calculate load.'}
-        </UiText>
-      </UiBox>
-      <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, borderColor: labColors.border,
-        bgcolor: '#f5f8fa', display: 'flex', flexDirection: 'column', height: 450, boxSizing: 'border-box', overflow: 'hidden' }}>
-        <UiText sx={{ fontWeight: 700, fontSize: 14, color: labColors.ink }}>Column response</UiText>
-        <UiBox sx={{ flex: 1, minHeight: 0, width: '100%', display: 'flex', alignItems: 'center' }}>
-          <ColumnIllustration material={material} section={section} width={width} length={length} result={result}/>
-        </UiBox>
-
-      </UiSurface>
-    </UiBox>
-    <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, borderColor: labColors.border,
-      display: 'flex', flexDirection: 'column', gap: 1, height: '100%', boxSizing: 'border-box' }}>
+  return <SimulatorWorkspace
+    status={<SimulatorStatus
+      tone={result?.failed ? 'failure' : result ? 'success' : 'neutral'}
+      title={result?.failed
+        ? `Limit exceeded: ${result.governing === 'buckling' ? 'Buckling' : 'Compression'}`
+        : result ? 'Column supports the applied load' : 'Column ready for analysis'}
+      detail={result
+        ? `Applied ${formatLoad(result.appliedLoad)} kN / limit ${formatLoad(result.capacity)} kN`
+        : 'Set a load, then select Calculate load.'}
+    />}
+    visual={<SimulatorVisual title="Column response">
+      <ColumnIllustration material={material} section={section} width={width} length={length} result={result}/>
+    </SimulatorVisual>}
+    controls={<SimulatorControls>
       <UiText sx={{ fontWeight: 700, fontSize: 14, color: labColors.ink }}>Column configuration</UiText>
       <TextField select label="Material" size="small" fullWidth value={material}
         onChange={e => changeMaterial(e.target.value as Material)} sx={selectSx}>
@@ -341,6 +330,6 @@ export default function ColumnSimulator() {
         </UiBox>
       </LabDetails>
 
-    </UiSurface>
-  </UiBox>
+    </SimulatorControls>}
+  />
 }
