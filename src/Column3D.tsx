@@ -157,11 +157,11 @@ export default function Column3D({material,section,width,length,failure}:Props) 
 
     const scene=new THREE.Scene()
     const camera=new THREE.PerspectiveCamera(34,1,.05,75)
-    camera.position.set(5,3.5,8.5)
+    camera.position.set(4.25,3.4,6.7)
     const controls=new OrbitControls(camera,renderer.domElement)
     controls.target.set(0,1.5,0)
     controls.enablePan=false
-    controls.minDistance=5.3
+    controls.minDistance=4.8
     controls.maxDistance=17
     controls.maxPolarAngle=Math.PI*.85
     controls.enableDamping=true
@@ -250,7 +250,7 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     resize()
     let frame=0
     const render=(now:number)=>{
-      if(failureBend){
+      if(failureBend && now-start<=800){
         const progress=Math.min(1,(now-start)/800)
         updateBend(1-Math.pow(1-progress,3))
       }
