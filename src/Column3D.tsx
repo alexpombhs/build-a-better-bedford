@@ -424,8 +424,25 @@ export default function Column3D({material,section,width,length,failure,load,loa
     // This is intentionally illustrative, not an impact/fracture solver.
     const compressionFailure=failure==='compression' || splitting
     const brittleFragments=brittle || material==='Wood'
+    const ductileCompression=failure==='compression' && (
+      material==='Steel'||material==='Copper'||material==='Plastic'
+    )
+    // Localized, non-destructive schematic yielding cue for ductile materials.
+    // A narrow outer shell follows the column's section instead of looking
+    // like glass cracks or wooden splinters. Its swelling is exaggerated.
+    const yieldBand=ductileCompression ? new THREE.Mesh(
+      buildColumn(section,width*1.065,length,.43,.57).geometry,
+      new THREE.MeshBasicMaterial({
+        color:material==='Copper'?'#db5a33':'#da4934',
+        transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,
+      }),
+    ) : null
+    if(yieldBand){
+      yieldBand.renderOrder=3
+      scene.add(yieldBand)
+    }
     const particles: { mesh:THREE.Mesh; velocity:THREE.Vector3; spin:THREE.Vector3; dust:boolean; startY:number }[]=[]
-    if(compressionFailure){
+    if(compressionFailure && !ductileCompression){
       const chipCount=splitting ? (material==='Glass'?42:42) : brittleFragments?30:12
       const dustCount=splitting ? (material==='Glass'?12:34) : brittleFragments?20:9
       const chipColor=material==='Glass'?'#a6dce9'
@@ -524,8 +541,28 @@ export default function Column3D({material,section,width,length,failure,load,loa
         lowerGroup.rotation.z=(glass?.006:.025)*ease
       }
       if(compressionFailure){
-        // Ductile materials shorten; glass and wood split instead.
-        if(!splitting){
+        // Wood and glass retain their separate fracture animations. Steel,
+        // copper and plastic instead show localized swelling under crushing.
+        if(ductileCompression){
+          const p=Math.min(1,elapsed/.85)
+          const ease=1-Math.pow(1-p,3)
+          const pulse=1+.065*Math.sin(elapsed*12)*Math.exp(-elapsed*2)
+          const shell=yieldBand!
+          shell.visible=p>0
+          shell.scale.set(pulse,1,pulse)
+          ;(shell.material as THREE.MeshBasicMaterial).opacity=.55*ease
+          for(let i=0;i<along.length;i++){
+            const u=along[i]
+            const local=Math.exp(-Math.pow((u-.50)/.105,2))
+            const radial=1+.22*ease*local
+            const j=i*3
+            position.array[j]=origin[j]*radial
+            position.array[j+1]=origin[j+1]-.11*ease*u
+            position.array[j+2]=origin[j+2]*radial
+          }
+          position.needsUpdate=true
+          geometry.computeVertexNormals()
+        }else if(!splitting){
           const p=Math.min(1,elapsed/.36)
           column.scale.y=1-.045*(1-Math.pow(1-p,3))
         }
