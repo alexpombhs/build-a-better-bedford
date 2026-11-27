@@ -80,6 +80,11 @@ export default function ColumnSimulator() {
   const [length, setLength] = useState(3.7)
   const [appliedLoad, setAppliedLoad] = useState(0)
   const [result, setResult] = useState<Result | null>(null)
+  const [simulationRun, setSimulationRun] = useState(0)
+  const calculateLoad = () => {
+    setResult(calculate(material, section, width, length, appliedLoad))
+    setSimulationRun(run => run + 1)
+  }
   const theoretical = calculate(material, section, width, length, 0)
   // The upper range follows the selected section, so even very strong or
   // very slender columns can be taken from zero through their failure limit.
@@ -112,7 +117,7 @@ export default function ColumnSimulator() {
       onAction={resetExperiment}
     />}
     visual={<SimulatorVisual title="Column response">
-      <Column3D material={material} section={section} width={width} length={length} failure={result?.failed ? result.governing : null}/>
+      <Column3D key={simulationRun} material={material} section={section} width={width} length={length} failure={result?.failed ? result.governing : null}/>
     </SimulatorVisual>}
     controls={<SimulatorControls>
       <UiText sx={{ fontWeight: 700, fontSize: 14, color: labColors.ink }}>Column configuration</UiText>
@@ -137,7 +142,7 @@ export default function ColumnSimulator() {
         Elastic modulus: {materials[material].E} GPa · Material limit: {materials[material].strength} MPa
       </UiText>
       <UiBox sx={{ display: 'flex', gap: 1, mt: .5, flexWrap: 'wrap' }}>
-        <UiButton variant="contained" size="small" onClick={() => setResult(calculate(material,section,width,length,appliedLoad))}
+        <UiButton variant="contained" size="small" onClick={calculateLoad}
           sx={{ bgcolor:labColors.accent, textTransform:'none', '&:hover': { bgcolor:labColors.ink } }}>
           Calculate load
         </UiButton>
