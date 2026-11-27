@@ -12,6 +12,8 @@ type Props = {
   width: number
   length: number
   failure: ColumnFailure
+  load: number
+  loadApplied: boolean
 }
 
 function makeSurfaceTexture(material: ColumnMaterial): THREE.CanvasTexture | null {
@@ -40,7 +42,7 @@ function makeSurfaceTexture(material: ColumnMaterial): THREE.CanvasTexture | nul
     }
   } else {
     const stone=material === 'Granite / Stone'
-    ctx.fillStyle=stone?'#8e969b':'#b8bec1';ctx.fillRect(0,0,256,512)
+    ctx.fillStyle=stone?'#717d87':'#929da6';ctx.fillRect(0,0,256,512)
     for(let i=0;i<(stone?5200:2900);i++) {
       const v=rand()
       ctx.fillStyle=stone?(v<.34?'rgba(44,54,59,.33)':v<.65?'rgba(235,238,236,.55)':'rgba(122,128,133,.44)')
@@ -60,14 +62,14 @@ function makeSurfaceTexture(material: ColumnMaterial): THREE.CanvasTexture | nul
 
 function createFinish(name: ColumnMaterial, texture: THREE.CanvasTexture | null) {
   const settings: Record<ColumnMaterial, THREE.MeshPhysicalMaterialParameters> = {
-    Steel: {color:'#b2bec8',metalness:.72,roughness:.26,clearcoat:.2},
-    Copper: {color:'#c9875d',metalness:.69,roughness:.3,clearcoat:.24},
-    Glass: {color:'#c6ecf5',metalness:0,roughness:.09,transparent:true,opacity:.64,
-      transmission:.35,thickness:.28,ior:1.45,depthWrite:false,side:THREE.DoubleSide},
+    Steel: {color:'#8696a6',metalness:.45,roughness:.37,clearcoat:.16},
+    Copper: {color:'#ae6846',metalness:.45,roughness:.38,clearcoat:.18},
+    Glass: {color:'#70a8c3',metalness:0,roughness:.17,transparent:true,opacity:.83,
+      transmission:.08,thickness:.28,ior:1.45,depthWrite:false,side:THREE.DoubleSide},
     Wood: {color:'#fff4e4',map:texture,metalness:0,roughness:.82},
     Concrete: {color:'#fff',map:texture,metalness:0,roughness:.95},
     'Granite / Stone': {color:'#fff',map:texture,metalness:.04,roughness:.69},
-    Plastic: {color:'#77acb2',metalness:0,roughness:.29,clearcoat:.34},
+    Plastic: {color:'#43858e',metalness:0,roughness:.34,clearcoat:.3},
   }
   return new THREE.MeshPhysicalMaterial({...settings[name],side:THREE.DoubleSide})
 }
@@ -140,7 +142,7 @@ function buildColumn(section: ColumnSection, width: number, length: number, star
   return {geometry,origin,along,diameter}
 }
 
-export default function Column3D({material,section,width,length,failure}:Props) {
+export default function Column3D({material,section,width,length,failure,load,loadApplied}:Props) {
   const host=useRef<HTMLDivElement>(null)
   useEffect(()=>{
     const el=host.current
@@ -151,7 +153,7 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2))
     renderer.outputColorSpace=THREE.SRGBColorSpace
     renderer.toneMapping=THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure=1.45
+    renderer.toneMappingExposure=1.06
     renderer.shadowMap.enabled=true
     renderer.shadowMap.type=THREE.PCFSoftShadowMap
     // The canvas drawing-buffer dimensions must not become its CSS size.
@@ -172,7 +174,7 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     const camera=new THREE.OrthographicCamera(-3,3,3,-3,.05,75)
     camera.position.set(4.25,3.4,6.7)
     const controls=new OrbitControls(camera,renderer.domElement)
-    controls.target.set(0,1.5,0)
+    controls.target.set(0,1.65,0)
     controls.enablePan=false
     controls.minZoom=.65
     controls.maxZoom=2.8
@@ -181,8 +183,8 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     controls.dampingFactor=.08
     controls.update()
 
-    scene.add(new THREE.HemisphereLight('#edf6ff','#9a9b99',2.6))
-    const key=new THREE.DirectionalLight('#ffffff',3.4)
+    scene.add(new THREE.HemisphereLight('#edf6ff','#75818c',1.65))
+    const key=new THREE.DirectionalLight('#ffffff',2.25)
     key.position.set(3.5,7,5)
     key.castShadow=true
     key.shadow.mapSize.set(1024,1024)
@@ -190,8 +192,8 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     key.shadow.camera.top=7;key.shadow.camera.bottom=-5
     key.shadow.bias=-.0001
     scene.add(key)
-    const fill=new THREE.DirectionalLight('#a8d3ed',1.6);fill.position.set(-5,3,1);scene.add(fill)
-    const rim=new THREE.DirectionalLight('#ffffff',2.1);rim.position.set(2,4,-5);scene.add(rim)
+    const fill=new THREE.DirectionalLight('#a8d3ed',.7);fill.position.set(-5,3,1);scene.add(fill)
+    const rim=new THREE.DirectionalLight('#ffffff',1.05);rim.position.set(2,4,-5);scene.add(rim)
 
     const floor=new THREE.Mesh(new THREE.CircleGeometry(2.9,64),
       new THREE.MeshStandardMaterial({color:'#e9eef1',roughness:1,transparent:true,opacity:.42}))
@@ -211,6 +213,21 @@ export default function Column3D({material,section,width,length,failure}:Props) 
     column.castShadow=true
     column.receiveShadow=true
     scene.add(column)
+
+    // The force vector follows the same axial load represented in the control
+    // panel, with its tip just above the column's top surface (y = 3 m).
+    // It is not a force application point inside the member.
+    if(load>0){
+      const downward=new THREE.ArrowHelper(
+        new THREE.Vector3(0,-1,0),
+        new THREE.Vector3(0,3.88,0),
+        .73,0xa84c2e,.19,.13,
+      )
+      downward.line.material.depthTest=false
+      downward.cone.material.depthTest=false
+      downward.renderOrder=10
+      scene.add(downward)
+    }
 
     // Wood and glass can lose continuity following a limiting event.
     // Model two independently moving sections, not a whole-column rubber bend.
@@ -335,7 +352,7 @@ export default function Column3D({material,section,width,length,failure}:Props) 
       canvas.style.height=h+'px'
       canvas.style.maxWidth='100%'
       canvas.style.maxHeight='100%'
-      const halfHeight=2.18
+      const halfHeight=2.42
       const aspect=w/h
       camera.left=-halfHeight*aspect
       camera.right=halfHeight*aspect
@@ -411,9 +428,16 @@ export default function Column3D({material,section,width,length,failure}:Props) 
       renderer.dispose()
       renderer.domElement.remove()
     }
-  },[material,section,width,length,failure])
+  },[material,section,width,length,failure,load])
   return <div style={{width:'100%',height:'100%',minWidth:0,minHeight:0,maxWidth:'100%',
     position:'relative',display:'block',overflow:'hidden',contain:'layout size paint',touchAction:'none'}}>
+    <div aria-live="polite" style={{
+      position:'absolute',left:12,top:10,zIndex:2,padding:'5px 8px',
+      fontSize:12,fontWeight:700,color:'#8c3d28',pointerEvents:'none',
+      background:'rgba(245,248,250,.93)',borderRadius:4,
+    }}>
+      {load>0 ? `${loadApplied?'Applied':'Selected'} downward force: ${Math.round(load).toLocaleString('en-US')} kN` : 'No axial force selected'}
+    </div>
     <div ref={host} role="img"
       aria-label={failure==='buckling'?'3D column bending sideways under the modeled buckling limit':failure==='compression'?'3D column at its compression limit':'3D column before failure'}
       style={{position:'absolute',top:0,right:0,bottom:0,left:0,overflow:'hidden',contain:'strict'}}/>
