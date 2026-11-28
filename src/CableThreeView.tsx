@@ -9,12 +9,13 @@ type Props = {
   solution: CableSolution
   loads: CableLoad[]
   span: number
+  pixelsPerMeter: number
   brokenSegment?: number
 }
 
 /** Three.js is the visualization layer; all force and sag calculations come
  * from the same funicularPhysics solver used by the SVG simulator. */
-export default function CableThreeView({ solution, loads, span, brokenSegment }: Props) {
+export default function CableThreeView({ solution, loads, span, pixelsPerMeter, brokenSegment }: Props) {
   const mount = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
   const geometryRef = useRef<THREE.Group | null>(null)
@@ -252,7 +253,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     if (brokenSegment !== undefined && brokenSegment >= 0) {
       // Use the EXACT same snapped endpoints and cable-side paths as 2D.
       // Both loose cable runs turn red; no intact-looking blue branch remains.
-      const fracture=illustrateCableBreak(solution,brokenSegment)
+      const fracture=illustrateCableBreak(solution,brokenSegment,pixelsPerMeter)
       const drawBrokenRun=(points:Array<[number,number]>)=>{
         for(let j=0;j<points.length-1;j++){
           const [ax,ay]=points[j], [bx,by]=points[j+1]
@@ -375,7 +376,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     return () => {
       // Geometry cleanup is performed at the next update or on unmount.
     }
-  }, [solution, loads, span, brokenSegment])
+  }, [solution, loads, span, pixelsPerMeter, brokenSegment])
 
   return <UiBox sx={{ position: 'relative', width: '100%', height: '100%', minHeight: 0, minWidth: 0, overflow: 'hidden' }}>
     <div ref={mount} role="img"
