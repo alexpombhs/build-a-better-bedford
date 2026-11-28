@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { UiBox, UiButton, UiText } from './components/atoms/MuiPrimitives'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { illustrateCableBreak } from './lab/funicularPhysics'
 import type { CableLoad, CableSolution } from './lab/funicularPhysics'
 
 type Props = {
@@ -248,23 +249,25 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       group.add(center)
       addLabel(index===0?'A':'B',new THREE.Vector3(x+(index===0?-.5:.5),-.12,.38),.7,'#354f62')
     }
-    for (let i = 0; i < solution.xs.length - 1; i++) {
-      const start = point(i)
-      const end = point(i + 1)
-      if (brokenSegment === i) {
-        // Same schematic snapped geometry as the 2D mode: the left end
-        // drops 25 SVG units, the right end drops 45 units. Convert those
-        // displacements using the 2D vertical drawing scale.
-        const direction=end.clone().sub(start)
-        const verticalScale=Math.min(14,88/Math.max(1,solution.sag))
-        const halfGap=Math.min(14/30,direction.x*.24)
-        const center=start.clone().lerp(end,.5)
-        const leftEnd=center.clone().add(new THREE.Vector3(-halfGap,-25/verticalScale,0))
-        const rightEnd=center.clone().add(new THREE.Vector3(halfGap,-45/verticalScale,0))
-        addRod(start,leftEnd,.065,red)
-        addRod(rightEnd,end,.065,blue)
-      } else {
-        addRod(start,end,.07,brokenSegment!==undefined && i<brokenSegment?red:blue)
+    if (brokenSegment !== undefined && brokenSegment >= 0) {
+      // Use the EXACT same snapped endpoints and cable-side paths as 2D.
+      // Both loose cable runs turn red; no intact-looking blue branch remains.
+      const fracture=illustrateCableBreak(solution,brokenSegment)
+      const drawBrokenRun=(points:Array<[number,number]>)=>{
+        for(let j=0;j<points.length-1;j++){
+          const [ax,ay]=points[j], [bx,by]=points[j+1]
+          addRod(
+            new THREE.Vector3(ax-span/2,-ay,0),
+            new THREE.Vector3(bx-span/2,-by,0),
+            .068,red,
+          )
+        }
+      }
+      drawBrokenRun(fracture.left)
+      drawBrokenRun(fracture.right)
+    }else{
+      for(let i=0;i<solution.xs.length-1;i++){
+        addRod(point(i),point(i+1),.07,blue)
       }
     }
     loads.forEach((load, i) => {
