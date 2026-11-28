@@ -32,6 +32,17 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     camera.position.copy(controls.target).add(vector)
     controls.update()
   }
+  const panVertically = (direction: number) => {
+    const camera = cameraRef.current
+    const controls = controlsRef.current
+    if (!camera || !controls) return
+    // Translate the camera and orbit target together: this moves the visible
+    // assembly on screen without shifting any of its physical coordinates.
+    const delta = direction * Math.max(.35, camera.position.distanceTo(controls.target) * .055)
+    camera.position.y += delta
+    controls.target.y += delta
+    controls.update()
+  }
   const resetView = () => {
     const camera = cameraRef.current
     const controls = controlsRef.current
@@ -67,7 +78,8 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     controls.enableDamping = true
     controls.enableZoom = true
     controls.zoomSpeed = 0.95
-    controls.enablePan = false
+    controls.enablePan = true
+    controls.screenSpacePanning = true
     controls.minDistance = 6
     controls.maxDistance = 55
     controls.maxPolarAngle = Math.PI * 0.8
@@ -313,12 +325,16 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
         sx={{ minWidth: 34, p: 0.5, fontSize: 19, lineHeight: 1 }}>+</UiButton>
       <UiButton size="small" variant="text" aria-label="Zoom out" onClick={() => zoom(1.28)}
         sx={{ minWidth: 34, p: 0.5, fontSize: 19, lineHeight: 1 }}>−</UiButton>
+      <UiButton size="small" variant="text" aria-label="Move view up" onClick={() => panVertically(-1)}
+        sx={{ minWidth: 34, p: 0.5, fontSize: 19, lineHeight: 1 }}>↑</UiButton>
+      <UiButton size="small" variant="text" aria-label="Move view down" onClick={() => panVertically(1)}
+        sx={{ minWidth: 34, p: 0.5, fontSize: 19, lineHeight: 1 }}>↓</UiButton>
       <UiButton size="small" variant="text" aria-label="Reset camera" onClick={resetView}
         sx={{ minWidth: 34, p: 0.5, fontSize: 11, lineHeight: 1.2 }}>Reset</UiButton>
     </UiBox>
     <UiText variant="caption" sx={{ position: 'absolute', bottom: 5, left: 8,
       color: '#465d70', fontSize: 10, pointerEvents: 'none' }}>
-      Drag to orbit · scroll or pinch to zoom
+      Drag to orbit · right-drag or two-finger drag to pan · scroll or pinch to zoom
     </UiText>
   </UiBox>
 }
