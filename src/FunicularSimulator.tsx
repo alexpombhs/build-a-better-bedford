@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import CableThreeView from './CableThreeView'
 import { UiBox, UiText, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
 import { LabDetails, LabSlider, labColors } from './lab/LabUI'
@@ -39,6 +39,25 @@ const defaultSettings: CableSettings = {
 export default function FunicularSimulator() {
   const [count, setCount] = useState<1 | 2>(1)
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d')
+  const diagramHost = useRef<HTMLDivElement>(null)
+  const [diagramWidth, setDiagramWidth] = useState(640)
+  useEffect(() => {
+    const host = diagramHost.current
+    if (!host) return
+    const measure = () => {
+      const { width, height } = host.getBoundingClientRect()
+      if (width > 0 && height > 0) {
+        // SVG units follow the available panel aspect ratio. Unlike stretching
+        // preserveAspectRatio='none', this does not distort the drawn angles.
+        const next = Math.max(640, Math.round(330 * width / height))
+        setDiagramWidth(previous => previous === next ? previous : next)
+      }
+    }
+    const observer = new ResizeObserver(measure)
+    observer.observe(host)
+    measure()
+    return () => observer.disconnect()
+  }, [viewMode])
 
   // Each load tab is its own experiment. Changing tabs cannot change the
   // failed geometry, load values, or controls of the other experiment.
@@ -108,8 +127,10 @@ export default function FunicularSimulator() {
   // Use fixed vertical scale for ordinary sag, compressing extreme deflection
   // only to preserve clearance for weight blocks, arrows and the span marker.
   const anchorY = 70
-  const pixelsPerMeter = 30
-  const leftX = (640 - pixelsPerMeter * shownSpan) / 2
+  // At maximum span, use almost the entire view width. Keep a narrow
+  // outer gutter for the horizontal force arrows and support annotations.
+  const pixelsPerMeter = (diagramWidth - 148) / 16
+  const leftX = (diagramWidth - pixelsPerMeter * shownSpan) / 2
   const rightX = leftX + pixelsPerMeter * shownSpan
   const verticalScale = Math.min(14, 88 / Math.max(1, displayed.sag))
   const screen = displayed.xs.map((x, i) => [
@@ -204,7 +225,8 @@ export default function FunicularSimulator() {
       </UiTabs>
     </UiBox>}>
       {viewMode === '3d' ? <CableThreeView solution={displayed} loads={shownLoads} span={shownSpan}
-        brokenSegment={broken ? breakIndex : undefined}/> : <svg viewBox="0 0 640 330" width="100%" style={{height:'min(34vh,330px)',display:'block',flexShrink:0}} role="img"
+        brokenSegment={broken ? breakIndex : undefined}/> : <div ref={diagramHost} style={{width:'100%',height:'min(34vh,330px)',minHeight:220,flexShrink:0}}>
+      <svg viewBox={`0 0 ${diagramWidth} 330`} width="100%" height="100%" style={{display:'block'}} role="img"
         aria-label={broken
           ? 'Cable snapped in segment ' + (breakIndex + 1) + ' under ' + fmt(displayedTotal) + ' kilonewtons of applied load. The weights are falling.'
           : 'Elastic cable across ' + shownSpan + ' meters with ' + fmt(displayed.sag) + ' meters calculated sag and ' + shownLoads.length + ' hanging weights.'}>
@@ -331,12 +353,12 @@ export default function FunicularSimulator() {
         })}
         <path d={'M' + leftX + ' 307H' + rightX + ' M' + leftX + ' 299v16 M' + rightX + ' 299v16'}
           fill="none" stroke="#8197a5" strokeWidth="1.5" />
-        <text x="320" y="324" textAnchor="middle" fontSize="15" fill="#465d70">{shownSpan} m span</text>
-        <line x1="635" y1={anchorY} x2="635" y2={sagY}
+        <text x={diagramWidth/2} y="324" textAnchor="middle" fontSize="15" fill="#465d70">{shownSpan} m span</text>
+        <line x1={diagramWidth-5} y1={anchorY} x2={diagramWidth-5} y2={sagY}
           stroke="#657f90" strokeDasharray="3 4" />
-        <text x="627" y={Math.max(anchorY + 19, (anchorY + sagY) / 2 + 4)} textAnchor="end"
+        <text x={diagramWidth-13} y={Math.max(anchorY + 19, (anchorY + sagY) / 2 + 4)} textAnchor="end"
           fill="#465d70" fontSize="13">{fmt(displayed.sag)} m sag</text>
-      </svg>}
+      </svg></div>}
       <UiBox sx={{ mt: 'auto', pt: 0.5 }}>
         <UiText variant="caption" sx={{ color: '#2e6492' }}>Horizontal tension (all segments)</UiText>
         <UiText sx={{ fontSize: 14, fontWeight: 700 }}>{fmt(displayed.horizontal)} kN</UiText>
