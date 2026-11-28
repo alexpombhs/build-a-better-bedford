@@ -131,7 +131,7 @@ export function maxSupportedTotalLoad(
  * The static solver does not predict dynamics after a cable snaps; the two
  * separated ends are deliberately displaced solely to communicate rupture.
  */
-export function illustrateCableBreak(solution: CableSolution, segment: number): {
+export function illustrateCableBreak(solution: CableSolution, segment: number, pixelsPerMeter = 30): {
   left: Array<[number, number]>
   right: Array<[number, number]>
 } {
@@ -142,8 +142,9 @@ export function illustrateCableBreak(solution: CableSolution, segment: number): 
   const endX = solution.xs[segment + 1]
   const middleX = (startX + endX) / 2
   const middleY = (solution.ys[segment] + solution.ys[segment + 1]) / 2
-  // A scale-independent horizontal gap, capped for short cable segments.
-  const halfGap = Math.min(0.4, (endX - startX) * 0.24)
+  // Match the original 2D SVG precisely: its break gap is capped at
+  // 14 screen units, then converted back to model coordinates for the 3D view.
+  const halfGap = Math.min(14 / pixelsPerMeter, (endX - startX) * 0.24)
   const verticalScale = Math.min(14, 88 / Math.max(1, solution.sag))
   return {
     left: [
