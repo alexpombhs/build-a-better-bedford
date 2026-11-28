@@ -50,13 +50,15 @@ export function LabTabs({value,onChange}:{value:string;onChange:(value:string)=>
 /** Engineering-lab molecule: shared cable status and prominent reset action.
  * Composed entirely from the site's MUI atoms, never raw MUI imports. */
 export function CableStatusBar({
-  status, tension, strength, segment, onReset,
+  status, tension, strength, segment, onReset, warningTitle, warningDetail,
 }: {
   status: 'intact' | 'warning' | 'broken'
   tension: number
   strength: number
   segment?: number
   onReset?: () => void
+  warningTitle?: string
+  warningDetail?: string
 }) {
   const palette = status === 'broken'
     ? { bg: '#fff0eb', border: '#df9e89', ink: '#9b3825' }
@@ -65,7 +67,7 @@ export function CableStatusBar({
       : { bg: '#edf5f1', border: '#c5dacf', ink: '#276957' }
   const label = status === 'broken'
     ? 'Cable broken' + (segment === undefined ? '' : ' · segment ' + segment)
-    : status === 'warning' ? 'Approaching breaking strength' : 'Cable intact'
+    : status === 'warning' ? (warningTitle ?? 'Approaching breaking strength') : 'Cable intact'
 
   return <UiBox
     role={status === 'broken' ? 'alert' : 'status'}
@@ -91,6 +93,9 @@ export function CableStatusBar({
         Peak tension {tension.toFixed(1)} kN / limit {strength.toFixed(1)} kN
         {status === 'broken' ? ' · Frozen until reset' : ''}
       </UiText>
+      {warningDetail && <UiText sx={{ color: palette.ink, fontSize: 12, lineHeight: 1.45, mt: 0.25 }}>
+        {warningDetail}
+      </UiText>}
     </UiBox>
     {status === 'broken' && onReset && <UiButton
       variant="contained"
