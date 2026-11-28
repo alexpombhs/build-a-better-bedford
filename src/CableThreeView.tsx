@@ -314,9 +314,11 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
       const jointPoint = point(i + 1)
       const x = jointPoint.x
       const z = jointPoint.z
-      const width = (30 + load.load * 1.1) / pixelsPerMeter
-      const height = (40 + load.load * .45) / pixelsPerMeter
-      const depth = .64
+      // Keep the 2D reference proportions, with a slight visual enlargement
+      // to account for 3D lighting and the framed 3D viewport.
+      const width = 1.12 * (30 + load.load * 1.1) / pixelsPerMeter
+      const height = 1.12 * (40 + load.load * .45) / pixelsPerMeter
+      const depth = Math.min(.9, width * .48)
       const hangerLength = 23 / pixelsPerMeter
       const topY = jointPoint.y - hangerLength
       const centerY = topY - height / 2
@@ -346,23 +348,43 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
       eye.position.set(x,topY+.055,z)
       group.add(eye)
 
-      // Rectangular suspended mass with actual 3D depth. Its world rotation
-      // stays identity even when the cable segments rotate with the sag.
+      // A bevelled, solid test weight with a recognizable 2D silhouette.
+      // Extrusion points toward +Z, with the weight centred at z=0.
+      // Slightly rounded corners, a dark edge and a warm inset face make the
+      // thickness perceptible without changing the gravity-aligned pose.
+      const bevel = Math.min(.10,width*.075,height*.075)
+      const shape = new THREE.Shape()
+      const w=width/2, h=height/2, r=bevel
+      shape.moveTo(-w+r,-h)
+      shape.lineTo(w-r,-h)
+      shape.quadraticCurveTo(w,-h,w,-h+r)
+      shape.lineTo(w,h-r)
+      shape.quadraticCurveTo(w,h,w-r,h)
+      shape.lineTo(-w+r,h)
+      shape.quadraticCurveTo(-w,h,-w,h-r)
+      shape.lineTo(-w,-h+r)
+      shape.quadraticCurveTo(-w,-h,-w+r,-h)
       const body = new THREE.Mesh(
-        new THREE.BoxGeometry(width,height,depth),orange,
+        new THREE.ExtrudeGeometry(shape,{
+          depth:depth-2*bevel,bevelEnabled:true,bevelSize:bevel*.5,
+          bevelThickness:bevel,bevelSegments:3,curveSegments:5,
+        }),orange,
       )
-      body.position.set(x,centerY,z)
+      body.position.set(x,centerY,z-depth/2+bevel)
       group.add(body)
-      const rim = new THREE.Mesh(
-        new THREE.BoxGeometry(width-.09,height-.09,.025),weightTrim,
+      const frontZ=z+depth/2+.014
+      // A shallow recessed face, not an extra protruding box.
+      const plate = new THREE.Mesh(
+        new THREE.PlaneGeometry(width-.19,height-.19),weightInset,
       )
-      rim.position.set(x,centerY,z+depth/2+.016)
-      group.add(rim)
-      const front = new THREE.Mesh(
-        new THREE.BoxGeometry(width-.15,height-.15,.027),weightInset,
+      plate.position.set(x,centerY,frontZ)
+      group.add(plate)
+      const topHighlight = new THREE.Mesh(
+        new THREE.BoxGeometry(width-.29,.065,.018),
+        new THREE.MeshBasicMaterial({color:'#e7b59c'}),
       )
-      front.position.set(x,centerY,z+depth/2+.042)
-      group.add(front)
+      topHighlight.position.set(x,centerY+height/2-.18,frontZ+.019)
+      group.add(topHighlight)
 
       // Text is affixed to the weight's front face, rather than using a
       // camera-facing sprite that floats independently as the view rotates.
@@ -375,10 +397,10 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
         labelCtx.fillStyle='#ffffff'
         labelCtx.textAlign='center'
         labelCtx.textBaseline='middle'
-        labelCtx.font='bold 72px sans-serif'
-        labelCtx.fillText('P'+(i+1),256,86)
-        labelCtx.font='bold 78px sans-serif'
-        labelCtx.fillText(load.load+' kN',256,177)
+        labelCtx.font='bold 79px sans-serif'
+        labelCtx.fillText('P'+(i+1),256,97)
+        labelCtx.font='bold 90px sans-serif'
+        labelCtx.fillText(load.load+' kN',256,191)
         const labelTexture=new THREE.CanvasTexture(labelCanvas)
         labelTexture.colorSpace=THREE.SRGBColorSpace
         const faceMaterial=new THREE.MeshBasicMaterial({
@@ -386,28 +408,36 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
           depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,
         })
         const label=new THREE.Mesh(
-          new THREE.PlaneGeometry(width*.92,height*.78),faceMaterial,
+          new THREE.PlaneGeometry(width*.95,height*.83),faceMaterial,
         )
-        label.position.set(x,centerY,z+depth/2+.066)
+        label.position.set(x,centerY-.065,frontZ+.035)
         group.add(label)
       }
 
       // Downward force starts below the center of mass, on the same x/z
       // vertical line. Geometry thickness (not WebGL lineWidth) encodes load.
       if(load.load>0){
-        const ratio=Math.min(1,load.load/30)
-        const radius=.014+.047*ratio
-        const forceMaterial=new THREE.MeshBasicMaterial({color:'#b4573d'})
-        const forceStart=centerY-height/2-.18
+        const ratio=Math.min(1,Math.max(0,load.load/30))
+        // Deliberately nonlinear, high-contrast visual encoding: at maximum
+        // load, the arrow is about five times thicker than at minimum load.
+        const strength=Math.pow(ratio,.8)
+        const diameter=.045+.30*strength
+        const arrowHeadRadius=.11+.22*strength
+        const shaftLength=.50
+        const arrowHeadLength=.25+.10*strength
+        const forceMaterial=new THREE.MeshBasicMaterial({color:'#c05e3d'})
+        const startY=centerY-height/2-.17
         const shaft=new THREE.Mesh(
-          new THREE.CylinderGeometry(radius,radius,.48,16),forceMaterial,
+          new THREE.CylinderGeometry(diameter/2,diameter/2,shaftLength,20),
+          forceMaterial,
         )
-        shaft.position.set(x,forceStart-.24,z)
+        shaft.position.set(x,startY-shaftLength/2,z)
         const tip=new THREE.Mesh(
-          new THREE.ConeGeometry(.06+.065*ratio,.21,18),forceMaterial,
+          new THREE.ConeGeometry(arrowHeadRadius,arrowHeadLength,24),
+          forceMaterial,
         )
         tip.rotation.z=Math.PI
-        tip.position.set(x,forceStart-.57,z)
+        tip.position.set(x,startY-shaftLength-arrowHeadLength/2,z)
         group.add(shaft,tip)
       }
     })
