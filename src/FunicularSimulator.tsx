@@ -222,7 +222,7 @@ export default function FunicularSimulator() {
             fill="#77a9cd" stroke="#477b9f" strokeWidth="1.2"/>
           <circle cx={x} cy={anchorY} r="6" fill="#416c89" stroke="#294b63" strokeWidth="1.2"/>
           <circle cx={x} cy={anchorY} r="2.7" fill="#c3dce9"/>
-          <text x={x+(i===0?-11:11)} y={anchorY+17} textAnchor={i===0?'end':'start'}
+          <text x={x+(i===0?-15:15)} y={anchorY+23} textAnchor={i===0?'end':'start'}
             fill="#40596c" fontSize="12" fontWeight="700">{i===0?'A':'B'}</text>
         </g>)}
         <path d={'M' + leftX + ' ' + anchorY + 'H' + rightX}
@@ -284,15 +284,18 @@ export default function FunicularSimulator() {
           { x: leftX, outward: -1, name: 'A', reaction: displayed.leftReaction, angle: segmentAngles[0] },
           { x: rightX, outward: 1, name: 'B', reaction: displayed.rightReaction, angle: segmentAngles[segmentAngles.length - 1] },
         ] as const).map(({ x, outward, name, reaction, angle }) => {
-          const supportCenter = x + outward * 12
-          const horizontalTip = x + outward * 68
+          // Keep the reaction vector outside the hanger bracket rather than
+          // drawing it across the beam or through the connection.
+          const reactionX = x + outward * 37
+          const horizontalStart = x + outward * 28
+          const horizontalTip = x + outward * 67
           return <g key={name}>
-            <path d={`M${supportCenter} ${anchorY - 17}V20m-5 7l5-7 5 7`}
+            <path d={`M${reactionX} 61V23m-5 7l5-7 5 7`}
               fill="none" stroke="#276957" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            <text x={supportCenter} y="13" textAnchor="middle" fill="#276957" fontSize="13">
+            <text x={reactionX} y="13" textAnchor="middle" fill="#276957" fontSize="12">
               {name}: {fmt(reaction)} kN
             </text>
-            <path d={`M${x + outward * 29} ${anchorY}H${horizontalTip}m${-outward * 7}-5l${outward * 7} 5 ${-outward * 7} 5`}
+            <path d={`M${horizontalStart} ${anchorY}H${horizontalTip}m${-outward * 7}-5l${outward * 7} 5 ${-outward * 7} 5`}
               fill="none" stroke="#2e6492" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             <text x={x - outward * angleInset} y={anchorY + 45} textAnchor="middle"
               fill={labColors.ink} fontSize="13" fontWeight="700"
