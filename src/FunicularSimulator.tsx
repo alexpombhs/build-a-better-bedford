@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import CableThreeView from './CableThreeView'
 import { UiBox, UiText, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
 import { LabDetails, LabSlider, labColors } from './lab/LabUI'
 import { SimulatorWorkspace, SimulatorStatus, SimulatorVisual, SimulatorControls } from './lab/SimulatorLayout'
@@ -37,6 +38,26 @@ const defaultSettings: CableSettings = {
 
 export default function FunicularSimulator() {
   const [count, setCount] = useState<1 | 2>(1)
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d')
+  const diagramHost = useRef<HTMLDivElement>(null)
+  const [diagramWidth, setDiagramWidth] = useState(640)
+  useEffect(() => {
+    const host = diagramHost.current
+    if (!host) return
+    const measure = () => {
+      const { width, height } = host.getBoundingClientRect()
+      if (width > 0 && height > 0) {
+        // SVG units follow the available panel aspect ratio. Unlike stretching
+        // preserveAspectRatio='none', this does not distort the drawn angles.
+        const next = Math.max(640, Math.round(330 * width / height))
+        setDiagramWidth(previous => previous === next ? previous : next)
+      }
+    }
+    const observer = new ResizeObserver(measure)
+    observer.observe(host)
+    measure()
+    return () => observer.disconnect()
+  }, [viewMode])
 
   // Each load tab is its own experiment. Changing tabs cannot change the
   // failed geometry, load values, or controls of the other experiment.
@@ -98,14 +119,18 @@ export default function FunicularSimulator() {
     displayed.ys[i] - displayed.ys[i + 1],
     displayed.xs[i + 1] - displayed.xs[i],
   ) * 180 / Math.PI)
-  const status = broken ? 'broken' : displayedPeak >= shownStrength * 0.85 ? 'warning' : 'intact'
+  const highStretch = displayed.maxStrainPercent > 12
+  const nearBreaking = displayedPeak >= shownStrength * .85
+  const status = broken ? 'broken' : nearBreaking || highStretch ? 'warning' : 'intact'
 
   // Leave space outside the anchor blocks for the horizontal force arrows.
   // Use fixed vertical scale for ordinary sag, compressing extreme deflection
   // only to preserve clearance for weight blocks, arrows and the span marker.
   const anchorY = 70
-  const pixelsPerMeter = 30
-  const leftX = (640 - pixelsPerMeter * shownSpan) / 2
+  // At maximum span, use almost the entire view width. Keep a narrow
+  // outer gutter for the horizontal force arrows and support annotations.
+  const pixelsPerMeter = (diagramWidth - 148) / 16
+  const leftX = (diagramWidth - pixelsPerMeter * shownSpan) / 2
   const rightX = leftX + pixelsPerMeter * shownSpan
   const verticalScale = Math.min(14, 88 / Math.max(1, displayed.sag))
   const screen = displayed.xs.map((x, i) => [
@@ -186,22 +211,44 @@ export default function FunicularSimulator() {
   return <SimulatorWorkspace
     status={<SimulatorStatus
       tone={status === 'broken' ? 'failure' : status === 'warning' ? 'warning' : 'success'}
-      title={broken ? 'Cable broken · segment ' + (breakIndex + 1) : status === 'warning' ? 'Approaching breaking strength' : 'Cable intact'}
-      detail={`Peak tension ${fmt(displayedPeak)} kN / limit ${fmt(shownStrength)} kN`}
+      title={broken ? 'Cable broken · segment ' + (breakIndex + 1) : nearBreaking ? 'Approaching breaking strength' : highStretch ? 'High modeled cable stretch' : 'Cable intact'}
+      detail={`Peak tension ${fmt(displayedPeak)} kN / limit ${fmt(shownStrength)} kN${highStretch ? ` · High modeled stretch (${fmt(displayed.maxStrainPercent)}%); idealized elastic cord, not a structural cable design limit.` : ''}`}
       actionLabel={broken ? 'Replace cable' : undefined}
       onAction={broken ? replaceCable : undefined}
     />}
-    visual={<SimulatorVisual title={<>Elastic cable under {count === 1 ? 'one load' : 'two loads'}</>}>
-
-
-      <svg viewBox="0 0 640 330" width="100%" style={{height:'min(34vh,330px)',display:'block',flexShrink:0}} role="img"
+    visual={<SimulatorVisual title={<UiBox sx={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:1,width:'100%',flexWrap:'wrap'}}>
+      <UiText sx={{fontSize:14,fontWeight:700,color:labColors.ink}}>Elastic cable under {count === 1 ? 'one load' : 'two loads'}</UiText>
+      <UiTabs value={viewMode} onChange={(_,value)=>setViewMode(value as '2d'|'3d')}
+        aria-label="Cable visualization mode" sx={{minHeight:30}}>
+        <UiTab value="2d" label="2D" sx={{minHeight:30,minWidth:48,py:0,px:1,textTransform:'none'}}/>
+        <UiTab value="3d" label="3D" sx={{minHeight:30,minWidth:48,py:0,px:1,textTransform:'none'}}/>
+      </UiTabs>
+    </UiBox>}>
+      {viewMode === '3d' ? <CableThreeView solution={displayed} loads={shownLoads} span={shownSpan}
+        pixelsPerMeter={pixelsPerMeter} brokenSegment={broken ? breakIndex : undefined}/> : <div ref={diagramHost} style={{width:'100%',height:'min(34vh,330px)',minHeight:220,flexShrink:0}}>
+      <svg viewBox={`0 0 ${diagramWidth} 330`} width="100%" height="100%" style={{display:'block'}} role="img"
         aria-label={broken
           ? 'Cable snapped in segment ' + (breakIndex + 1) + ' under ' + fmt(displayedTotal) + ' kilonewtons of applied load. The weights are falling.'
           : 'Elastic cable across ' + shownSpan + ' meters with ' + fmt(displayed.sag) + ' meters calculated sag and ' + shownLoads.length + ' hanging weights.'}>
+        {/* Beam and pinned hanger brackets from the experimental schematic.
+            Force vectors and angle labels below are retained from main. */}
         <path d={'M' + leftX + ' 43V295 M' + rightX + ' 43V295'} stroke="#d1dce2" strokeDasharray="5 6" />
-        <path d={'M' + leftX + ' ' + anchorY + 'H' + rightX} stroke="#a5b7c3" strokeDasharray="6 7" strokeWidth="1.5" />
-        <rect x={leftX - 24} y={anchorY - 13} width="24" height="26" fill="#c6d4dc" />
-        <rect x={rightX} y={anchorY - 13} width="24" height="26" fill="#c6d4dc" />
+        <rect x={leftX-27} y="30" width={rightX-leftX+54} height="12"
+          fill="#d4dce2" stroke="#8195a4" strokeWidth="1.2"/>
+        <line x1={leftX-27} y1="43" x2={rightX+27} y2="43" stroke="#516a7c" strokeWidth="1.5"/>
+        {([leftX,rightX] as const).map((x,i)=><g key={i}>
+          <rect x={x-19} y="43" width="38" height="6" rx="1"
+            fill="#77a9cd" stroke="#477b9f" strokeWidth="1.2"/>
+          <path d={`M${x-12} 49 L${x-7} ${anchorY-5}
+            Q${x} ${anchorY+4} ${x+7} ${anchorY-5} L${x+12} 49 Z`}
+            fill="#77a9cd" stroke="#477b9f" strokeWidth="1.2"/>
+          <circle cx={x} cy={anchorY} r="6" fill="#416c89" stroke="#294b63" strokeWidth="1.2"/>
+          <circle cx={x} cy={anchorY} r="2.7" fill="#c3dce9"/>
+          <text x={x+(i===0?-15:15)} y={anchorY+23} textAnchor={i===0?'end':'start'}
+            fill="#40596c" fontSize="12" fontWeight="700">{i===0?'A':'B'}</text>
+        </g>)}
+        <path d={'M' + leftX + ' ' + anchorY + 'H' + rightX}
+          stroke="#a5b7c3" strokeDasharray="6 7" strokeWidth="1.3" fill="none" />
         {broken ? <>
           <polyline points={brokenLeft} fill="none" stroke="#b4573d" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round" />
           <polyline points={brokenRight} fill="none" stroke="#b4573d" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round" />
@@ -259,16 +306,31 @@ export default function FunicularSimulator() {
           { x: leftX, outward: -1, name: 'A', reaction: displayed.leftReaction, angle: segmentAngles[0] },
           { x: rightX, outward: 1, name: 'B', reaction: displayed.rightReaction, angle: segmentAngles[segmentAngles.length - 1] },
         ] as const).map(({ x, outward, name, reaction, angle }) => {
-          const supportCenter = x + outward * 12
-          const horizontalTip = x + outward * 68
+          // BOTH vector tails are at the physical support pin (x, anchorY).
+          // Only the force-value label is shifted; the forces themselves must
+          // never float away from their point of application.
+          const horizontalTip = x + outward * 67
+          const labelX = x - outward * 49
           return <g key={name}>
-            <path d={`M${supportCenter} ${anchorY - 17}V25m-5 7l5-7 5 7`}
-              fill="none" stroke="#276957" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            <text x={supportCenter} y="17" textAnchor="middle" fill="#276957" fontSize="13">
+            {/* Dashed vectors show support-force components without
+                visually turning the bracket into part of an arrow. Both
+                dashed shafts originate at the same pin connection. */}
+            <path d={`M${x} ${anchorY}V23`}
+              fill="none" stroke="#276957" strokeWidth="1.8"
+              strokeDasharray="4 5" strokeLinecap="round" />
+            <path d={`M${x-4} 29L${x} 22L${x+4} 29`}
+              fill="none" stroke="#276957" strokeWidth="2"
+              strokeLinecap="round" strokeLinejoin="round" />
+            <text x={labelX} y="16" textAnchor="middle" fill="#276957"
+              fontSize="12" fontWeight="600">
               {name}: {fmt(reaction)} kN
             </text>
-            <path d={`M${x + outward * 29} ${anchorY}H${horizontalTip}m${-outward * 7}-5l${outward * 7} 5 ${-outward * 7} 5`}
-              fill="none" stroke="#2e6492" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d={`M${x} ${anchorY}H${horizontalTip-outward*7}`}
+              fill="none" stroke="#2e6492" strokeWidth="1.8"
+              strokeDasharray="4 5" strokeLinecap="round" />
+            <path d={`M${horizontalTip-outward*7} ${anchorY-4}L${horizontalTip} ${anchorY}L${horizontalTip-outward*7} ${anchorY+4}`}
+              fill="none" stroke="#2e6492" strokeWidth="2"
+              strokeLinecap="round" strokeLinejoin="round" />
             <text x={x - outward * angleInset} y={anchorY + 45} textAnchor="middle"
               fill={labColors.ink} fontSize="13" fontWeight="700"
               stroke="#f5f8fa" strokeWidth="4" paintOrder="stroke">
@@ -303,21 +365,16 @@ export default function FunicularSimulator() {
         })}
         <path d={'M' + leftX + ' 307H' + rightX + ' M' + leftX + ' 299v16 M' + rightX + ' 299v16'}
           fill="none" stroke="#8197a5" strokeWidth="1.5" />
-        <text x="320" y="324" textAnchor="middle" fontSize="15" fill="#465d70">{shownSpan} m span</text>
-        <line x1="635" y1={anchorY} x2="635" y2={sagY}
+        <text x={diagramWidth/2} y="324" textAnchor="middle" fontSize="15" fill="#465d70">{shownSpan} m span</text>
+        <line x1={diagramWidth-5} y1={anchorY} x2={diagramWidth-5} y2={sagY}
           stroke="#657f90" strokeDasharray="3 4" />
-        <text x="627" y={Math.max(anchorY + 19, (anchorY + sagY) / 2 + 4)} textAnchor="end"
+        <text x={diagramWidth-13} y={Math.max(anchorY + 19, (anchorY + sagY) / 2 + 4)} textAnchor="end"
           fill="#465d70" fontSize="13">{fmt(displayed.sag)} m sag</text>
-      </svg>
+      </svg></div>}
       <UiBox sx={{ mt: 'auto', pt: 0.5 }}>
         <UiText variant="caption" sx={{ color: '#2e6492' }}>Horizontal tension (all segments)</UiText>
         <UiText sx={{ fontSize: 14, fontWeight: 700 }}>{fmt(displayed.horizontal)} kN</UiText>
       </UiBox>
-      <UiText variant="caption" sx={{ display: 'block', color: labColors.muted, pt: 0.5, fontSize: 11.5, lineHeight: 1.4 }}>
-        The angles above the cable are measured from horizontal. The angles below the supports are measured from vertical.
-        {count === 2 && ' The middle reading shows how much the cable rises or falls from P1 to P2.'}
-        {broken && ' Force and angle readings show the cable just before it snapped.'}
-      </UiText>
     </SimulatorVisual>}
     controls={<SimulatorControls>
       <UiBox sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
