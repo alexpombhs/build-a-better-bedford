@@ -34,8 +34,8 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     const camera = cameraRef.current
     const controls = controlsRef.current
     if (!camera || !controls) return
-    camera.position.set(0, 5.5, homeDistance.current)
-    controls.target.set(0, -1.4, 0)
+    camera.position.set(1.7, 3.1, homeDistance.current)
+    controls.target.set(0, -2, 0)
     controls.update()
   }
 
@@ -47,7 +47,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     sceneRef.current = scene
     const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 300)
     homeDistance.current = 23
-    camera.position.set(0, 5.5, homeDistance.current)
+    camera.position.set(1.7, 3.1, homeDistance.current)
     cameraRef.current = camera
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
@@ -70,7 +70,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     controls.minDistance = 8
     controls.maxDistance = 55
     controls.maxPolarAngle = Math.PI * 0.8
-    controls.target.set(0, -1.4, 0)
+    controls.target.set(0, -2, 0)
     controls.update()
     const resize = () => {
       const width = element.clientWidth
@@ -99,10 +99,13 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       if (geometryRef.current) {
         scene.remove(geometryRef.current)
         geometryRef.current.traverse(object => {
-          if (object instanceof THREE.Mesh || object instanceof THREE.Line) {
-            object.geometry.dispose()
+          if (object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Sprite) {
+            if (object instanceof THREE.Mesh || object instanceof THREE.Line) object.geometry.dispose()
             const materials = Array.isArray(object.material) ? object.material : [object.material]
-            materials.forEach(material => material.dispose())
+            materials.forEach(material => {
+              if (material instanceof THREE.SpriteMaterial) material.map?.dispose()
+              material.dispose()
+            })
           }
         })
         geometryRef.current = null
@@ -142,37 +145,64 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), difference.normalize())
       group.add(mesh)
     }
-    // These are fixed-height supports. Their geometry must not depend on
-    // the live cable sag or point loads: only the cable and weights respond
-    // to changes in load. The footing elevation stays constant.
-    const pillarHeight = 8.5
-    const concrete = new THREE.MeshStandardMaterial({ color: '#aebbc5', roughness: 0.92 })
-    const trim = new THREE.MeshStandardMaterial({ color: '#8193a1', roughness: 0.75 })
-    for (const x of [-span / 2, span / 2]) {
-      // Slight taper, square profile, and a wider foundation evoke real
-      // suspension-bridge pylons without adding a roadway or bridge frame.
-      const shape = new THREE.BoxGeometry(0.88, pillarHeight, 1.06)
-      const positions = shape.attributes.position
-      for (let v = 0; v < positions.count; v++) {
-        if (positions.getY(v) > 0) {
-          positions.setX(v, positions.getX(v) * 0.70)
-          positions.setZ(v, positions.getZ(v) * 0.78)
-        }
-      }
-      shape.computeVertexNormals()
-      const pillar = new THREE.Mesh(shape, concrete)
-      pillar.position.set(x, -pillarHeight / 2, 0)
-      group.add(pillar)
-      const foundation = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.36, 1.5), concrete)
-      foundation.position.set(x, -pillarHeight - 0.18, 0)
-      group.add(foundation)
-      const topCap = new THREE.Mesh(new THREE.BoxGeometry(0.83, 0.22, 0.94), trim)
-      topCap.position.set(x, 0.1, 0)
-      group.add(topCap)
-      const bearing = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.2, 16), blue)
-      bearing.rotation.x = Math.PI / 2
-      bearing.position.set(x, 0.25, 0)
+    // Match the 2D structural diagram: fixed overhead beam, blue hanger
+    // brackets and pin joints. No support dimension depends on cable sag.
+    const beamMaterial = new THREE.MeshStandardMaterial({color:'#d1dae1',metalness:.18,roughness:.68})
+    const bracketMaterial = new THREE.MeshStandardMaterial({color:'#75a9ce',metalness:.2,roughness:.52})
+    const pinMaterial = new THREE.MeshStandardMaterial({color:'#375f7e',metalness:.35,roughness:.43})
+    const highlight = new THREE.MeshStandardMaterial({color:'#afcde2',metalness:.18,roughness:.5})
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(span+1.6,.33,.9),beamMaterial)
+    beam.position.y=1.1
+    group.add(beam)
+
+    // Camera-facing text sprites keep the same load labeling as 2D while
+    // remaining legible when the user orbits the physical model.
+    const addLabel = (label:string, center:THREE.Vector3, scale:number, color='#ffffff')=>{
+      const canvas=document.createElement('canvas')
+      canvas.width=256;canvas.height=128
+      const ctx=canvas.getContext('2d')
+      if(!ctx)return
+      ctx.clearRect(0,0,256,128)
+      ctx.fillStyle=color
+      ctx.textAlign='center';ctx.textBaseline='middle'
+      ctx.font='bold 48px sans-serif'
+      ctx.fillText(label,128,64,246)
+      const texture=new THREE.CanvasTexture(canvas)
+      texture.colorSpace=THREE.SRGBColorSpace
+      const sprite=new THREE.Sprite(new THREE.SpriteMaterial({
+        map:texture,transparent:true,depthTest:false,depthWrite:false,
+      }))
+      sprite.position.copy(center)
+      sprite.scale.set(scale,scale*.5,1)
+      sprite.renderOrder=6
+      group.add(sprite)
+    }
+    for(const [index,x] of [-span/2,span/2].entries()){
+      const plate = new THREE.Mesh(new THREE.BoxGeometry(1.2,.15,.96),bracketMaterial)
+      plate.position.set(x,.83,0)
+      group.add(plate)
+      // Trapezoidal clevis plate hangs from the beam down to the cable pin.
+      const bracketOutline=new THREE.Shape()
+      bracketOutline.moveTo(-.40,.77)
+      bracketOutline.lineTo(.40,.77)
+      bracketOutline.lineTo(.20,.18)
+      bracketOutline.quadraticCurveTo(0,-.10,-.20,.18)
+      bracketOutline.closePath()
+      const bracket=new THREE.Mesh(
+        new THREE.ExtrudeGeometry(bracketOutline,{depth:.14,bevelEnabled:false}),
+        bracketMaterial,
+      )
+      bracket.position.set(x,0,-.07)
+      group.add(bracket)
+      const bearing=new THREE.Mesh(new THREE.CylinderGeometry(.20,.20,.33,28),pinMaterial)
+      bearing.rotation.x=Math.PI/2
+      bearing.position.set(x,0,0)
       group.add(bearing)
+      const center=new THREE.Mesh(new THREE.CylinderGeometry(.092,.092,.35,28),highlight)
+      center.rotation.x=Math.PI/2
+      center.position.set(x,0,.02)
+      group.add(center)
+      addLabel(index===0?'A':'B',new THREE.Vector3(x+(index===0?-.5:.5),-.12,.38),.7,'#354f62')
     }
     for (let i = 0; i < solution.xs.length - 1; i++) {
       const start = point(i)
@@ -188,13 +218,26 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       }
     }
     loads.forEach((load, i) => {
-      const attachment = point(i + 1)
-      const height = 0.4 + load.load * 0.024
-      const block = new THREE.Mesh(new THREE.BoxGeometry(0.65, height, 0.7), orange)
-      block.position.copy(attachment).add(new THREE.Vector3(0, -0.85 - height / 2, 0))
+      const attachment=point(i+1)
+      // Metal eye at the point-load joint, then a short hanger to the block.
+      const joint=new THREE.Mesh(new THREE.TorusGeometry(.19,.057,10,32),pinMaterial)
+      joint.position.copy(attachment)
+      group.add(joint)
+      const height=.48+load.load*.019
+      const block=new THREE.Mesh(new THREE.BoxGeometry(1.18,height,.76),orange)
+      block.position.copy(attachment).add(new THREE.Vector3(0,-.44-height/2,0))
       group.add(block)
-      addRod(attachment, new THREE.Vector3(attachment.x, block.position.y + height / 2, 0), 0.026, steel)
-      const arrow = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(attachment.x, block.position.y - height / 2 - 0.1, 0), 0.85, 0xb4573d, 0.23, 0.12)
+      const blockTop=block.position.y+height/2
+      addRod(new THREE.Vector3(attachment.x,attachment.y-.17,0),
+        new THREE.Vector3(attachment.x,blockTop+.12,0),.043,steel)
+      const hanger=new THREE.Mesh(new THREE.TorusGeometry(.16,.044,8,24,Math.PI),steel)
+      hanger.position.set(attachment.x,blockTop+.08,0)
+      group.add(hanger)
+      addLabel('P'+(i+1),new THREE.Vector3(block.position.x,block.position.y+.17,.41),.72)
+      addLabel(load.load+' kN',new THREE.Vector3(block.position.x,block.position.y-.15,.41),.8)
+      const arrow=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),
+        new THREE.Vector3(attachment.x,block.position.y-height/2-.16,0),
+        .76,0xb4573d,.21,.14)
       group.add(arrow)
     })
     // A subtle horizontal line makes the undeformed support elevation visible.
@@ -212,7 +255,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
 
   return <UiBox sx={{ position: 'relative', width: '100%', height: 'min(43vh,405px)', minHeight: 250 }}>
     <div ref={mount} role="img"
-      aria-label={`Rotatable three-dimensional view of a ${span} meter cable with ${loads.length} point loads and ${solution.sag.toFixed(1)} meters of calculated sag. The two supports have fixed heights as cable loading changes.`}
+      aria-label={`Rotatable three-dimensional view of a ${span} meter cable with ${loads.length} point loads and ${solution.sag.toFixed(1)} meters of calculated sag. A fixed overhead beam supports blue pin joints and straight cable segments.`}
       style={{ width: '100%', height: '100%', touchAction: 'none' }} />
     <UiBox sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', flexDirection: 'column',
       gap: 0.5, p: 0.5, bgcolor: 'rgba(255,255,255,.92)', border: '1px solid #d3dce2',
