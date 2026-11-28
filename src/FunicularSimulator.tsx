@@ -312,19 +312,24 @@ export default function FunicularSimulator() {
           const horizontalTip = x + outward * 67
           const labelX = x - outward * 49
           return <g key={name}>
-            {/* White under-stroke keeps the upward reaction legible as it
-                crosses the blue bracket and overhead beam. */}
-            <path d={`M${x} ${anchorY}V19`}
-              fill="none" stroke="#f5f8fa" strokeWidth="5.5" strokeLinecap="round" />
-            <path d={`M${x} ${anchorY}V19m-5 7l5-7 5 7`}
-              fill="none" stroke="#276957" strokeWidth="2.5"
+            {/* Dashed vectors show support-force components without
+                visually turning the bracket into part of an arrow. Both
+                dashed shafts originate at the same pin connection. */}
+            <path d={`M${x} ${anchorY}V23`}
+              fill="none" stroke="#276957" strokeWidth="1.8"
+              strokeDasharray="4 5" strokeLinecap="round" />
+            <path d={`M${x-4} 29L${x} 22L${x+4} 29`}
+              fill="none" stroke="#276957" strokeWidth="2"
               strokeLinecap="round" strokeLinejoin="round" />
             <text x={labelX} y="16" textAnchor="middle" fill="#276957"
               fontSize="12" fontWeight="600">
               {name}: {fmt(reaction)} kN
             </text>
-            <path d={`M${x} ${anchorY}H${horizontalTip}m${-outward * 7}-5l${outward * 7} 5 ${-outward * 7} 5`}
-              fill="none" stroke="#2e6492" strokeWidth="2.5"
+            <path d={`M${x} ${anchorY}H${horizontalTip-outward*7}`}
+              fill="none" stroke="#2e6492" strokeWidth="1.8"
+              strokeDasharray="4 5" strokeLinecap="round" />
+            <path d={`M${horizontalTip-outward*7} ${anchorY-4}L${horizontalTip} ${anchorY}L${horizontalTip-outward*7} ${anchorY+4}`}
+              fill="none" stroke="#2e6492" strokeWidth="2"
               strokeLinecap="round" strokeLinejoin="round" />
             <text x={x - outward * angleInset} y={anchorY + 45} textAnchor="middle"
               fill={labColors.ink} fontSize="13" fontWeight="700"
