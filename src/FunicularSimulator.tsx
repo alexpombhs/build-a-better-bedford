@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import CableThreeView from './CableThreeView'
 import { UiBox, UiText, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
 import { LabDetails, LabSlider, labColors } from './lab/LabUI'
 import { SimulatorWorkspace, SimulatorStatus, SimulatorVisual, SimulatorControls } from './lab/SimulatorLayout'
@@ -37,6 +38,7 @@ const defaultSettings: CableSettings = {
 
 export default function FunicularSimulator() {
   const [count, setCount] = useState<1 | 2>(1)
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d')
 
   // Each load tab is its own experiment. Changing tabs cannot change the
   // failed geometry, load values, or controls of the other experiment.
@@ -98,7 +100,9 @@ export default function FunicularSimulator() {
     displayed.ys[i] - displayed.ys[i + 1],
     displayed.xs[i + 1] - displayed.xs[i],
   ) * 180 / Math.PI)
-  const status = broken ? 'broken' : displayedPeak >= shownStrength * 0.85 ? 'warning' : 'intact'
+  const highStretch = displayed.maxStrainPercent > 12
+  const nearBreaking = displayedPeak >= shownStrength * .85
+  const status = broken ? 'broken' : nearBreaking || highStretch ? 'warning' : 'intact'
 
   // Leave space outside the anchor blocks for the horizontal force arrows.
   // Use fixed vertical scale for ordinary sag, compressing extreme deflection
@@ -186,22 +190,43 @@ export default function FunicularSimulator() {
   return <SimulatorWorkspace
     status={<SimulatorStatus
       tone={status === 'broken' ? 'failure' : status === 'warning' ? 'warning' : 'success'}
-      title={broken ? 'Cable broken · segment ' + (breakIndex + 1) : status === 'warning' ? 'Approaching breaking strength' : 'Cable intact'}
-      detail={`Peak tension ${fmt(displayedPeak)} kN / limit ${fmt(shownStrength)} kN`}
+      title={broken ? 'Cable broken · segment ' + (breakIndex + 1) : nearBreaking ? 'Approaching breaking strength' : highStretch ? 'High modeled cable stretch' : 'Cable intact'}
+      detail={`Peak tension ${fmt(displayedPeak)} kN / limit ${fmt(shownStrength)} kN${highStretch ? ` · High modeled stretch (${fmt(displayed.maxStrainPercent)}%); idealized elastic cord, not a structural cable design limit.` : ''}`}
       actionLabel={broken ? 'Replace cable' : undefined}
       onAction={broken ? replaceCable : undefined}
     />}
-    visual={<SimulatorVisual title={<>Elastic cable under {count === 1 ? 'one load' : 'two loads'}</>}>
-
-
-      <svg viewBox="0 0 640 330" width="100%" style={{height:'min(34vh,330px)',display:'block',flexShrink:0}} role="img"
+    visual={<SimulatorVisual title={<UiBox sx={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:1,width:'100%',flexWrap:'wrap'}}>
+      <UiText sx={{fontSize:14,fontWeight:700,color:labColors.ink}}>Elastic cable under {count === 1 ? 'one load' : 'two loads'}</UiText>
+      <UiTabs value={viewMode} onChange={(_,value)=>setViewMode(value as '2d'|'3d')}
+        aria-label="Cable visualization mode" sx={{minHeight:30}}>
+        <UiTab value="2d" label="2D" sx={{minHeight:30,minWidth:48,py:0,px:1,textTransform:'none'}}/>
+        <UiTab value="3d" label="3D" sx={{minHeight:30,minWidth:48,py:0,px:1,textTransform:'none'}}/>
+      </UiTabs>
+    </UiBox>}>
+      {viewMode === '3d' ? <CableThreeView solution={displayed} loads={shownLoads} span={shownSpan}
+        brokenSegment={broken ? breakIndex : undefined}/> : <svg viewBox="0 0 640 330" width="100%" style={{height:'min(34vh,330px)',display:'block',flexShrink:0}} role="img"
         aria-label={broken
           ? 'Cable snapped in segment ' + (breakIndex + 1) + ' under ' + fmt(displayedTotal) + ' kilonewtons of applied load. The weights are falling.'
           : 'Elastic cable across ' + shownSpan + ' meters with ' + fmt(displayed.sag) + ' meters calculated sag and ' + shownLoads.length + ' hanging weights.'}>
+        {/* Beam and pinned hanger brackets from the experimental schematic.
+            Force vectors and angle labels below are retained from main. */}
         <path d={'M' + leftX + ' 43V295 M' + rightX + ' 43V295'} stroke="#d1dce2" strokeDasharray="5 6" />
-        <path d={'M' + leftX + ' ' + anchorY + 'H' + rightX} stroke="#a5b7c3" strokeDasharray="6 7" strokeWidth="1.5" />
-        <rect x={leftX - 24} y={anchorY - 13} width="24" height="26" fill="#c6d4dc" />
-        <rect x={rightX} y={anchorY - 13} width="24" height="26" fill="#c6d4dc" />
+        <rect x={leftX-27} y="30" width={rightX-leftX+54} height="12"
+          fill="#d4dce2" stroke="#8195a4" strokeWidth="1.2"/>
+        <line x1={leftX-27} y1="43" x2={rightX+27} y2="43" stroke="#516a7c" strokeWidth="1.5"/>
+        {([leftX,rightX] as const).map((x,i)=><g key={i}>
+          <rect x={x-19} y="43" width="38" height="6" rx="1"
+            fill="#77a9cd" stroke="#477b9f" strokeWidth="1.2"/>
+          <path d={`M${x-12} 49 L${x-7} ${anchorY-5}
+            Q${x} ${anchorY+4} ${x+7} ${anchorY-5} L${x+12} 49 Z`}
+            fill="#77a9cd" stroke="#477b9f" strokeWidth="1.2"/>
+          <circle cx={x} cy={anchorY} r="6" fill="#416c89" stroke="#294b63" strokeWidth="1.2"/>
+          <circle cx={x} cy={anchorY} r="2.7" fill="#c3dce9"/>
+          <text x={x+(i===0?-11:11)} y={anchorY+17} textAnchor={i===0?'end':'start'}
+            fill="#40596c" fontSize="12" fontWeight="700">{i===0?'A':'B'}</text>
+        </g>)}
+        <path d={'M' + leftX + ' ' + anchorY + 'H' + rightX}
+          stroke="#a5b7c3" strokeDasharray="6 7" strokeWidth="1.3" fill="none" />
         {broken ? <>
           <polyline points={brokenLeft} fill="none" stroke="#b4573d" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round" />
           <polyline points={brokenRight} fill="none" stroke="#b4573d" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round" />
@@ -262,9 +287,9 @@ export default function FunicularSimulator() {
           const supportCenter = x + outward * 12
           const horizontalTip = x + outward * 68
           return <g key={name}>
-            <path d={`M${supportCenter} ${anchorY - 17}V25m-5 7l5-7 5 7`}
+            <path d={`M${supportCenter} ${anchorY - 17}V20m-5 7l5-7 5 7`}
               fill="none" stroke="#276957" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            <text x={supportCenter} y="17" textAnchor="middle" fill="#276957" fontSize="13">
+            <text x={supportCenter} y="13" textAnchor="middle" fill="#276957" fontSize="13">
               {name}: {fmt(reaction)} kN
             </text>
             <path d={`M${x + outward * 29} ${anchorY}H${horizontalTip}m${-outward * 7}-5l${outward * 7} 5 ${-outward * 7} 5`}
@@ -308,16 +333,11 @@ export default function FunicularSimulator() {
           stroke="#657f90" strokeDasharray="3 4" />
         <text x="627" y={Math.max(anchorY + 19, (anchorY + sagY) / 2 + 4)} textAnchor="end"
           fill="#465d70" fontSize="13">{fmt(displayed.sag)} m sag</text>
-      </svg>
+      </svg>}
       <UiBox sx={{ mt: 'auto', pt: 0.5 }}>
         <UiText variant="caption" sx={{ color: '#2e6492' }}>Horizontal tension (all segments)</UiText>
         <UiText sx={{ fontSize: 14, fontWeight: 700 }}>{fmt(displayed.horizontal)} kN</UiText>
       </UiBox>
-      <UiText variant="caption" sx={{ display: 'block', color: labColors.muted, pt: 0.5, fontSize: 11.5, lineHeight: 1.4 }}>
-        The angles above the cable are measured from horizontal. The angles below the supports are measured from vertical.
-        {count === 2 && ' The middle reading shows how much the cable rises or falls from P1 to P2.'}
-        {broken && ' Force and angle readings show the cable just before it snapped.'}
-      </UiText>
     </SimulatorVisual>}
     controls={<SimulatorControls>
       <UiBox sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
