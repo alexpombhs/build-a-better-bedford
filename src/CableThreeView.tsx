@@ -332,9 +332,5 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       <UiButton size="small" variant="text" aria-label="Reset camera" onClick={resetView}
         sx={{ minWidth: 34, p: 0.5, fontSize: 11, lineHeight: 1.2 }}>Reset</UiButton>
     </UiBox>
-    <UiText variant="caption" sx={{ position: 'absolute', bottom: 5, left: 8,
-      color: '#465d70', fontSize: 10, pointerEvents: 'none' }}>
-      Drag to orbit · right-drag or two-finger drag to pan · scroll or pinch to zoom
-    </UiText>
   </UiBox>
 }
