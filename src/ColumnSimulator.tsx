@@ -112,12 +112,14 @@ export default function ColumnSimulator() {
         : result ? 'Column supports the applied load' : 'Column ready for analysis'}
       detail={result
         ? `Applied ${formatLoad(result.appliedLoad)} kN / limit ${formatLoad(result.capacity)} kN`
-        : 'Set a load, then select Calculate load.'}
+        : appliedLoad>0 ? `Selected downward force: ${formatLoad(appliedLoad)} kN. Select Calculate load to test.` : 'Set a load, then select Calculate load.'}
       actionLabel="Reset"
       onAction={resetExperiment}
     />}
     visual={<SimulatorVisual title="Column response">
-      <Column3D key={simulationRun} material={material} section={section} width={width} length={length} failure={result?.failed ? result.governing : null}/>
+      <Column3D material={material} section={section} width={width} length={length}
+        load={appliedLoad} loadLimit={theoretical.capacity} replay={simulationRun}
+        failure={result?.failed ? result.governing : null}/>
     </SimulatorVisual>}
     controls={<SimulatorControls>
       <UiText sx={{ fontWeight: 700, fontSize: 14, color: labColors.ink }}>Column configuration</UiText>
@@ -132,7 +134,7 @@ export default function ColumnSimulator() {
         ]}/>
       <UiBox sx={{ display: 'flex', flexDirection: 'column', gap: .25 }}>
         <LabSlider compact label={section.includes('pipe') ? 'Base diameter' : 'Base width'}
-          value={width} min={.05} max={.6} step={.01} unit="m" onChange={changeWidth}/>
+          value={width} min={.05} max={1.5} step={.01} unit="m" onChange={changeWidth}/>
         <LabSlider compact label="Length" value={length} min={1} max={5} step={.05} unit="m" onChange={changeLength}/>
         <LabSlider compact label="Applied load" value={Math.min(appliedLoad,sliderMaximum)} min={0} max={sliderMaximum}
           step={1} unit="kN" onChange={changeLoad}/>
@@ -164,8 +166,10 @@ export default function ColumnSimulator() {
       </UiBox>
       <LabDetails title="Load calculations">
         <UiText sx={{ fontSize: 12, color: labColors.muted, mt: 1, mb: 1 }}>
-          Model: pinned-end Euler buckling and axial compression. Illustrations are schematic.
-          Fracture and post-buckling behavior are not calculated.
+          Model: pinned-end Euler buckling and axial compression. Deformation is illustrative, not
+          a computed strain or post-failure prediction. Solid metal sections show broad barreling;
+          hollow metal sections show possible local wall folding. Actual response depends on geometry,
+          end restraint, imperfections, and material behavior.
           {result?.failed && ' ' + responseDescription(material, result.governing)}
         </UiText>
         <UiBox sx={{ p: 1.25, mt: .5, bgcolor: '#f2f6f8', borderRadius: 'var(--bbb-card-radius, 4px)',
