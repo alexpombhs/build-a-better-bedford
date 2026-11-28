@@ -3,7 +3,7 @@ import CableThreeView from './CableThreeView'
 import { UiBox, UiText, UiTabs, UiTab } from './components/atoms/MuiPrimitives'
 import { LabDetails, LabSlider, labColors } from './lab/LabUI'
 import { SimulatorWorkspace, SimulatorStatus, SimulatorVisual, SimulatorControls } from './lab/SimulatorLayout'
-import { illustrateCableBreak, maxSupportedTotalLoad, solveElasticCable } from './lab/funicularPhysics'
+import { maxSupportedTotalLoad, solveElasticCable } from './lab/funicularPhysics'
 import type { CableLoad, CableSolution } from './lab/funicularPhysics'
 
 const fmt = (v: number) => v.toFixed(1)
@@ -154,22 +154,21 @@ export default function FunicularSimulator() {
 
   // Failure is determined by the highest T, not by total vertical weight.
   const breakIndex = broken?.segment ?? -1
-  // Both renderers use the same snapped-cable shape in physical coordinates.
-  // The SVG transforms it into screen coordinates; Three.js uses the same
-  // x/y points with the vertical axis reversed.
-  const snapped = illustrateCableBreak(displayed, breakIndex)
-  const toSvgPath = (points: Array<[number, number]>) => points.map(([x, y]) =>
-    (leftX + pixelsPerMeter * x).toFixed(2) + ',' +
-    (anchorY + verticalScale * y).toFixed(2),
-  ).join(' ')
-  const brokenLeft = toSvgPath(snapped.left)
-  const brokenRight = toSvgPath(snapped.right)
-  const snappedLeft = snapped.left[snapped.left.length - 1]
-  const snappedRight = snapped.right[0]
-  const midpointX = snappedLeft && snappedRight
-    ? leftX + pixelsPerMeter * (snappedLeft[0] + snappedRight[0]) / 2 : 0
-  const midpointY = snappedLeft && snappedRight
-    ? anchorY + verticalScale * (snappedLeft[1] + snappedRight[1]) / 2 : 0
+  const breakFrom = breakIndex >= 0 ? screen[breakIndex] : null
+  const breakTo = breakIndex >= 0 ? screen[breakIndex + 1] : null
+  const midpointX = breakFrom && breakTo ? (breakFrom[0] + breakTo[0]) / 2 : 0
+  const midpointY = breakFrom && breakTo ? (breakFrom[1] + breakTo[1]) / 2 : 0
+  const breakHalfGap = breakFrom && breakTo
+    ? Math.min(14, (breakTo[0] - breakFrom[0]) * 0.24)
+    : 0
+  const brokenLeft = breakIndex < 0 ? '' : [
+    ...screen.slice(0, breakIndex + 1),
+    [midpointX - breakHalfGap, midpointY + 25],
+  ].map(([x, y]) => x.toFixed(2) + ',' + y.toFixed(2)).join(' ')
+  const brokenRight = breakIndex < 0 ? '' : [
+    [midpointX + breakHalfGap, midpointY + 45],
+    ...screen.slice(breakIndex + 1),
+  ].map(([x, y]) => x.toFixed(2) + ',' + y.toFixed(2)).join(' ')
 
   // Independent settings make it safe to switch without changing the other tab.
   const changeCount = (value: 1 | 2) => setCount(value)
@@ -226,7 +225,7 @@ export default function FunicularSimulator() {
       </UiTabs>
     </UiBox>}>
       {viewMode === '3d' ? <CableThreeView solution={displayed} loads={shownLoads} span={shownSpan}
-        brokenSegment={broken ? breakIndex : undefined}/> : <div ref={diagramHost} style={{width:'100%',height:'min(34vh,330px)',minHeight:220,flexShrink:0}}>
+        pixelsPerMeter={pixelsPerMeter} brokenSegment={broken ? breakIndex : undefined}/> : <div ref={diagramHost} style={{width:'100%',height:'min(34vh,330px)',minHeight:220,flexShrink:0}}>
       <svg viewBox={`0 0 ${diagramWidth} 330`} width="100%" height="100%" style={{display:'block'}} role="img"
         aria-label={broken
           ? 'Cable snapped in segment ' + (breakIndex + 1) + ' under ' + fmt(displayedTotal) + ' kilonewtons of applied load. The weights are falling.'
