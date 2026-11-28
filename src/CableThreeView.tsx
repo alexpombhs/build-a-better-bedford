@@ -22,6 +22,9 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
   const homeDistance = useRef(15)
   const homeTarget = useRef(-1.7)
   const initialFrameSet = useRef(false)
+  const manuallyAdjusted = useRef(false)
+  const framing = useRef({span, sag:solution.sag, loads, ys:solution.ys})
+  framing.current = {span, sag:solution.sag, loads, ys:solution.ys}
   const zoom = (factor: number) => {
     const camera = cameraRef.current
     const controls = controlsRef.current
@@ -44,10 +47,11 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     controls.update()
   }
   const resetView = () => {
+    manuallyAdjusted.current = false
     const camera = cameraRef.current
     const controls = controlsRef.current
     if (!camera || !controls) return
-    camera.position.set(1.1, homeTarget.current + 4, homeDistance.current)
+    camera.position.set(.85, homeTarget.current + 1.3, homeDistance.current)
     controls.target.set(0, homeTarget.current, 0)
     controls.update()
   }
@@ -83,6 +87,8 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     controls.minDistance = 6
     controls.maxDistance = 55
     controls.maxPolarAngle = Math.PI * 0.8
+    const markAdjusted = () => { manuallyAdjusted.current = true }
+    controls.addEventListener('start',markAdjusted)
     controls.target.set(0, homeTarget.current, 0)
     controls.update()
     const resize = () => {
@@ -93,23 +99,24 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       camera.aspect = aspect
       camera.updateProjectionMatrix()
       renderer.setSize(width, height, false)
-      if(!initialFrameSet.current){
-        // Frame the whole structural assembly, not the now-removed pylons.
-        // Base the fit on span AND the lowest hanging load so the weights
-        // remain visible at the default view across wide/narrow screens.
-        const lowest=solution.sag+3.0
-        const top=1.45
-        const verticalExtent=top+lowest
-        const fov=Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)
-        const fitWidth=(span+2.3)/(2*fov*aspect*.86)
-        const fitHeight=verticalExtent/(2*fov*.84)
-        homeDistance.current=Math.max(7.5,fitWidth,fitHeight)
-        homeTarget.current=(top-lowest)/2
-        camera.position.set(1.1,homeTarget.current+3.0,homeDistance.current)
+      // Fit the actual load hardware, not a fixed sag+3 margin. Preserve
+      // deliberate camera edits; Reset restores the latest fitted view.
+      const latest=framing.current
+      const lowest=Math.max(0,...latest.loads.map((load,i)=>
+        (latest.ys[i+1]??latest.sag) + .46 + (.83+load.load*.014) + .88))
+      const top=1.44
+      const verticalExtent=top+lowest
+      const tanHalf=Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)
+      const fitWidth=(latest.span+2.2)/(2*tanHalf*aspect*.90)
+      const fitHeight=verticalExtent/(2*tanHalf*.88)
+      homeDistance.current=Math.max(6.5,fitWidth,fitHeight)
+      homeTarget.current=(top-lowest)/2
+      if(!initialFrameSet.current || !manuallyAdjusted.current){
+        camera.position.set(.85,homeTarget.current+1.3,homeDistance.current)
         controls.target.set(0,homeTarget.current,0)
         controls.update()
-        initialFrameSet.current=true
       }
+      initialFrameSet.current=true
     }
     const observer = new ResizeObserver(resize)
     observer.observe(element)
@@ -124,6 +131,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     return () => {
       cancelAnimationFrame(frame)
       observer.disconnect()
+      controls.removeEventListener('start',markAdjusted)
       controls.dispose()
       controlsRef.current = null
       cameraRef.current = null
@@ -244,13 +252,19 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       const start = point(i)
       const end = point(i + 1)
       if (brokenSegment === i) {
-        const direction = end.clone().sub(start)
-        const a = start.clone().addScaledVector(direction, 0.44).add(new THREE.Vector3(0, -0.35, 0))
-        const b = start.clone().addScaledVector(direction, 0.56).add(new THREE.Vector3(0, -0.6, 0))
-        addRod(start, a, 0.065, red)
-        addRod(b, end, 0.065, red)
+        // Same schematic snapped geometry as the 2D mode: the left end
+        // drops 25 SVG units, the right end drops 45 units. Convert those
+        // displacements using the 2D vertical drawing scale.
+        const direction=end.clone().sub(start)
+        const verticalScale=Math.min(14,88/Math.max(1,solution.sag))
+        const halfGap=Math.min(14/30,direction.x*.24)
+        const center=start.clone().lerp(end,.5)
+        const leftEnd=center.clone().add(new THREE.Vector3(-halfGap,-25/verticalScale,0))
+        const rightEnd=center.clone().add(new THREE.Vector3(halfGap,-45/verticalScale,0))
+        addRod(start,leftEnd,.065,red)
+        addRod(rightEnd,end,.065,blue)
       } else {
-        addRod(start, end, 0.07, blue)
+        addRod(start,end,.07,brokenSegment!==undefined && i<brokenSegment?red:blue)
       }
     }
     loads.forEach((load, i) => {
@@ -308,6 +322,31 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     )
     baseline.computeLineDistances()
     group.add(baseline)
+    // Reframe only while the user has not deliberately orbited or panned.
+    // For a changed load, the current camera's Reset fit is also refreshed.
+    const box=mount.current
+    if(box){
+      // A subsequent ResizeObserver callback is not guaranteed when
+      // geometry changes, so recompute the fitted home on each update.
+      const camera=cameraRef.current
+      const controls=controlsRef.current
+      if(camera && controls && box.clientWidth>0 && box.clientHeight>0){
+        const aspect=box.clientWidth/box.clientHeight
+        const lowest=Math.max(0,...loads.map((load,i)=>
+          (solution.ys[i+1]??solution.sag)+.46+(.83+load.load*.014)+.88))
+        const top=1.44
+        const tanHalf=Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)
+        homeDistance.current=Math.max(6.5,
+          (span+2.2)/(2*tanHalf*aspect*.90),
+          (top+lowest)/(2*tanHalf*.88))
+        homeTarget.current=(top-lowest)/2
+        if(!manuallyAdjusted.current){
+          camera.position.set(.85,homeTarget.current+1.3,homeDistance.current)
+          controls.target.set(0,homeTarget.current,0)
+          controls.update()
+        }
+      }
+    }
     // Dispose shared materials even when one is not used by the current state.
     return () => {
       // Geometry cleanup is performed at the next update or on unmount.
