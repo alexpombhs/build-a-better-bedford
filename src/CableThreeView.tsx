@@ -20,8 +20,8 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
   const sceneRef = useRef<THREE.Scene | null>(null)
   const geometryRef = useRef<THREE.Group | null>(null)
   const controlsRef = useRef<OrbitControls | null>(null)
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
-  const homeDistance = useRef(15)
+  const cameraRef = useRef<THREE.OrthographicCamera | null>(null)
+  const homeHalfHeight = useRef(5.5)
   const homeTarget = useRef(-1.7)
   const initialFrameSet = useRef(false)
   const manuallyAdjusted = useRef(false)
@@ -32,10 +32,10 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
     const camera = cameraRef.current
     const controls = controlsRef.current
     if (!camera || !controls) return
-    const vector = camera.position.clone().sub(controls.target)
-    vector.multiplyScalar(factor)
-    vector.clampLength(controls.minDistance, controls.maxDistance)
-    camera.position.copy(controls.target).add(vector)
+    manuallyAdjusted.current = true
+    // Orthographic zoom changes apparent size without introducing perspective.
+    camera.zoom = THREE.MathUtils.clamp(camera.zoom / factor, .4, 4)
+    camera.updateProjectionMatrix()
     controls.update()
   }
   const panVertically = (direction: number) => {
@@ -54,8 +54,10 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
     const camera = cameraRef.current
     const controls = controlsRef.current
     if (!camera || !controls) return
-    camera.position.set(0, homeTarget.current, homeDistance.current)
+    camera.position.set(0, homeTarget.current, 25)
     controls.target.set(0, homeTarget.current, 0)
+    camera.zoom = 1
+    camera.updateProjectionMatrix()
     controls.update()
   }
 
@@ -65,8 +67,10 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
     const scene = new THREE.Scene()
     scene.background = new THREE.Color('#f5f8fa')
     sceneRef.current = scene
-    const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 300)
-    camera.position.set(0, homeTarget.current, homeDistance.current)
+    // Orthographic projection preserves the same X/Y drawing proportions as
+    // the 2D SVG in a front-facing view, even when the model has real depth.
+    const camera = new THREE.OrthographicCamera(-8,8,5,-5,.1,300)
+    camera.position.set(0, homeTarget.current, 25)
     cameraRef.current = camera
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
@@ -99,23 +103,24 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
       const height = element.clientHeight
       if (!width || !height) return
       const aspect=width/height
-      camera.aspect = aspect
-      camera.updateProjectionMatrix()
       renderer.setSize(width, height, false)
-      // Fit the actual load hardware, not a fixed sag+3 margin. Preserve
-      // deliberate camera edits; Reset restores the latest fitted view.
+      // Fit beam and load hardware without perspective foreshortening.
+      // Width and height are expressed in the same physical display units.
       const latest=framing.current
       const lowest=Math.max(0,...latest.loads.map((load,i)=>
-        (latest.ys[i+1]??latest.sag)*latest.visualYScale + .46 + (.83+load.load*.014) + .88))
+        (latest.ys[i+1]??latest.sag)*latest.visualYScale+.46+(.83+load.load*.014)+.88))
       const top=1.44
-      const verticalExtent=top+lowest
-      const tanHalf=Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)
-      const fitWidth=(latest.span+2.2)/(2*tanHalf*aspect*.90)
-      const fitHeight=verticalExtent/(2*tanHalf*.88)
-      homeDistance.current=Math.max(6.5,fitWidth,fitHeight)
+      homeHalfHeight.current=Math.max(3.0,
+        (latest.span+2.2)/(2*aspect*.89),
+        (top+lowest)/(2*.86))
       homeTarget.current=(top-lowest)/2
+      camera.left=-homeHalfHeight.current*aspect
+      camera.right=homeHalfHeight.current*aspect
+      camera.top=homeHalfHeight.current
+      camera.bottom=-homeHalfHeight.current
+      camera.updateProjectionMatrix()
       if(!initialFrameSet.current || !manuallyAdjusted.current){
-        camera.position.set(0,homeTarget.current,homeDistance.current)
+        camera.position.set(0,homeTarget.current,25)
         controls.target.set(0,homeTarget.current,0)
         controls.update()
       }
@@ -371,13 +376,17 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
         const lowest=Math.max(0,...loads.map((load,i)=>
           (solution.ys[i+1]??solution.sag)*visualYScale+.46+(.83+load.load*.014)+.88))
         const top=1.44
-        const tanHalf=Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)
-        homeDistance.current=Math.max(6.5,
-          (span+2.2)/(2*tanHalf*aspect*.90),
-          (top+lowest)/(2*tanHalf*.88))
+        homeHalfHeight.current=Math.max(3.0,
+          (span+2.2)/(2*aspect*.89),
+          (top+lowest)/(2*.86))
         homeTarget.current=(top-lowest)/2
+        camera.left=-homeHalfHeight.current*aspect
+        camera.right=homeHalfHeight.current*aspect
+        camera.top=homeHalfHeight.current
+        camera.bottom=-homeHalfHeight.current
+        camera.updateProjectionMatrix()
         if(!manuallyAdjusted.current){
-          camera.position.set(0,homeTarget.current,homeDistance.current)
+          camera.position.set(0,homeTarget.current,25)
           controls.target.set(0,homeTarget.current,0)
           controls.update()
         }
