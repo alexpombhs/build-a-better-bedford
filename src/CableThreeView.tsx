@@ -123,10 +123,13 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     if (previous) {
       scene.remove(previous)
       previous.traverse(object => {
-        if (object instanceof THREE.Mesh || object instanceof THREE.Line) {
-          object.geometry.dispose()
+        if (object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Sprite) {
+          if (object instanceof THREE.Mesh || object instanceof THREE.Line) object.geometry.dispose()
           const materials = Array.isArray(object.material) ? object.material : [object.material]
-          materials.forEach(material => material.dispose())
+          materials.forEach(material => {
+            if (material instanceof THREE.SpriteMaterial) material.map?.dispose()
+            material.dispose()
+          })
         }
       })
     }
