@@ -100,7 +100,7 @@ export default function FunicularSimulator() {
   // At 16 m the anchors reach x=32 and x=608 (nearly edge to edge).
   // Use fixed vertical scale for ordinary sag, compressing extreme deflection
   // only to preserve clearance for weight blocks, arrows and the span marker.
-  const anchorY = 70
+  const anchorY = 78
   const pixelsPerMeter = 36
   const leftX = (640 - pixelsPerMeter * shownSpan) / 2
   const rightX = leftX + pixelsPerMeter * shownSpan
@@ -193,10 +193,30 @@ export default function FunicularSimulator() {
         aria-label={broken
           ? 'Cable snapped in segment ' + (breakIndex + 1) + ' under ' + fmt(displayedTotal) + ' kilonewtons of applied load. The weights are falling.'
           : 'Elastic cable across ' + shownSpan + ' meters with ' + fmt(displayed.sag) + ' meters calculated sag and ' + shownLoads.length + ' hanging weights.'}>
-        <path d={'M' + leftX + ' 43V295 M' + rightX + ' 43V295'} stroke="#d1dce2" strokeDasharray="5 6" />
-        <path d={'M' + leftX + ' ' + anchorY + 'H' + rightX} stroke="#a5b7c3" strokeDasharray="6 7" strokeWidth="1.5" />
-        <rect x={leftX - 24} y={anchorY - 13} width="24" height="26" fill="#c6d4dc" />
-        <rect x={rightX} y={anchorY - 13} width="24" height="26" fill="#c6d4dc" />
+        {/* Overhead beam, suspension brackets and pinned anchor connections.
+            Inspired by the reference engineering diagram, with BBB colors. */}
+        <rect x={leftX - 29} y="23" width={rightX - leftX + 58} height="13"
+          fill="#d4dce2" stroke="#8295a3" strokeWidth="1.5" />
+        <line x1={leftX - 29} y1="37" x2={rightX + 29} y2="37"
+          stroke="#526a7c" strokeWidth="2" />
+        {([leftX,rightX] as const).map((x,i)=><g key={i}>
+          <rect x={x - 23} y="36" width="46" height="8"
+            rx="1.5" fill="#76a9cf" stroke="#477b9f" strokeWidth="1.3"/>
+          <path d={`M${x - 13} 44 L${x - 7} ${anchorY - 10}
+            Q${x} ${anchorY + 4} ${x + 7} ${anchorY - 10}
+            L${x + 13} 44 Z`}
+            fill="#73a7d0" stroke="#457a9d" strokeWidth="1.5"/>
+          <circle cx={x} cy={anchorY - 5} r="8" fill="#426e91" stroke="#2b506d" strokeWidth="1.4"/>
+          <circle cx={x} cy={anchorY - 5} r="4" fill="#b7d4e7"/>
+          <line x1={x} y1={anchorY - 1} x2={x} y2={anchorY}
+            stroke="#284d69" strokeWidth="3"/>
+          <text x={x+(i===0?-15:15)} y={anchorY+10}
+            textAnchor={i===0?'end':'start'} fill="#40596c" fontSize="12" fontWeight="700">
+            {i===0?'A':'B'}
+          </text>
+        </g>)}
+        <path d={'M' + leftX + ' ' + anchorY + 'H' + rightX}
+          stroke="#a5b7c3" strokeDasharray="6 7" strokeWidth="1.3" fill="none"/>
         {broken ? <>
           <polyline points={brokenLeft} fill="none" stroke="#b4573d" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round" />
           <polyline points={brokenRight} fill="none" stroke="#b4573d" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round" />
@@ -250,10 +270,12 @@ export default function FunicularSimulator() {
               fill="#c05e3d" />
           </g>
         })}
-        <text x={Math.min(leftX, 185)} y="43" fill="#276957" fontSize="14">
+        <text x={Math.max(105,leftX+40)} y="17" textAnchor="middle"
+          fill="#276957" fontSize="12" fontWeight="600">
           A: {fmt(displayed.leftReaction)} kN ↑
         </text>
-        <text x={Math.max(rightX, 455)} y="43" textAnchor="end" fill="#276957" fontSize="14">
+        <text x={Math.min(535,rightX-40)} y="17" textAnchor="middle"
+          fill="#276957" fontSize="12" fontWeight="600">
           B: {fmt(displayed.rightReaction)} kN ↑
         </text>
         <path d={'M' + leftX + ' 307H' + rightX + ' M' + leftX + ' 299v16 M' + rightX + ' 299v16'}
