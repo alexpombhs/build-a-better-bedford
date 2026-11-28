@@ -310,14 +310,18 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
     loads.forEach((load, i) => {
       const attachment=point(i+1)
       // Metal eye at the point-load joint, then a short hanger to the block.
+      // One cable-eye joint shared by the two cable segments and the
+      // suspension. Do not create a second floating eye above this joint.
       const joint=new THREE.Mesh(new THREE.TorusGeometry(.19,.057,10,32),pinMaterial)
       joint.position.copy(attachment)
       group.add(joint)
       // A suspended test mass: thick cast-metal body with bevelled edges,
       // a recessed front plate, hanging shackle and a clearly stamped value.
-      const height=.83+load.load*.014
-      const massWidth=1.42
-      const massDepth=.78
+      // Scale to the 2D weight proportions at the same span. The blocks
+      // must be substantial enough to read as actual suspended test masses.
+      const height=1.08+load.load*.018
+      const massWidth=1.85
+      const massDepth=.86
       const shape=new THREE.Shape()
       shape.moveTo(-massWidth/2,-height/2)
       shape.lineTo(massWidth/2,-height/2)
@@ -330,7 +334,7 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
       }),orange)
       // Leave a visible suspension gap below the cable joint. The center
       // stays exactly under that joint for every load and sag setting.
-      const hangerDrop=.70
+      const hangerDrop=.60
       const centerY=attachment.y-hangerDrop-height/2
       body.position.set(attachment.x,centerY,-massDepth/2+.05)
       group.add(body)
@@ -342,28 +346,25 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
       face.position.set(attachment.x,centerY,faceZ+.035)
       group.add(face)
       const strapTop=centerY+height/2
-      // An uninterrupted load path: cable pin → hanging link → weight eye.
-      // The previous short center rod was hidden behind the solid body and
-      // torus, making the block appear to float near the cable.
-      const frontZ=faceZ+.10
+      // The upper end of the metal link starts inside the EXISTING cable
+      // ring at z=0. It then angles forward to the eye fixed to the weight,
+      // preserving an actual connection when viewed from any orbit angle.
       const hookMaterial=new THREE.MeshStandardMaterial({
         color:'#647986',metalness:.55,roughness:.38,
       })
-      const linkStart=new THREE.Vector3(attachment.x,attachment.y-.08,frontZ)
-      const linkEnd=new THREE.Vector3(attachment.x,strapTop+.12,frontZ)
-      addRod(linkStart,linkEnd,.047,hookMaterial)
-      const upperEye=new THREE.Mesh(new THREE.TorusGeometry(.14,.044,12,28),hookMaterial)
-      upperEye.position.set(attachment.x,attachment.y-.10,frontZ)
-      group.add(upperEye)
-      const lowerEye=new THREE.Mesh(new THREE.TorusGeometry(.14,.044,12,28),hookMaterial)
-      lowerEye.position.set(attachment.x,strapTop+.11,frontZ)
+      const lowerEyeZ=massDepth/2+.055
+      const linkStart=new THREE.Vector3(attachment.x,attachment.y-.13,0)
+      const linkEnd=new THREE.Vector3(attachment.x,strapTop+.15,lowerEyeZ)
+      addRod(linkStart,linkEnd,.067,hookMaterial)
+      const lowerEye=new THREE.Mesh(new THREE.TorusGeometry(.15,.057,12,28),hookMaterial)
+      lowerEye.position.set(attachment.x,strapTop+.12,lowerEyeZ)
       group.add(lowerEye)
-      const cap=new THREE.Mesh(new THREE.BoxGeometry(.48,.11,.24),weightTrim)
-      cap.position.set(attachment.x,strapTop+.02,frontZ-.08)
+      const cap=new THREE.Mesh(new THREE.BoxGeometry(.54,.15,.30),weightTrim)
+      cap.position.set(attachment.x,strapTop+.01,lowerEyeZ-.12)
       group.add(cap)
       const textZ=faceZ+.068
-      addLabel('P'+(i+1),new THREE.Vector3(attachment.x,centerY+height*.19,textZ),1.02)
-      addLabel(load.load+' kN',new THREE.Vector3(attachment.x,centerY-height*.16,textZ),1.18)
+      addLabel('P'+(i+1),new THREE.Vector3(attachment.x,centerY+height*.19,textZ),1.28)
+      addLabel(load.load+' kN',new THREE.Vector3(attachment.x,centerY-height*.16,textZ),1.48)
       if(load.load>0){
         // Three.js line widths are fixed on most WebGL implementations.
         // Use real solids to communicate greater force with a thicker arrow.
