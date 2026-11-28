@@ -25,8 +25,9 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
   const homeTarget = useRef(-1.7)
   const initialFrameSet = useRef(false)
   const manuallyAdjusted = useRef(false)
-  const framing = useRef({span, sag:solution.sag, loads, ys:solution.ys})
-  framing.current = {span, sag:solution.sag, loads, ys:solution.ys}
+  const visualYScale = Math.min(14, 88 / Math.max(1, solution.sag)) / pixelsPerMeter
+  const framing = useRef({span, sag:solution.sag, loads, ys:solution.ys, visualYScale})
+  framing.current = {span, sag:solution.sag, loads, ys:solution.ys, visualYScale}
   const zoom = (factor: number) => {
     const camera = cameraRef.current
     const controls = controlsRef.current
@@ -105,7 +106,7 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
       // deliberate camera edits; Reset restores the latest fitted view.
       const latest=framing.current
       const lowest=Math.max(0,...latest.loads.map((load,i)=>
-        (latest.ys[i+1]??latest.sag) + .46 + (.83+load.load*.014) + .88))
+        (latest.ys[i+1]??latest.sag)*latest.visualYScale + .46 + (.83+load.load*.014) + .88))
       const top=1.44
       const verticalExtent=top+lowest
       const tanHalf=Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)
@@ -183,7 +184,13 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
     const weightTrim = new THREE.MeshStandardMaterial({ color: '#74412f', metalness: .35, roughness: .6 })
     const weightInset = new THREE.MeshStandardMaterial({ color: '#b97755', metalness: .27, roughness: .65 })
     const red = new THREE.MeshStandardMaterial({ color: '#b4573d' })
-    const point = (i: number) => new THREE.Vector3(solution.xs[i] - span / 2, -solution.ys[i], 0)
+    // The SVG view intentionally uses a vertically compressed drawing scale.
+    // Apply the same display projection to cable coordinates in 3D so a
+    // front-on view shows the same slopes and snapped-end separation.
+    // This is a presentation transform, not a modification of the solver.
+    const point = (i: number) => new THREE.Vector3(
+      solution.xs[i] - span / 2, -solution.ys[i] * visualYScale, 0,
+    )
     const addRod = (start: THREE.Vector3, end: THREE.Vector3, radius: number, material: THREE.Material) => {
       const difference = end.clone().sub(start)
       const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, difference.length(), 9), material)
@@ -258,8 +265,8 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
         for(let j=0;j<points.length-1;j++){
           const [ax,ay]=points[j], [bx,by]=points[j+1]
           addRod(
-            new THREE.Vector3(ax-span/2,-ay,0),
-            new THREE.Vector3(bx-span/2,-by,0),
+            new THREE.Vector3(ax-span/2,-ay*visualYScale,0),
+            new THREE.Vector3(bx-span/2,-by*visualYScale,0),
             .068,red,
           )
         }
@@ -271,11 +278,15 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
       const left=fracture.left[fracture.left.length-1]
       const right=fracture.right[0]
       if(left && right){
-        const mid=new THREE.Vector3((left[0]+right[0])/2-span/2,
-          -(left[1]+right[1])/2,.25)
+        // Match SVG label placement: it sits 23 screen-units ABOVE the
+        // original (pre-break) segment midpoint, not between the fallen tips.
+        const preBreakX=(solution.xs[brokenSegment]+solution.xs[brokenSegment+1])/2
+        const preBreakY=(solution.ys[brokenSegment]+solution.ys[brokenSegment+1])/2
+        const mid=new THREE.Vector3(preBreakX-span/2,
+          -preBreakY*visualYScale + 23/pixelsPerMeter,.35)
         const mark=new THREE.MeshBasicMaterial({color:'#b4573d',depthTest:false})
         for(const [x,y] of [left,right]){
-          const center=new THREE.Vector3(x-span/2,-y,.1)
+          const center=new THREE.Vector3(x-span/2,-y*visualYScale,.1)
           const slashA=center.clone().add(new THREE.Vector3(-.10,-.13,0))
           const slashB=center.clone().add(new THREE.Vector3(.10,.13,0))
           const slash=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.30,7),mark)
@@ -285,7 +296,7 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
           slash.renderOrder=7
           group.add(slash)
         }
-        addLabel('SNAP!',mid.clone().add(new THREE.Vector3(0,.7,0)),1.45,'#a33e2a')
+        addLabel('SNAP!',mid,1.85,'#a33e2a')
       }
     }else{
       for(let i=0;i<solution.xs.length-1;i++){
@@ -358,7 +369,7 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
       if(camera && controls && box.clientWidth>0 && box.clientHeight>0){
         const aspect=box.clientWidth/box.clientHeight
         const lowest=Math.max(0,...loads.map((load,i)=>
-          (solution.ys[i+1]??solution.sag)+.46+(.83+load.load*.014)+.88))
+          (solution.ys[i+1]??solution.sag)*visualYScale+.46+(.83+load.load*.014)+.88))
         const top=1.44
         const tanHalf=Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)
         homeDistance.current=Math.max(6.5,
@@ -376,7 +387,7 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
     return () => {
       // Geometry cleanup is performed at the next update or on unmount.
     }
-  }, [solution, loads, span, pixelsPerMeter, brokenSegment])
+  }, [solution, loads, span, pixelsPerMeter, visualYScale, brokenSegment])
 
   return <UiBox sx={{ position: 'relative', width: '100%', height: '100%', minHeight: 0, minWidth: 0, overflow: 'hidden' }}>
     <div ref={mount} role="img"
