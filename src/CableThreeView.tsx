@@ -142,10 +142,10 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), difference.normalize())
       group.add(mesh)
     }
-    // Two standalone bridge-inspired concrete pylons, not a bridge/deck.
-    // Keep the bases below every cable point, with clearance for the
-    // illustrative droop of a broken segment.
-    const pillarHeight = Math.max(5, solution.sag + 2.3)
+    // These are fixed-height supports. Their geometry must not depend on
+    // the live cable sag or point loads: only the cable and weights respond
+    // to changes in load. The footing elevation stays constant.
+    const pillarHeight = 8.5
     const concrete = new THREE.MeshStandardMaterial({ color: '#aebbc5', roughness: 0.92 })
     const trim = new THREE.MeshStandardMaterial({ color: '#8193a1', roughness: 0.75 })
     for (const x of [-span / 2, span / 2]) {
@@ -212,7 +212,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
 
   return <UiBox sx={{ position: 'relative', width: '100%', height: 'min(43vh,405px)', minHeight: 250 }}>
     <div ref={mount} role="img"
-      aria-label={`Rotatable three-dimensional view of a ${span} meter cable with ${loads.length} point loads and ${solution.sag.toFixed(1)} meters of calculated sag. The two supports extend below the cable's lowest point.`}
+      aria-label={`Rotatable three-dimensional view of a ${span} meter cable with ${loads.length} point loads and ${solution.sag.toFixed(1)} meters of calculated sag. The two supports have fixed heights as cable loading changes.`}
       style={{ width: '100%', height: '100%', touchAction: 'none' }} />
     <UiBox sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', flexDirection: 'column',
       gap: 0.5, p: 0.5, bgcolor: 'rgba(255,255,255,.92)', border: '1px solid #d3dce2',
