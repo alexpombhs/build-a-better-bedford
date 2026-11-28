@@ -19,7 +19,9 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
   const geometryRef = useRef<THREE.Group | null>(null)
   const controlsRef = useRef<OrbitControls | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
-  const homeDistance = useRef(23)
+  const homeDistance = useRef(15)
+  const homeTarget = useRef(-1.7)
+  const initialFrameSet = useRef(false)
   const zoom = (factor: number) => {
     const camera = cameraRef.current
     const controls = controlsRef.current
@@ -34,8 +36,8 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     const camera = cameraRef.current
     const controls = controlsRef.current
     if (!camera || !controls) return
-    camera.position.set(1.7, 3.1, homeDistance.current)
-    controls.target.set(0, -2, 0)
+    camera.position.set(1.1, homeTarget.current + 4, homeDistance.current)
+    controls.target.set(0, homeTarget.current, 0)
     controls.update()
   }
 
@@ -46,8 +48,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     scene.background = new THREE.Color('#f5f8fa')
     sceneRef.current = scene
     const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 300)
-    homeDistance.current = 23
-    camera.position.set(1.7, 3.1, homeDistance.current)
+    camera.position.set(1.1, 2.3, homeDistance.current)
     cameraRef.current = camera
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
@@ -67,18 +68,36 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     controls.enableZoom = true
     controls.zoomSpeed = 0.95
     controls.enablePan = false
-    controls.minDistance = 8
+    controls.minDistance = 6
     controls.maxDistance = 55
     controls.maxPolarAngle = Math.PI * 0.8
-    controls.target.set(0, -2, 0)
+    controls.target.set(0, homeTarget.current, 0)
     controls.update()
     const resize = () => {
       const width = element.clientWidth
       const height = element.clientHeight
       if (!width || !height) return
-      camera.aspect = width / height
+      const aspect=width/height
+      camera.aspect = aspect
       camera.updateProjectionMatrix()
       renderer.setSize(width, height, false)
+      if(!initialFrameSet.current){
+        // Frame the whole structural assembly, not the now-removed pylons.
+        // Base the fit on span AND the lowest hanging load so the weights
+        // remain visible at the default view across wide/narrow screens.
+        const lowest=solution.sag+3.0
+        const top=1.45
+        const verticalExtent=top+lowest
+        const fov=Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)
+        const fitWidth=(span+2.3)/(2*fov*aspect*.86)
+        const fitHeight=verticalExtent/(2*fov*.84)
+        homeDistance.current=Math.max(7.5,fitWidth,fitHeight)
+        homeTarget.current=(top-lowest)/2
+        camera.position.set(1.1,homeTarget.current+3.0,homeDistance.current)
+        controls.target.set(0,homeTarget.current,0)
+        controls.update()
+        initialFrameSet.current=true
+      }
     }
     const observer = new ResizeObserver(resize)
     observer.observe(element)
@@ -138,7 +157,9 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     scene.add(group)
     const blue = new THREE.MeshStandardMaterial({ color: '#294b63', metalness: 0.25, roughness: 0.55 })
     const steel = new THREE.MeshStandardMaterial({ color: '#b1c1cc', metalness: 0.3, roughness: 0.55 })
-    const orange = new THREE.MeshStandardMaterial({ color: '#b66c4c', metalness: 0.15, roughness: 0.65 })
+    const orange = new THREE.MeshStandardMaterial({ color: '#a76247', metalness: 0.38, roughness: 0.52 })
+    const weightTrim = new THREE.MeshStandardMaterial({ color: '#74412f', metalness: .35, roughness: .6 })
+    const weightInset = new THREE.MeshStandardMaterial({ color: '#b97755', metalness: .27, roughness: .65 })
     const red = new THREE.MeshStandardMaterial({ color: '#b4573d' })
     const point = (i: number) => new THREE.Vector3(solution.xs[i] - span / 2, -solution.ys[i], 0)
     const addRod = (start: THREE.Vector3, end: THREE.Vector3, radius: number, material: THREE.Material) => {
@@ -226,21 +247,46 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       const joint=new THREE.Mesh(new THREE.TorusGeometry(.19,.057,10,32),pinMaterial)
       joint.position.copy(attachment)
       group.add(joint)
-      const height=.48+load.load*.019
-      const block=new THREE.Mesh(new THREE.BoxGeometry(1.18,height,.76),orange)
-      block.position.copy(attachment).add(new THREE.Vector3(0,-.44-height/2,0))
-      group.add(block)
-      const blockTop=block.position.y+height/2
+      // A suspended test mass: thick cast-metal body with bevelled edges,
+      // a recessed front plate, hanging shackle and a clearly stamped value.
+      const height=.83+load.load*.014
+      const massWidth=1.42
+      const massDepth=.78
+      const shape=new THREE.Shape()
+      shape.moveTo(-massWidth/2,-height/2)
+      shape.lineTo(massWidth/2,-height/2)
+      shape.lineTo(massWidth/2,height/2)
+      shape.lineTo(-massWidth/2,height/2)
+      shape.closePath()
+      const body=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{
+        depth:massDepth-.10,bevelEnabled:true,bevelThickness:.05,
+        bevelSize:.05,bevelSegments:2,steps:1,
+      }),orange)
+      const centerY=attachment.y-.46-height/2
+      body.position.set(attachment.x,centerY,-massDepth/2+.05)
+      group.add(body)
+      const faceZ=massDepth/2+.02
+      const border=new THREE.Mesh(new THREE.BoxGeometry(massWidth-.16,height-.16,.025),weightTrim)
+      border.position.set(attachment.x,centerY,faceZ)
+      group.add(border)
+      const face=new THREE.Mesh(new THREE.BoxGeometry(massWidth-.23,height-.23,.035),weightInset)
+      face.position.set(attachment.x,centerY,faceZ+.035)
+      group.add(face)
+      const strapTop=centerY+height/2
       addRod(new THREE.Vector3(attachment.x,attachment.y-.17,0),
-        new THREE.Vector3(attachment.x,blockTop+.12,0),.043,steel)
-      const hanger=new THREE.Mesh(new THREE.TorusGeometry(.16,.044,8,24,Math.PI),steel)
-      hanger.position.set(attachment.x,blockTop+.08,0)
-      group.add(hanger)
-      addLabel('P'+(i+1),new THREE.Vector3(block.position.x,block.position.y+.17,.41),.72)
-      addLabel(load.load+' kN',new THREE.Vector3(block.position.x,block.position.y-.15,.41),.8)
+        new THREE.Vector3(attachment.x,strapTop+.07,0),.052,steel)
+      const loop=new THREE.Mesh(new THREE.TorusGeometry(.19,.065,12,32),steel)
+      loop.position.set(attachment.x,strapTop+.08,0)
+      group.add(loop)
+      const cap=new THREE.Mesh(new THREE.BoxGeometry(.50,.10,.44),weightTrim)
+      cap.position.set(attachment.x,strapTop+.02,0)
+      group.add(cap)
+      const textZ=faceZ+.068
+      addLabel('P'+(i+1),new THREE.Vector3(attachment.x,centerY+height*.19,textZ),1.02)
+      addLabel(load.load+' kN',new THREE.Vector3(attachment.x,centerY-height*.16,textZ),1.18)
       const arrow=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),
-        new THREE.Vector3(attachment.x,block.position.y-height/2-.16,0),
-        .76,0xb4573d,.21,.14)
+        new THREE.Vector3(attachment.x,centerY-height/2-.18,0),
+        .72,0xb4573d,.22,.15)
       group.add(arrow)
     })
     // A subtle horizontal line makes the undeformed support elevation visible.
