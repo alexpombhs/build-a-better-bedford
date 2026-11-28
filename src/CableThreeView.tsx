@@ -26,8 +26,11 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
   const initialFrameSet = useRef(false)
   const manuallyAdjusted = useRef(false)
   const visualYScale = Math.min(14, 88 / Math.max(1, solution.sag)) / pixelsPerMeter
-  const framing = useRef({span, sag:solution.sag, loads, ys:solution.ys, visualYScale})
-  framing.current = {span, sag:solution.sag, loads, ys:solution.ys, visualYScale}
+  // Supports are rigid. Camera framing depends on the fixed span and viewport,
+  // never on force-dependent sag or weight dimensions.
+  const currentSpan = useRef(span)
+  currentSpan.current = span
+  const framedSpan = useRef(span)
   const zoom = (factor: number) => {
     const camera = cameraRef.current
     const controls = controlsRef.current
@@ -42,8 +45,8 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
     const camera = cameraRef.current
     const controls = controlsRef.current
     if (!camera || !controls) return
-    // Translate the camera and orbit target together: this moves the visible
-    // assembly on screen without shifting any of its physical coordinates.
+    manuallyAdjusted.current = true
+    // Translate camera and target together without moving model geometry.
     const delta = direction * Math.max(.35, camera.position.distanceTo(controls.target) * .055)
     camera.position.y += delta
     controls.target.y += delta
@@ -104,22 +107,18 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
       if (!width || !height) return
       const aspect=width/height
       renderer.setSize(width, height, false)
-      // Fit beam and load hardware without perspective foreshortening.
-      // Width and height are expressed in the same physical display units.
-      const latest=framing.current
-      const lowest=Math.max(0,...latest.loads.map((load,i)=>
-        (latest.ys[i+1]??latest.sag)*latest.visualYScale+.46+(.83+load.load*.014)+.88))
-      const top=1.44
-      homeHalfHeight.current=Math.max(3.0,
-        (latest.span+2.2)/(2*aspect*.89),
-        (top+lowest)/(2*.86))
-      homeTarget.current=(top-lowest)/2
+      // Stable structural reference: the camera must not track cable sag or
+      // changing load-box heights. This leaves the beam and support pins
+      // stationary on screen while the cable and suspended weights move.
+      homeHalfHeight.current=Math.max(5.1,
+        (currentSpan.current+2.2)/(2*aspect*.89))
+      homeTarget.current=-2.2
       camera.left=-homeHalfHeight.current*aspect
       camera.right=homeHalfHeight.current*aspect
       camera.top=homeHalfHeight.current
       camera.bottom=-homeHalfHeight.current
       camera.updateProjectionMatrix()
-      if(!initialFrameSet.current || !manuallyAdjusted.current){
+      if(!initialFrameSet.current){
         camera.position.set(0,homeTarget.current,25)
         controls.target.set(0,homeTarget.current,0)
         controls.update()
@@ -365,10 +364,19 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
       const textZ=faceZ+.068
       addLabel('P'+(i+1),new THREE.Vector3(attachment.x,centerY+height*.19,textZ),1.02)
       addLabel(load.load+' kN',new THREE.Vector3(attachment.x,centerY-height*.16,textZ),1.18)
-      const arrow=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),
-        new THREE.Vector3(attachment.x,centerY-height/2-.18,0),
-        .72,0xb4573d,.22,.15)
-      group.add(arrow)
+      if(load.load>0){
+        // Three.js line widths are fixed on most WebGL implementations.
+        // Use real solids to communicate greater force with a thicker arrow.
+        const ratio=Math.min(1,Math.max(0,load.load/30))
+        const radius=.014+.047*ratio
+        const arrowMaterial=new THREE.MeshBasicMaterial({color:'#b4573d'})
+        const shaft=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,.48,16),arrowMaterial)
+        shaft.position.set(attachment.x,centerY-height/2-.18-.24,0)
+        const cone=new THREE.Mesh(new THREE.ConeGeometry(.06+.065*ratio,.21,18),arrowMaterial)
+        cone.rotation.z=Math.PI
+        cone.position.set(attachment.x,centerY-height/2-.18-.57,0)
+        group.add(shaft,cone)
+      }
     })
     // A subtle horizontal line makes the undeformed support elevation visible.
     const baseline = new THREE.Line(
@@ -377,33 +385,23 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
     )
     baseline.computeLineDistances()
     group.add(baseline)
-    // Reframe only while the user has not deliberately orbited or panned.
-    // For a changed load, the current camera's Reset fit is also refreshed.
-    const box=mount.current
-    if(box){
-      // A subsequent ResizeObserver callback is not guaranteed when
-      // geometry changes, so recompute the fitted home on each update.
+    // Refit only if the fixed structural span changes. Load changes never
+    // alter camera orientation, framing or orbit target.
+    if(framedSpan.current!==span){
+      framedSpan.current=span
       const camera=cameraRef.current
       const controls=controlsRef.current
-      if(camera && controls && box.clientWidth>0 && box.clientHeight>0){
+      const box=mount.current
+      if(camera && controls && box && box.clientHeight>0){
         const aspect=box.clientWidth/box.clientHeight
-        const lowest=Math.max(0,...loads.map((load,i)=>
-          (solution.ys[i+1]??solution.sag)*visualYScale+.46+(.83+load.load*.014)+.88))
-        const top=1.44
-        homeHalfHeight.current=Math.max(3.0,
-          (span+2.2)/(2*aspect*.89),
-          (top+lowest)/(2*.86))
-        homeTarget.current=(top-lowest)/2
+        homeHalfHeight.current=Math.max(5.1,(span+2.2)/(2*aspect*.89))
         camera.left=-homeHalfHeight.current*aspect
         camera.right=homeHalfHeight.current*aspect
         camera.top=homeHalfHeight.current
         camera.bottom=-homeHalfHeight.current
         camera.updateProjectionMatrix()
-        if(!manuallyAdjusted.current){
-          camera.position.set(0,homeTarget.current,25)
-          controls.target.set(0,homeTarget.current,0)
-          controls.update()
-        }
+        // Retain the user's chosen orbit and pan, including when span changes.
+        controls.update()
       }
     }
     // Dispose shared materials even when one is not used by the current state.
