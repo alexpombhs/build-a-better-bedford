@@ -185,7 +185,6 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
     const blue = new THREE.MeshStandardMaterial({ color: '#294b63', metalness: 0.25, roughness: 0.55 })
     const steel = new THREE.MeshStandardMaterial({ color: '#b1c1cc', metalness: 0.3, roughness: 0.55 })
     const orange = new THREE.MeshStandardMaterial({ color: '#a76247', metalness: 0.38, roughness: 0.52 })
-    const weightTrim = new THREE.MeshStandardMaterial({ color: '#74412f', metalness: .35, roughness: .6 })
     const weightInset = new THREE.MeshStandardMaterial({ color: '#b97755', metalness: .27, roughness: .65 })
     const red = new THREE.MeshStandardMaterial({ color: '#b4573d' })
     // The SVG view intentionally uses a vertically compressed drawing scale.
