@@ -123,3 +123,38 @@ export function maxSupportedTotalLoad(
   }
   return safe
 }
+
+
+/**
+ * Shared *illustrative* snapped-cable geometry for both 2D and 3D.
+ * Coordinates use the solver convention: x from the left anchor, y downward.
+ * The static solver does not predict dynamics after a cable snaps; the two
+ * separated ends are deliberately displaced solely to communicate rupture.
+ */
+export function illustrateCableBreak(solution: CableSolution, segment: number): {
+  left: Array<[number, number]>
+  right: Array<[number, number]>
+} {
+  if (segment < 0 || segment >= solution.xs.length - 1) {
+    return {left: [], right: []}
+  }
+  const startX = solution.xs[segment]
+  const endX = solution.xs[segment + 1]
+  const middleX = (startX + endX) / 2
+  const middleY = (solution.ys[segment] + solution.ys[segment + 1]) / 2
+  // A scale-independent horizontal gap, capped for short cable segments.
+  const halfGap = Math.min(0.4, (endX - startX) * 0.24)
+  const verticalScale = Math.min(14, 88 / Math.max(1, solution.sag))
+  return {
+    left: [
+      ...solution.xs.slice(0, segment + 1)
+        .map((x, i) => [x, solution.ys[i]] as [number, number]),
+      [middleX - halfGap, middleY + 25 / verticalScale],
+    ],
+    right: [
+      [middleX + halfGap, middleY + 45 / verticalScale],
+      ...solution.xs.slice(segment + 1)
+        .map((x, i) => [x, solution.ys[segment + 1 + i]] as [number, number]),
+    ],
+  }
+}
