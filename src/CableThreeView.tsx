@@ -329,7 +329,10 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
         depth:massDepth-.10,bevelEnabled:true,bevelThickness:.05,
         bevelSize:.05,bevelSegments:2,steps:1,
       }),orange)
-      const centerY=attachment.y-.46-height/2
+      // Leave a visible suspension gap below the cable joint. The center
+      // stays exactly under that joint for every load and sag setting.
+      const hangerDrop=.70
+      const centerY=attachment.y-hangerDrop-height/2
       body.position.set(attachment.x,centerY,-massDepth/2+.05)
       group.add(body)
       const faceZ=massDepth/2+.02
@@ -340,13 +343,24 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
       face.position.set(attachment.x,centerY,faceZ+.035)
       group.add(face)
       const strapTop=centerY+height/2
-      addRod(new THREE.Vector3(attachment.x,attachment.y-.17,0),
-        new THREE.Vector3(attachment.x,strapTop+.07,0),.052,steel)
-      const loop=new THREE.Mesh(new THREE.TorusGeometry(.19,.065,12,32),steel)
-      loop.position.set(attachment.x,strapTop+.08,0)
-      group.add(loop)
-      const cap=new THREE.Mesh(new THREE.BoxGeometry(.50,.10,.44),weightTrim)
-      cap.position.set(attachment.x,strapTop+.02,0)
+      // An uninterrupted load path: cable pin → hanging link → weight eye.
+      // The previous short center rod was hidden behind the solid body and
+      // torus, making the block appear to float near the cable.
+      const frontZ=faceZ+.10
+      const hookMaterial=new THREE.MeshStandardMaterial({
+        color:'#647986',metalness:.55,roughness:.38,
+      })
+      const linkStart=new THREE.Vector3(attachment.x,attachment.y-.08,frontZ)
+      const linkEnd=new THREE.Vector3(attachment.x,strapTop+.12,frontZ)
+      addRod(linkStart,linkEnd,.047,hookMaterial)
+      const upperEye=new THREE.Mesh(new THREE.TorusGeometry(.14,.044,12,28),hookMaterial)
+      upperEye.position.set(attachment.x,attachment.y-.10,frontZ)
+      group.add(upperEye)
+      const lowerEye=new THREE.Mesh(new THREE.TorusGeometry(.14,.044,12,28),hookMaterial)
+      lowerEye.position.set(attachment.x,strapTop+.11,frontZ)
+      group.add(lowerEye)
+      const cap=new THREE.Mesh(new THREE.BoxGeometry(.48,.11,.24),weightTrim)
+      cap.position.set(attachment.x,strapTop+.02,frontZ-.08)
       group.add(cap)
       const textZ=faceZ+.068
       addLabel('P'+(i+1),new THREE.Vector3(attachment.x,centerY+height*.19,textZ),1.02)
