@@ -290,9 +290,6 @@ export default function FunicularSimulator() {
         <text x="627" y={(anchorY + sagY) / 2 + 4} textAnchor="end"
           fill="#465d70" fontSize="13">{fmt(displayed.sag)} m sag</text>
       </svg>}
-      <UiText variant="caption" sx={{ display: 'block', color: labColors.muted, mt: 'auto', pt: 0.5, fontSize: 11.5, lineHeight: 1.4 }}>
-        Weights scale with load; orange arrows indicate downward force. Cable failure is a static illustration. In 3D, drag to rotate, right-drag or two-finger drag to pan, and scroll to zoom.
-      </UiText>
       </UiSurface>
     </UiBox>
 
