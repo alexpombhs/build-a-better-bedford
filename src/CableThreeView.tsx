@@ -314,7 +314,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     }
   }, [solution, loads, span, brokenSegment])
 
-  return <UiBox sx={{ position: 'relative', width: '100%', height: 'min(43vh,405px)', minHeight: 250 }}>
+  return <UiBox sx={{ position: 'relative', width: '100%', height: '100%', minHeight: 0, minWidth: 0, overflow: 'hidden' }}>
     <div ref={mount} role="img"
       aria-label={`Rotatable three-dimensional view of a ${span} meter cable with ${loads.length} point loads and ${solution.sag.toFixed(1)} meters of calculated sag. A fixed overhead beam supports blue pin joints and straight cable segments.`}
       style={{ width: '100%', height: '100%', touchAction: 'none' }} />
