@@ -52,7 +52,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     const camera = cameraRef.current
     const controls = controlsRef.current
     if (!camera || !controls) return
-    camera.position.set(.85, homeTarget.current + 1.3, homeDistance.current)
+    camera.position.set(0, homeTarget.current, homeDistance.current)
     controls.target.set(0, homeTarget.current, 0)
     controls.update()
   }
@@ -64,7 +64,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
     scene.background = new THREE.Color('#f5f8fa')
     sceneRef.current = scene
     const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 300)
-    camera.position.set(1.1, 2.3, homeDistance.current)
+    camera.position.set(0, homeTarget.current, homeDistance.current)
     cameraRef.current = camera
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
@@ -113,7 +113,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       homeDistance.current=Math.max(6.5,fitWidth,fitHeight)
       homeTarget.current=(top-lowest)/2
       if(!initialFrameSet.current || !manuallyAdjusted.current){
-        camera.position.set(.85,homeTarget.current+1.3,homeDistance.current)
+        camera.position.set(0,homeTarget.current,homeDistance.current)
         controls.target.set(0,homeTarget.current,0)
         controls.update()
       }
@@ -265,6 +265,27 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
       }
       drawBrokenRun(fracture.left)
       drawBrokenRun(fracture.right)
+      // In 2D both severed ends have a break marker and SNAP label.
+      // Anchor the same annotation to the shared physical fracture points.
+      const left=fracture.left[fracture.left.length-1]
+      const right=fracture.right[0]
+      if(left && right){
+        const mid=new THREE.Vector3((left[0]+right[0])/2-span/2,
+          -(left[1]+right[1])/2,.25)
+        const mark=new THREE.MeshBasicMaterial({color:'#b4573d',depthTest:false})
+        for(const [x,y] of [left,right]){
+          const center=new THREE.Vector3(x-span/2,-y,.1)
+          const slashA=center.clone().add(new THREE.Vector3(-.10,-.13,0))
+          const slashB=center.clone().add(new THREE.Vector3(.10,.13,0))
+          const slash=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.30,7),mark)
+          slash.position.copy(slashA).add(slashB).multiplyScalar(.5)
+          slash.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),
+            slashB.sub(slashA).normalize())
+          slash.renderOrder=7
+          group.add(slash)
+        }
+        addLabel('SNAP!',mid.clone().add(new THREE.Vector3(0,.7,0)),1.45,'#a33e2a')
+      }
     }else{
       for(let i=0;i<solution.xs.length-1;i++){
         addRod(point(i),point(i+1),.07,blue)
@@ -344,7 +365,7 @@ export default function CableThreeView({ solution, loads, span, brokenSegment }:
           (top+lowest)/(2*tanHalf*.88))
         homeTarget.current=(top-lowest)/2
         if(!manuallyAdjusted.current){
-          camera.position.set(.85,homeTarget.current+1.3,homeDistance.current)
+          camera.position.set(0,homeTarget.current,homeDistance.current)
           controls.target.set(0,homeTarget.current,0)
           controls.update()
         }
