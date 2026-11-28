@@ -93,7 +93,9 @@ export default function FunicularSimulator() {
   const shownCapacity = broken?.capacity ?? capacity
   const displayedTotal = shownLoads.reduce((sum, point) => sum + point.load, 0)
   const displayedPeak = maxTension(displayed)
-  const status = broken ? 'broken' : displayedPeak >= shownStrength * 0.85 ? 'warning' : 'intact'
+  const highStretch = displayed.maxStrainPercent > 12
+  const nearBreaking = displayedPeak >= shownStrength * 0.85
+  const status = broken ? 'broken' : nearBreaking || highStretch ? 'warning' : 'intact'
 
   // The 640 x 330 SVG matches the desktop panel's actual aspect ratio much
   // more closely, eliminating the old side letterboxing caused by 'meet'.
@@ -176,6 +178,8 @@ export default function FunicularSimulator() {
         strength={shownStrength}
         segment={broken ? breakIndex + 1 : undefined}
         onReset={replaceCable}
+        warningTitle={!broken && highStretch && !nearBreaking ? 'High modeled cable stretch' : undefined}
+        warningDetail={highStretch ? `High modeled stretch (${fmt(displayed.maxStrainPercent)}%). This educational elastic cord is much more stretchable than a typical structural cable; do not treat these values as bridge design limits.` : undefined}
       />
       <UiSurface variant="outlined" sx={{ p: { xs: 1.5, md: 2 }, bgcolor: '#f5f8fa', borderColor: labColors.border, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <UiBox sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 0.5 }}>
@@ -287,7 +291,7 @@ export default function FunicularSimulator() {
           fill="#465d70" fontSize="13">{fmt(displayed.sag)} m sag</text>
       </svg>}
       <UiText variant="caption" sx={{ display: 'block', color: labColors.muted, mt: 'auto', pt: 0.5, fontSize: 11.5, lineHeight: 1.4 }}>
-        Weights scale with load; orange arrows indicate downward force. Cable failure is a static illustration. In 3D, drag to rotate and scroll to zoom.
+        Weights scale with load; orange arrows indicate downward force. Cable failure is a static illustration. In 3D, drag to rotate, right-drag or two-finger drag to pan, and scroll to zoom.
       </UiText>
       </UiSurface>
     </UiBox>
@@ -348,11 +352,6 @@ export default function FunicularSimulator() {
           </UiBox>
         </UiBox>
       </LabDetails>
-      {displayed.maxStrainPercent > 12 && <UiText role="status" variant="body2" sx={{ mt: 2, color: '#97501c', lineHeight: 1.5 }}>
-        High modeled stretch ({fmt(displayed.maxStrainPercent)}%). This educational elastic cord
-        is much more stretchable than a typical structural cable; do not treat these values as bridge design limits.
-      </UiText>}
-
       <UiText variant="caption" sx={{ display: 'block', mt: 1, fontSize: 11, color: labColors.muted, lineHeight: 1.35 }}>
         Idealized static model for learning, not structural design. It does not model material fatigue, supports, cable weight, or falling dynamics.
       </UiText>
