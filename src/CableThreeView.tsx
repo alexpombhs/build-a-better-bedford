@@ -149,7 +149,7 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
             if (object instanceof THREE.Mesh || object instanceof THREE.Line) object.geometry.dispose()
             const materials = Array.isArray(object.material) ? object.material : [object.material]
             materials.forEach(material => {
-              if (material instanceof THREE.SpriteMaterial) material.map?.dispose()
+              if ((material instanceof THREE.SpriteMaterial || material instanceof THREE.MeshBasicMaterial) && material.map) material.map.dispose()
               material.dispose()
             })
           }
@@ -173,7 +173,7 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
           if (object instanceof THREE.Mesh || object instanceof THREE.Line) object.geometry.dispose()
           const materials = Array.isArray(object.material) ? object.material : [object.material]
           materials.forEach(material => {
-            if (material instanceof THREE.SpriteMaterial) material.map?.dispose()
+            if ((material instanceof THREE.SpriteMaterial || material instanceof THREE.MeshBasicMaterial) && material.map) material.map.dispose()
             material.dispose()
           })
         }
@@ -308,75 +308,107 @@ export default function CableThreeView({ solution, loads, span, pixelsPerMeter, 
       }
     }
     loads.forEach((load, i) => {
-      const attachment=point(i+1)
-      // Metal eye at the point-load joint, then a short hanger to the block.
-      // One cable-eye joint shared by the two cable segments and the
-      // suspension. Do not create a second floating eye above this joint.
-      const joint=new THREE.Mesh(new THREE.TorusGeometry(.19,.057,10,32),pinMaterial)
-      joint.position.copy(attachment)
+      // Treat each load as a freely suspended gravity load, NOT as a child of
+      // either inclined cable segment. Every component has the SAME x/z
+      // centerline as the cable's solved point-load joint.
+      const jointPoint = point(i + 1)
+      const x = jointPoint.x
+      const z = jointPoint.z
+      const width = (30 + load.load * 1.1) / pixelsPerMeter
+      const height = (40 + load.load * .45) / pixelsPerMeter
+      const depth = .64
+      const hangerLength = 23 / pixelsPerMeter
+      const topY = jointPoint.y - hangerLength
+      const centerY = topY - height / 2
+
+      // Real joint ring: centered in the vertical cable plane, not offset
+      // toward the camera. The cable endpoints, hanger, and block all meet
+      // along one vertical load path.
+      const joint = new THREE.Mesh(
+        new THREE.TorusGeometry(.145,.045,10,32),pinMaterial,
+      )
+      joint.position.copy(jointPoint)
       group.add(joint)
-      // A suspended test mass: thick cast-metal body with bevelled edges,
-      // a recessed front plate, hanging shackle and a clearly stamped value.
-      // Scale to the 2D weight proportions at the same span. The blocks
-      // must be substantial enough to read as actual suspended test masses.
-      const height=1.08+load.load*.018
-      const massWidth=1.85
-      const massDepth=.86
-      const shape=new THREE.Shape()
-      shape.moveTo(-massWidth/2,-height/2)
-      shape.lineTo(massWidth/2,-height/2)
-      shape.lineTo(massWidth/2,height/2)
-      shape.lineTo(-massWidth/2,height/2)
-      shape.closePath()
-      const body=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{
-        depth:massDepth-.10,bevelEnabled:true,bevelThickness:.05,
-        bevelSize:.05,bevelSegments:2,steps:1,
-      }),orange)
-      // Leave a visible suspension gap below the cable joint. The center
-      // stays exactly under that joint for every load and sag setting.
-      const hangerDrop=.60
-      const centerY=attachment.y-hangerDrop-height/2
-      body.position.set(attachment.x,centerY,-massDepth/2+.05)
-      group.add(body)
-      const faceZ=massDepth/2+.02
-      const border=new THREE.Mesh(new THREE.BoxGeometry(massWidth-.16,height-.16,.025),weightTrim)
-      border.position.set(attachment.x,centerY,faceZ)
-      group.add(border)
-      const face=new THREE.Mesh(new THREE.BoxGeometry(massWidth-.23,height-.23,.035),weightInset)
-      face.position.set(attachment.x,centerY,faceZ+.035)
-      group.add(face)
-      const strapTop=centerY+height/2
-      // The upper end of the metal link starts inside the EXISTING cable
-      // ring at z=0. It then angles forward to the eye fixed to the weight,
-      // preserving an actual connection when viewed from any orbit angle.
-      const hookMaterial=new THREE.MeshStandardMaterial({
-        color:'#647986',metalness:.55,roughness:.38,
+
+      const hangingSteel = new THREE.MeshStandardMaterial({
+        color:'#657b8b',metalness:.55,roughness:.36,
       })
-      const lowerEyeZ=massDepth/2+.055
-      const linkStart=new THREE.Vector3(attachment.x,attachment.y-.13,0)
-      const linkEnd=new THREE.Vector3(attachment.x,strapTop+.15,lowerEyeZ)
-      addRod(linkStart,linkEnd,.067,hookMaterial)
-      const lowerEye=new THREE.Mesh(new THREE.TorusGeometry(.15,.057,12,28),hookMaterial)
-      lowerEye.position.set(attachment.x,strapTop+.12,lowerEyeZ)
-      group.add(lowerEye)
-      const cap=new THREE.Mesh(new THREE.BoxGeometry(.54,.15,.30),weightTrim)
-      cap.position.set(attachment.x,strapTop+.01,lowerEyeZ-.12)
-      group.add(cap)
-      const textZ=faceZ+.068
-      addLabel('P'+(i+1),new THREE.Vector3(attachment.x,centerY+height*.19,textZ),1.28)
-      addLabel(load.load+' kN',new THREE.Vector3(attachment.x,centerY-height*.16,textZ),1.48)
+      // Suspended vertical rod has zero horizontal and depth displacement.
+      addRod(
+        new THREE.Vector3(x,jointPoint.y-.07,z),
+        new THREE.Vector3(x,topY+.08,z),
+        .044,hangingSteel,
+      )
+      // Weight's eye is attached to its top and intersects the hanger.
+      const eye = new THREE.Mesh(
+        new THREE.TorusGeometry(.11,.037,10,28),hangingSteel,
+      )
+      eye.position.set(x,topY+.055,z)
+      group.add(eye)
+
+      // Rectangular suspended mass with actual 3D depth. Its world rotation
+      // stays identity even when the cable segments rotate with the sag.
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(width,height,depth),orange,
+      )
+      body.position.set(x,centerY,z)
+      group.add(body)
+      const rim = new THREE.Mesh(
+        new THREE.BoxGeometry(width-.09,height-.09,.025),weightTrim,
+      )
+      rim.position.set(x,centerY,z+depth/2+.016)
+      group.add(rim)
+      const front = new THREE.Mesh(
+        new THREE.BoxGeometry(width-.15,height-.15,.027),weightInset,
+      )
+      front.position.set(x,centerY,z+depth/2+.042)
+      group.add(front)
+
+      // Text is affixed to the weight's front face, rather than using a
+      // camera-facing sprite that floats independently as the view rotates.
+      const labelCanvas=document.createElement('canvas')
+      labelCanvas.width=512
+      labelCanvas.height=256
+      const labelCtx=labelCanvas.getContext('2d')
+      if(labelCtx){
+        labelCtx.clearRect(0,0,512,256)
+        labelCtx.fillStyle='#ffffff'
+        labelCtx.textAlign='center'
+        labelCtx.textBaseline='middle'
+        labelCtx.font='bold 72px sans-serif'
+        labelCtx.fillText('P'+(i+1),256,86)
+        labelCtx.font='bold 78px sans-serif'
+        labelCtx.fillText(load.load+' kN',256,177)
+        const labelTexture=new THREE.CanvasTexture(labelCanvas)
+        labelTexture.colorSpace=THREE.SRGBColorSpace
+        const faceMaterial=new THREE.MeshBasicMaterial({
+          map:labelTexture,transparent:true,side:THREE.DoubleSide,
+          depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,
+        })
+        const label=new THREE.Mesh(
+          new THREE.PlaneGeometry(width*.92,height*.78),faceMaterial,
+        )
+        label.position.set(x,centerY,z+depth/2+.066)
+        group.add(label)
+      }
+
+      // Downward force starts below the center of mass, on the same x/z
+      // vertical line. Geometry thickness (not WebGL lineWidth) encodes load.
       if(load.load>0){
-        // Three.js line widths are fixed on most WebGL implementations.
-        // Use real solids to communicate greater force with a thicker arrow.
-        const ratio=Math.min(1,Math.max(0,load.load/30))
+        const ratio=Math.min(1,load.load/30)
         const radius=.014+.047*ratio
-        const arrowMaterial=new THREE.MeshBasicMaterial({color:'#b4573d'})
-        const shaft=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,.48,16),arrowMaterial)
-        shaft.position.set(attachment.x,centerY-height/2-.18-.24,0)
-        const cone=new THREE.Mesh(new THREE.ConeGeometry(.06+.065*ratio,.21,18),arrowMaterial)
-        cone.rotation.z=Math.PI
-        cone.position.set(attachment.x,centerY-height/2-.18-.57,0)
-        group.add(shaft,cone)
+        const forceMaterial=new THREE.MeshBasicMaterial({color:'#b4573d'})
+        const forceStart=centerY-height/2-.18
+        const shaft=new THREE.Mesh(
+          new THREE.CylinderGeometry(radius,radius,.48,16),forceMaterial,
+        )
+        shaft.position.set(x,forceStart-.24,z)
+        const tip=new THREE.Mesh(
+          new THREE.ConeGeometry(.06+.065*ratio,.21,18),forceMaterial,
+        )
+        tip.rotation.z=Math.PI
+        tip.position.set(x,forceStart-.57,z)
+        group.add(shaft,tip)
       }
     })
     // A subtle horizontal line makes the undeformed support elevation visible.
